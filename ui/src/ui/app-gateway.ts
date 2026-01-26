@@ -26,6 +26,7 @@ import {
 import type { ClawdbotApp } from "./app";
 import type { ExecApprovalRequest } from "./controllers/exec-approval";
 import { loadAssistantIdentity } from "./controllers/assistant-identity";
+import { t, tp } from "./i18n/index.js";
 
 type GatewayHost = {
   settings: UiSettings;
@@ -137,12 +138,19 @@ export function connectGateway(host: GatewayHost) {
       host.connected = false;
       // Code 1012 = Service Restart (expected during config saves, don't show as error)
       if (code !== 1012) {
-        host.lastError = `disconnected (${code}): ${reason || "no reason"}`;
+        const reasonText = reason || t("app.errors.noReason");
+        host.lastError = tp("app.errors.disconnected", {
+          code: String(code),
+          reason: reasonText,
+        });
       }
     },
     onEvent: (evt) => handleGatewayEvent(host, evt),
     onGap: ({ expected, received }) => {
-      host.lastError = `event gap detected (expected seq ${expected}, got ${received}); refresh recommended`;
+      host.lastError = tp("app.errors.eventGap", {
+        expected: String(expected),
+        received: String(received),
+      });
     },
   });
   host.client.start();

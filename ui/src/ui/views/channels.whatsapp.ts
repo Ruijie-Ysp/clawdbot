@@ -1,10 +1,11 @@
 import { html, nothing } from "lit";
 
 import { formatAgo } from "../format";
+import { t } from "../i18n/index.js";
 import type { WhatsAppStatus } from "../types";
 import type { ChannelsProps } from "./channels.types";
 import { renderChannelConfigSection } from "./channels.config";
-import { formatDuration } from "./channels.shared";
+import { formatBool, formatDuration } from "./channels.shared";
 
 export function renderWhatsAppCard(params: {
   props: ChannelsProps;
@@ -15,47 +16,47 @@ export function renderWhatsAppCard(params: {
 
   return html`
     <div class="card">
-      <div class="card-title">WhatsApp</div>
-      <div class="card-sub">Link WhatsApp Web and monitor connection health.</div>
+      <div class="card-title">${t("channels.whatsapp")}</div>
+      <div class="card-sub">${t("channels.whatsappCard.subtitle")}</div>
       ${accountCountLabel}
 
       <div class="status-list" style="margin-top: 16px;">
         <div>
-          <span class="label">Configured</span>
-          <span>${whatsapp?.configured ? "Yes" : "No"}</span>
+          <span class="label">${t("channels.labels.configured")}</span>
+          <span>${formatBool(whatsapp?.configured)}</span>
         </div>
         <div>
-          <span class="label">Linked</span>
-          <span>${whatsapp?.linked ? "Yes" : "No"}</span>
+          <span class="label">${t("channels.labels.linked")}</span>
+          <span>${formatBool(whatsapp?.linked)}</span>
         </div>
         <div>
-          <span class="label">Running</span>
-          <span>${whatsapp?.running ? "Yes" : "No"}</span>
+          <span class="label">${t("channels.labels.running")}</span>
+          <span>${formatBool(whatsapp?.running)}</span>
         </div>
         <div>
-          <span class="label">Connected</span>
-          <span>${whatsapp?.connected ? "Yes" : "No"}</span>
+          <span class="label">${t("channels.labels.connected")}</span>
+          <span>${formatBool(whatsapp?.connected)}</span>
         </div>
         <div>
-          <span class="label">Last connect</span>
+          <span class="label">${t("channels.labels.lastConnect")}</span>
           <span>
             ${whatsapp?.lastConnectedAt
               ? formatAgo(whatsapp.lastConnectedAt)
-              : "n/a"}
+              : t("common.na")}
           </span>
         </div>
         <div>
-          <span class="label">Last message</span>
+          <span class="label">${t("channels.labels.lastMessage")}</span>
           <span>
-            ${whatsapp?.lastMessageAt ? formatAgo(whatsapp.lastMessageAt) : "n/a"}
+            ${whatsapp?.lastMessageAt ? formatAgo(whatsapp.lastMessageAt) : t("common.na")}
           </span>
         </div>
         <div>
-          <span class="label">Auth age</span>
+          <span class="label">${t("channels.labels.authAge")}</span>
           <span>
             ${whatsapp?.authAgeMs != null
               ? formatDuration(whatsapp.authAgeMs)
-              : "n/a"}
+              : t("common.na")}
           </span>
         </div>
       </div>
@@ -74,7 +75,7 @@ export function renderWhatsAppCard(params: {
 
       ${props.whatsappQrDataUrl
         ? html`<div class="qr-wrap">
-            <img src=${props.whatsappQrDataUrl} alt="WhatsApp QR" />
+            <img src=${props.whatsappQrDataUrl} alt=${t("channels.whatsappCard.qrAlt")} />
           </div>`
         : nothing}
 
@@ -84,31 +85,31 @@ export function renderWhatsAppCard(params: {
           ?disabled=${props.whatsappBusy}
           @click=${() => props.onWhatsAppStart(false)}
         >
-          ${props.whatsappBusy ? "Working…" : "Show QR"}
+          ${props.whatsappBusy ? t("common.working") : t("channels.whatsappCard.showQr")}
         </button>
         <button
           class="btn"
           ?disabled=${props.whatsappBusy}
           @click=${() => props.onWhatsAppStart(true)}
         >
-          Relink
+          ${t("channels.whatsappCard.relink")}
         </button>
         <button
           class="btn"
           ?disabled=${props.whatsappBusy}
           @click=${() => props.onWhatsAppWait()}
         >
-          Wait for scan
+          ${t("channels.whatsappCard.waitForScan")}
         </button>
         <button
           class="btn danger"
           ?disabled=${props.whatsappBusy}
           @click=${() => props.onWhatsAppLogout()}
         >
-          Logout
+          ${t("channels.whatsappCard.logout")}
         </button>
         <button class="btn" @click=${() => props.onRefresh(true)}>
-          Refresh
+          ${t("common.refresh")}
         </button>
       </div>
 

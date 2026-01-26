@@ -1,6 +1,7 @@
 import { html, nothing } from "lit";
 
 import { formatAgo } from "../format";
+import { t, tp } from "../i18n/index.js";
 import { formatSessionTokens } from "../presenter";
 import { pathForTab } from "../navigation";
 import type { GatewaySessionRow, SessionsListResult } from "../types";
@@ -35,11 +36,7 @@ export type SessionsProps = {
 
 const THINK_LEVELS = ["", "off", "minimal", "low", "medium", "high"] as const;
 const BINARY_THINK_LEVELS = ["", "off", "on"] as const;
-const VERBOSE_LEVELS = [
-  { value: "", label: "inherit" },
-  { value: "off", label: "off (explicit)" },
-  { value: "on", label: "on" },
-] as const;
+const VERBOSE_LEVELS = ["", "off", "on"] as const;
 const REASONING_LEVELS = ["", "off", "on", "stream"] as const;
 
 function normalizeProviderId(provider?: string | null): string {
@@ -76,17 +73,17 @@ export function renderSessions(props: SessionsProps) {
     <section class="card">
       <div class="row" style="justify-content: space-between;">
         <div>
-          <div class="card-title">Sessions</div>
-          <div class="card-sub">Active session keys and per-session overrides.</div>
+          <div class="card-title">${t("sessions.title")}</div>
+          <div class="card-sub">${t("sessions.subtitle")}</div>
         </div>
         <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
-          ${props.loading ? "Loading…" : "Refresh"}
+          ${props.loading ? t("common.loading") : t("common.refresh")}
         </button>
       </div>
 
       <div class="filters" style="margin-top: 14px;">
         <label class="field">
-          <span>Active within (minutes)</span>
+          <span>${t("sessions.activeWithin")}</span>
           <input
             .value=${props.activeMinutes}
             @input=${(e: Event) =>
@@ -99,7 +96,7 @@ export function renderSessions(props: SessionsProps) {
           />
         </label>
         <label class="field">
-          <span>Limit</span>
+          <span>${t("sessions.limit")}</span>
           <input
             .value=${props.limit}
             @input=${(e: Event) =>
@@ -112,7 +109,7 @@ export function renderSessions(props: SessionsProps) {
           />
         </label>
         <label class="field checkbox">
-          <span>Include global</span>
+          <span>${t("sessions.includeGlobal")}</span>
           <input
             type="checkbox"
             .checked=${props.includeGlobal}
@@ -126,7 +123,7 @@ export function renderSessions(props: SessionsProps) {
           />
         </label>
         <label class="field checkbox">
-          <span>Include unknown</span>
+          <span>${t("sessions.includeUnknown")}</span>
           <input
             type="checkbox"
             .checked=${props.includeUnknown}
@@ -146,23 +143,23 @@ export function renderSessions(props: SessionsProps) {
         : nothing}
 
       <div class="muted" style="margin-top: 12px;">
-        ${props.result ? `Store: ${props.result.path}` : ""}
+        ${props.result ? tp("sessions.storeLabel", { path: props.result.path }) : ""}
       </div>
 
       <div class="table" style="margin-top: 16px;">
         <div class="table-head">
-          <div>Key</div>
-          <div>Label</div>
-          <div>Kind</div>
-          <div>Updated</div>
-          <div>Tokens</div>
-          <div>Thinking</div>
-          <div>Verbose</div>
-          <div>Reasoning</div>
-          <div>Actions</div>
+          <div>${t("sessions.headers.key")}</div>
+          <div>${t("sessions.headers.label")}</div>
+          <div>${t("sessions.headers.kind")}</div>
+          <div>${t("sessions.headers.updated")}</div>
+          <div>${t("sessions.headers.tokens")}</div>
+          <div>${t("sessions.headers.thinking")}</div>
+          <div>${t("sessions.headers.verbose")}</div>
+          <div>${t("sessions.headers.reasoning")}</div>
+          <div>${t("sessions.headers.actions")}</div>
         </div>
         ${rows.length === 0
-          ? html`<div class="muted">No sessions found.</div>`
+          ? html`<div class="muted">${t("sessions.noSessions")}</div>`
           : rows.map((row) =>
               renderRow(row, props.basePath, props.onPatch, props.onDelete, props.loading),
             )}
@@ -178,13 +175,21 @@ function renderRow(
   onDelete: SessionsProps["onDelete"],
   disabled: boolean,
 ) {
-  const updated = row.updatedAt ? formatAgo(row.updatedAt) : "n/a";
+  const updated = row.updatedAt ? formatAgo(row.updatedAt) : t("common.na");
   const rawThinking = row.thinkingLevel ?? "";
   const isBinaryThinking = isBinaryThinkingProvider(row.modelProvider);
   const thinking = resolveThinkLevelDisplay(rawThinking, isBinaryThinking);
   const thinkLevels = resolveThinkLevelOptions(row.modelProvider);
   const verbose = row.verboseLevel ?? "";
   const reasoning = row.reasoningLevel ?? "";
+  const verboseOptions = VERBOSE_LEVELS.map((value) => ({
+    value,
+    label: value ? (value === "off" ? t("sessions.options.offExplicit") : t(`sessions.options.${value}`)) : t("sessions.options.inherit"),
+  }));
+  const reasoningOptions = REASONING_LEVELS.map((value) => ({
+    value,
+    label: value ? t(`sessions.options.${value}`) : t("sessions.options.inherit"),
+  }));
   const displayName = row.displayName ?? row.key;
   const canLink = row.kind !== "global";
   const chatUrl = canLink
@@ -200,7 +205,7 @@ function renderRow(
         <input
           .value=${row.label ?? ""}
           ?disabled=${disabled}
-          placeholder="(optional)"
+          placeholder=${t("sessions.optionalPlaceholder")}
           @change=${(e: Event) => {
             const value = (e.target as HTMLInputElement).value.trim();
             onPatch(row.key, { label: value || null });
@@ -222,7 +227,7 @@ function renderRow(
           }}
         >
           ${thinkLevels.map((level) =>
-            html`<option value=${level}>${level || "inherit"}</option>`,
+            html`<option value=${level}>${level ? t(`sessions.options.${level}`) : t("sessions.options.inherit")}</option>`,
           )}
         </select>
       </div>
@@ -235,7 +240,7 @@ function renderRow(
             onPatch(row.key, { verboseLevel: value || null });
           }}
         >
-          ${VERBOSE_LEVELS.map(
+          ${verboseOptions.map(
             (level) => html`<option value=${level.value}>${level.label}</option>`,
           )}
         </select>
@@ -249,14 +254,14 @@ function renderRow(
             onPatch(row.key, { reasoningLevel: value || null });
           }}
         >
-          ${REASONING_LEVELS.map((level) =>
-            html`<option value=${level}>${level || "inherit"}</option>`,
+          ${reasoningOptions.map((level) =>
+            html`<option value=${level.value}>${level.label}</option>`,
           )}
         </select>
       </div>
       <div>
         <button class="btn danger" ?disabled=${disabled} @click=${() => onDelete(row.key)}>
-          Delete
+          ${t("common.delete")}
         </button>
       </div>
     </div>

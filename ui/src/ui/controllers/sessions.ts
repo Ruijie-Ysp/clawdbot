@@ -1,6 +1,7 @@
 import type { GatewayBrowserClient } from "../gateway";
 import { toNumber } from "../format";
 import type { SessionsListResult } from "../types";
+import { tp } from "../i18n/index.js";
 
 export type SessionsState = {
   client: GatewayBrowserClient | null;
@@ -66,9 +67,7 @@ export async function patchSession(
 export async function deleteSession(state: SessionsState, key: string) {
   if (!state.client || !state.connected) return;
   if (state.sessionsLoading) return;
-  const confirmed = window.confirm(
-    `Delete session "${key}"?\n\nDeletes the session entry and archives its transcript.`,
-  );
+  const confirmed = window.confirm(tp("sessions.confirmDelete", { key }));
   if (!confirmed) return;
   state.sessionsLoading = true;
   state.sessionsError = null;

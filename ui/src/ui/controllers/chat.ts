@@ -1,6 +1,7 @@
 import type { GatewayBrowserClient } from "../gateway";
 import { extractText } from "../chat/message-extract";
 import { generateUUID } from "../uuid";
+import { t, tp } from "../i18n/index.js";
 
 export type ChatState = {
   client: GatewayBrowserClient | null;
@@ -82,7 +83,7 @@ export async function sendChatMessage(state: ChatState, message: string): Promis
       ...state.chatMessages,
       {
         role: "assistant",
-        content: [{ type: "text", text: "Error: " + error }],
+        content: [{ type: "text", text: tp("chat.errorMessage", { error }) }],
         timestamp: Date.now(),
       },
     ];
@@ -138,7 +139,7 @@ export function handleChatEvent(
     state.chatStream = null;
     state.chatRunId = null;
     state.chatStreamStartedAt = null;
-    state.lastError = payload.errorMessage ?? "chat error";
+    state.lastError = payload.errorMessage ?? t("chat.errorFallback");
   }
   return payload.state;
 }

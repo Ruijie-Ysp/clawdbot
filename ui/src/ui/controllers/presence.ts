@@ -1,4 +1,5 @@
 import type { GatewayBrowserClient } from "../gateway";
+import { t } from "../i18n/index.js";
 import type { PresenceEntry } from "../types";
 
 export type PresenceState = {
@@ -22,10 +23,10 @@ export async function loadPresence(state: PresenceState) {
       | undefined;
     if (Array.isArray(res)) {
       state.presenceEntries = res;
-      state.presenceStatus = res.length === 0 ? "No instances yet." : null;
+      state.presenceStatus = res.length === 0 ? t("instances.noInstances") : null;
     } else {
       state.presenceEntries = [];
-      state.presenceStatus = "No presence payload.";
+      state.presenceStatus = t("instances.noPresencePayload");
     }
   } catch (err) {
     state.presenceError = String(err);

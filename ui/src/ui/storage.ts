@@ -18,7 +18,9 @@ export type UiSettings = {
 export function loadSettings(): UiSettings {
   const defaultUrl = (() => {
     const proto = location.protocol === "https:" ? "wss" : "ws";
-    return `${proto}://${location.host}`;
+    // In dev mode (port 5173), connect to gateway on port 19001
+    const host = location.port === "5173" ? "127.0.0.1:19001" : location.host;
+    return `${proto}://${host}`;
   })();
 
   const defaults: UiSettings = {

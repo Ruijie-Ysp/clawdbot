@@ -1,6 +1,7 @@
 import { html, nothing } from "lit";
 
 import { formatAgo } from "../format";
+import { t } from "../i18n/index.js";
 import type {
   ChannelAccountSnapshot,
   ChannelUiMetaEntry,
@@ -20,7 +21,7 @@ import type {
   ChannelsChannelData,
   ChannelsProps,
 } from "./channels.types";
-import { channelEnabled, renderChannelAccountCount } from "./channels.shared";
+import { channelEnabled, formatBool, renderChannelAccountCount } from "./channels.shared";
 import { renderChannelConfigSection } from "./channels.config";
 import { renderDiscordCard } from "./channels.discord";
 import { renderGoogleChatCard } from "./channels.googlechat";
@@ -77,10 +78,10 @@ export function renderChannels(props: ChannelsProps) {
     <section class="card" style="margin-top: 18px;">
       <div class="row" style="justify-content: space-between;">
         <div>
-          <div class="card-title">Channel health</div>
-          <div class="card-sub">Channel status snapshots from the gateway.</div>
+          <div class="card-title">${t("channels.healthTitle")}</div>
+          <div class="card-sub">${t("channels.healthSubtitle")}</div>
         </div>
-        <div class="muted">${props.lastSuccessAt ? formatAgo(props.lastSuccessAt) : "n/a"}</div>
+        <div class="muted">${props.lastSuccessAt ? formatAgo(props.lastSuccessAt) : t("common.na")}</div>
       </div>
       ${props.lastError
         ? html`<div class="callout danger" style="margin-top: 12px;">
@@ -88,7 +89,7 @@ export function renderChannels(props: ChannelsProps) {
           </div>`
         : nothing}
       <pre class="code-block" style="margin-top: 12px;">
-${props.snapshot ? JSON.stringify(props.snapshot, null, 2) : "No snapshot yet."}
+${props.snapshot ? JSON.stringify(props.snapshot, null, 2) : t("channels.noSnapshot")}
       </pre>
     </section>
   `;
@@ -215,7 +216,7 @@ function renderGenericChannelCard(
   return html`
     <div class="card">
       <div class="card-title">${label}</div>
-      <div class="card-sub">Channel status and configuration.</div>
+      <div class="card-sub">${t("channels.genericSubtitle")}</div>
       ${accountCountLabel}
 
       ${accounts.length > 0
@@ -227,16 +228,16 @@ function renderGenericChannelCard(
         : html`
             <div class="status-list" style="margin-top: 16px;">
               <div>
-                <span class="label">Configured</span>
-                <span>${configured == null ? "n/a" : configured ? "Yes" : "No"}</span>
+                <span class="label">${t("channels.labels.configured")}</span>
+                <span>${formatBool(configured)}</span>
               </div>
               <div>
-                <span class="label">Running</span>
-                <span>${running == null ? "n/a" : running ? "Yes" : "No"}</span>
+                <span class="label">${t("channels.labels.running")}</span>
+                <span>${formatBool(running)}</span>
               </div>
               <div>
-                <span class="label">Connected</span>
-                <span>${connected == null ? "n/a" : connected ? "Yes" : "No"}</span>
+                <span class="label">${t("channels.labels.connected")}</span>
+                <span>${formatBool(connected)}</span>
               </div>
             </div>
           `}
@@ -274,19 +275,35 @@ function hasRecentActivity(account: ChannelAccountSnapshot): boolean {
   return Date.now() - account.lastInboundAt < RECENT_ACTIVITY_THRESHOLD_MS;
 }
 
-function deriveRunningStatus(account: ChannelAccountSnapshot): "Yes" | "No" | "Active" {
-  if (account.running) return "Yes";
-  // If we have recent inbound activity, the channel is effectively running
-  if (hasRecentActivity(account)) return "Active";
-  return "No";
+type StatusValue = "yes" | "no" | "active" | "na";
+
+function formatStatus(value: StatusValue): string {
+  switch (value) {
+    case "yes":
+      return t("common.yes");
+    case "no":
+      return t("common.no");
+    case "active":
+      return t("common.active");
+    case "na":
+    default:
+      return t("common.na");
+  }
 }
 
-function deriveConnectedStatus(account: ChannelAccountSnapshot): "Yes" | "No" | "Active" | "n/a" {
-  if (account.connected === true) return "Yes";
-  if (account.connected === false) return "No";
+function deriveRunningStatus(account: ChannelAccountSnapshot): StatusValue {
+  if (account.running) return "yes";
+  // If we have recent inbound activity, the channel is effectively running
+  if (hasRecentActivity(account)) return "active";
+  return "no";
+}
+
+function deriveConnectedStatus(account: ChannelAccountSnapshot): StatusValue {
+  if (account.connected === true) return "yes";
+  if (account.connected === false) return "no";
   // If connected is null/undefined but we have recent activity, show as active
-  if (hasRecentActivity(account)) return "Active";
-  return "n/a";
+  if (hasRecentActivity(account)) return "active";
+  return "na";
 }
 
 function renderGenericAccount(account: ChannelAccountSnapshot) {
@@ -301,20 +318,20 @@ function renderGenericAccount(account: ChannelAccountSnapshot) {
       </div>
       <div class="status-list account-card-status">
         <div>
-          <span class="label">Running</span>
-          <span>${runningStatus}</span>
+          <span class="label">${t("channels.labels.running")}</span>
+          <span>${formatStatus(runningStatus)}</span>
         </div>
         <div>
-          <span class="label">Configured</span>
-          <span>${account.configured ? "Yes" : "No"}</span>
+          <span class="label">${t("channels.labels.configured")}</span>
+          <span>${formatBool(account.configured)}</span>
         </div>
         <div>
-          <span class="label">Connected</span>
-          <span>${connectedStatus}</span>
+          <span class="label">${t("channels.labels.connected")}</span>
+          <span>${formatStatus(connectedStatus)}</span>
         </div>
         <div>
-          <span class="label">Last inbound</span>
-          <span>${account.lastInboundAt ? formatAgo(account.lastInboundAt) : "n/a"}</span>
+          <span class="label">${t("channels.labels.lastInbound")}</span>
+          <span>${account.lastInboundAt ? formatAgo(account.lastInboundAt) : t("common.na")}</span>
         </div>
         ${account.lastError
           ? html`
