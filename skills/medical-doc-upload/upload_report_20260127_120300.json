@@ -1,0 +1,60 @@
+{
+  "timestamp": "2026-01-27T12:03:00.426411",
+  "total_files": 10,
+  "successful_uploads": 10,
+  "failed_uploads": 0,
+  "success_rate": "100.0%",
+  "uploaded_files": [
+    {
+      "file": "/Users/yangshengpeng/Desktop/glyy/DVT的诊断和治疗指南.pdf",
+      "doc_id": "DOC-20260127-B6318FCE",
+      "status": "UPLOADED"
+    },
+    {
+      "file": "/Users/yangshengpeng/Desktop/glyy/感染性腹主动脉瘤诊断与治疗中国专家共识（2024版）_辛世杰__.pdf",
+      "doc_id": "DOC-20260127-E3E2B274",
+      "status": "UPLOADED"
+    },
+    {
+      "file": "/Users/yangshengpeng/Desktop/glyy/急性主动脉综合征诊断与治疗规范中国专家共识.pdf",
+      "doc_id": "DOC-20260127-C65C3F81",
+      "status": "UPLOADED"
+    },
+    {
+      "file": "/Users/yangshengpeng/Desktop/glyy/主髂动脉闭塞症的诊断和治疗_中国专家共识.pdf",
+      "doc_id": "DOC-20260127-02116275",
+      "status": "UPLOADED"
+    },
+    {
+      "file": "/Users/yangshengpeng/Desktop/glyy/胸腹主动脉瘤内脏动脉分支重建专家共识.pdf",
+      "doc_id": "DOC-20260127-B49313F7",
+      "status": "UPLOADED"
+    },
+    {
+      "file": "/Users/yangshengpeng/Desktop/glyy/中国头颈部动脉夹层诊治指南解读2024(全文).pdf",
+      "doc_id": "DOC-20260127-F3E11B59",
+      "status": "UPLOADED"
+    },
+    {
+      "file": "/Users/yangshengpeng/Desktop/glyy/慢性肢体威胁性缺血治疗的全球血管指南（全译）.pdf",
+      "doc_id": "DOC-20260127-5CE9BA12",
+      "status": "UPLOADED"
+    },
+    {
+      "file": "/Users/yangshengpeng/Desktop/glyy/颈动脉狭窄介入治疗操作规范(专家共识)[1].pdf",
+      "doc_id": "DOC-20260127-E536E109",
+      "status": "UPLOADED"
+    },
+    {
+      "file": "/Users/yangshengpeng/Desktop/glyy/2025慢性颈内动脉闭塞评估及治疗中国专家共识.pdf",
+      "doc_id": "DOC-20260127-5652A1E9",
+      "status": "UPLOADED"
+    },
+    {
+      "file": "/Users/yangshengpeng/Desktop/glyy/下肢动脉疾病腔内减容规范化应用.pdf",
+      "doc_id": "DOC-20260127-580BA1B8",
+      "status": "UPLOADED"
+    }
+  ],
+  "failed_files": []
+}

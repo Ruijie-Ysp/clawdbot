@@ -1,0 +1,33 @@
+{
+  "api_base": "http://localhost:48200",
+  "api_key": "your_api_key_here",
+  "tenant_id": "default",
+  "default_category": "医学文献",
+  "upload_options": {
+    "priority": "normal",
+    "parser": "auto",
+    "callback_url": null
+  },
+  "retry_settings": {
+    "max_retries": 3,
+    "retry_delay": 5,
+    "timeout": 30
+  },
+  "file_extensions": [
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".xlsx",
+    ".xls",
+    ".txt",
+    ".md"
+  ],
+  "categories": {
+    "临床指南": "临床实践指南和诊疗规范",
+    "医学文献": "学术论文和研究报告",
+    "药品说明书": "药品使用说明和注意事项",
+    "病历记录": "患者病历和诊疗记录",
+    "影像报告": "医学影像检查报告",
+    "政策法规": "医疗政策和法律法规"
+  }
+}

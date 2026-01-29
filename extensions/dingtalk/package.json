@@ -1,0 +1,27 @@
+{
+  "name": "@clawdbot/dingtalk",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Clawdbot DingTalk channel plugin",
+  "clawdbot": {
+    "extensions": ["./index.ts"],
+    "channel": {
+      "id": "dingtalk",
+      "label": "钉钉",
+      "selectionLabel": "钉钉（企业通讯）",
+      "docsPath": "/channels/dingtalk",
+      "docsLabel": "dingtalk",
+      "blurb": "钉钉机器人集成，支持企业通讯",
+      "order": 70,
+      "aliases": ["dt"]
+    },
+    "install": {
+      "npmSpec": "@clawdbot/dingtalk",
+      "localPath": "extensions/dingtalk",
+      "defaultChoice": "npm"
+    }
+  },
+  "dependencies": {
+    "clawdbot": "workspace:*"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "dingtalk",
+  "name": "DingTalk",
+  "description": "DingTalk channel plugin for Clawdbot",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}
