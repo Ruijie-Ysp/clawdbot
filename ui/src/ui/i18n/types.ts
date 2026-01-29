@@ -73,6 +73,7 @@ export interface Translations {
     reload: string;
     enable: string;
     disable: string;
+    completed: string;
   };
   // App shell
   app: {
@@ -173,6 +174,117 @@ export interface Translations {
     toggleFocusDisabled: string;
     errorMessage: string;
     errorFallback: string;
+    loadTimeout: string;
+    fallbackToMain: string;
+    youLabel: string;
+    youInitial: string;
+    toolLabel: string;
+    systemLabel: string;
+    unknownLabel: string;
+    copyAsMarkdown: string;
+    copied: string;
+    copyFailed: string;
+    historyNotice: string;
+    reasoningLabel: string;
+    toolOutputTruncated: string;
+    toolCard: {
+      view: string;
+      commandLabel: string;
+      noOutput: string;
+    };
+  };
+  // Tool display
+  toolDisplay: {
+    tools: {
+      tool: string;
+      bash: string;
+      process: string;
+      read: string;
+      write: string;
+      edit: string;
+      attach: string;
+      browser: string;
+      canvas: string;
+      nodes: string;
+      cron: string;
+      gateway: string;
+      whatsapp_login: string;
+      discord: string;
+      slack: string;
+    };
+    actions: {
+      status: string;
+      start: string;
+      stop: string;
+      tabs: string;
+      open: string;
+      focus: string;
+      close: string;
+      snapshot: string;
+      screenshot: string;
+      navigate: string;
+      console: string;
+      pdf: string;
+      upload: string;
+      dialog: string;
+      act: string;
+      present: string;
+      hide: string;
+      eval: string;
+      a2ui_push: string;
+      a2ui_reset: string;
+      describe: string;
+      pending: string;
+      approve: string;
+      reject: string;
+      notify: string;
+      camera_snap: string;
+      camera_list: string;
+      camera_clip: string;
+      screen_record: string;
+      list: string;
+      add: string;
+      update: string;
+      remove: string;
+      run: string;
+      runs: string;
+      wake: string;
+      restart: string;
+      config_get: string;
+      config_schema: string;
+      config_apply: string;
+      update_run: string;
+      wait: string;
+      react: string;
+      reactions: string;
+      sticker: string;
+      poll: string;
+      permissions: string;
+      read_messages: string;
+      send_message: string;
+      edit_message: string;
+      delete_message: string;
+      thread_create: string;
+      thread_list: string;
+      thread_reply: string;
+      pin_message: string;
+      unpin_message: string;
+      list_pins: string;
+      search_messages: string;
+      member_info: string;
+      role_info: string;
+      emoji_list: string;
+      role_add: string;
+      role_remove: string;
+      channel_info: string;
+      channel_list: string;
+      voice_status: string;
+      event_list: string;
+      event_create: string;
+      timeout: string;
+      kick: string;
+      ban: string;
+    };
   };
   // Overview
   overview: {
@@ -367,6 +479,16 @@ export interface Translations {
       nip05: string;
       lightning: string;
     };
+    messages: {
+      updateFailedStatus: string;
+      updateFailed: string;
+      publishFailed: string;
+      published: string;
+      importFailedStatus: string;
+      importFailed: string;
+      importSaved: string;
+      importUnsaved: string;
+    };
   };
   // Instances
   instances: {
@@ -418,6 +540,17 @@ export interface Translations {
       high: string;
       offExplicit: string;
     };
+  };
+  // Sessions Sidebar
+  sessionsSidebar: {
+    title: string;
+    expand: string;
+    collapse: string;
+    searchPlaceholder: string;
+    noResults: string;
+    count: string;
+    rename: string;
+    namePlaceholder: string;
   };
   // Cron
   cron: {

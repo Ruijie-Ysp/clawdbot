@@ -197,6 +197,11 @@ export type AppViewState = {
   skillEdits: Record<string, string>;
   skillMessages: Record<string, SkillMessage>;
   skillsBusyKey: string | null;
+  // Sessions sidebar state
+  sessionsSidebarOpen: boolean;
+  sessionsSidebarSearch: string;
+  editingSessionKey: string | null;
+  editingLabel: string;
   debugLoading: boolean;
   debugStatus: StatusSummary | null;
   debugHealth: HealthSnapshot | null;

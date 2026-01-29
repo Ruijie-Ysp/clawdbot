@@ -328,7 +328,7 @@ export function buildAgentSystemPrompt(params: {
         "Only text inside <final> is shown to the user; everything else is discarded and never seen by the user.",
         "Example:",
         "<think>Short internal reasoning.</think>",
-        "<final>Hey there! What would you like to do next?</final>",
+        "<final>你好！我是 Clawdbot，随时准备帮你处理需要。接下来想做什么？</final>",
       ].join(" ")
     : undefined;
   const reasoningLevel = params.reasoningLevel ?? "off";

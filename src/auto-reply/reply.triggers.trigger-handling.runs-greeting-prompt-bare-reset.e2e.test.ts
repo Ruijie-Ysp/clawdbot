@@ -133,7 +133,7 @@ describe("trigger handling", () => {
       expect(text).toBe("hello");
       expect(runEmbeddedPiAgent).toHaveBeenCalledOnce();
       const prompt = vi.mocked(runEmbeddedPiAgent).mock.calls[0]?.[0]?.prompt ?? "";
-      expect(prompt).toContain("A new session was started via /new or /reset");
+      expect(prompt).toContain("已通过 /new 或 /reset 启动新会话");
     });
   });
   it("does not reset for unauthorized /reset", async () => {

@@ -142,6 +142,9 @@ export class OpenClawApp extends LitElement {
   @state() sidebarContent: string | null = null;
   @state() sidebarError: string | null = null;
   @state() splitRatio = this.settings.splitRatio;
+  // Sessions sidebar state
+  @state() sessionsSidebarOpen = this.settings.sessionsSidebarOpen ?? true;
+  @state() sessionsSidebarSearch = "";
 
   @state() nodesLoading = false;
   @state() nodes: Array<Record<string, unknown>> = [];
