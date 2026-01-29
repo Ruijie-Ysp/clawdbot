@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import type { ClawdbotConfig } from "clawdbot/plugin-sdk";
+import type { MoltbotConfig } from "moltbot/plugin-sdk";
 import type { DingTalkWebhookMessage } from "./types.js";
 
 export function verifyDingTalkSignature(
@@ -23,7 +23,7 @@ export function verifyDingTalkSignature(
 
 export function parseDingTalkWebhook(
   body: any,
-  config: ClawdbotConfig
+  config: MoltbotConfig
 ): DingTalkWebhookMessage | null {
   const dingtalkConfig = config.channels?.dingtalk;
   
@@ -69,16 +69,16 @@ export function adaptFromDingTalkMessage(
   };
 }
 
-export function createDingTalkWebhookHandler(config: ClawdbotConfig) {
+export function createDingTalkWebhookHandler(config: MoltbotConfig) {
   const dingtalkConfig = config.channels?.dingtalk;
-  
+
   return async (req: any, res: any) => {
     try {
       // 验证签名
       const timestamp = req.headers["timestamp"] as string;
       const sign = req.headers["sign"] as string;
       const secret = dingtalkConfig?.secret;
-      
+
       if (secret && timestamp && sign) {
         const bodyString = JSON.stringify(req.body);
         const isValid = verifyDingTalkSignature(timestamp, sign, secret, bodyString);
@@ -95,15 +95,15 @@ export function createDingTalkWebhookHandler(config: ClawdbotConfig) {
         return;
       }
 
-      // 转换为Clawdbot格式
+      // 转换为Moltbot格式
       const adaptedMsg = adaptFromDingTalkMessage(dingtalkMsg);
-      
-      // 这里应该将消息转发到Clawdbot的消息总线
-      // 实际实现需要集成到Clawdbot的inbound消息系统
-      
+
+      // 这里应该将消息转发到Moltbot的消息总线
+      // 实际实现需要集成到Moltbot的inbound消息系统
+
       // 返回成功响应
       res.json({ errcode: 0, errmsg: "ok" });
-      
+
     } catch (error) {
       console.error("DingTalk webhook error:", error);
       res.status(500).json({ errcode: 500, errmsg: "服务器内部错误" });

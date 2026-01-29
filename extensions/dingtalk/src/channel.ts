@@ -4,8 +4,8 @@ import {
   formatPairingApproveHint,
   getChatChannelMeta,
   type ChannelPlugin,
-  type ClawdbotConfig,
-} from "clawdbot/plugin-sdk";
+  type MoltbotConfig,
+} from "moltbot/plugin-sdk";
 
 import { DingTalkConfigSchema } from "./config-schema.js";
 import { dingtalkOnboardingAdapter } from "./onboarding.js";
@@ -38,7 +38,7 @@ function normalizeDingTalkMessagingTarget(raw: string): string | null {
 }
 
 function resolveDingTalkAccount(
-  cfg: ClawdbotConfig,
+  cfg: MoltbotConfig,
   accountId: string = DEFAULT_ACCOUNT_ID
 ): ResolvedDingTalkAccount {
   const config = cfg.channels?.dingtalk;
@@ -56,7 +56,7 @@ function resolveDingTalkAccount(
   };
 }
 
-function listDingTalkAccountIds(cfg: ClawdbotConfig): string[] {
+function listDingTalkAccountIds(cfg: MoltbotConfig): string[] {
   return [DEFAULT_ACCOUNT_ID];
 }
 
@@ -77,11 +77,11 @@ export const dingtalkPlugin: ChannelPlugin<ResolvedDingTalkAccount> = {
   reload: { configPrefixes: ["channels.dingtalk"] },
   configSchema: buildChannelConfigSchema(DingTalkConfigSchema),
   config: {
-    listAccountIds: (cfg) => listDingTalkAccountIds(cfg as ClawdbotConfig),
-    resolveAccount: (cfg, accountId) => resolveDingTalkAccount(cfg as ClawdbotConfig, accountId),
+    listAccountIds: (cfg) => listDingTalkAccountIds(cfg as MoltbotConfig),
+    resolveAccount: (cfg, accountId) => resolveDingTalkAccount(cfg as MoltbotConfig, accountId),
     defaultAccountId: () => DEFAULT_ACCOUNT_ID,
     setAccountEnabled: ({ cfg, accountId, enabled }) => {
-      const config = { ...cfg } as ClawdbotConfig;
+      const config = { ...cfg } as MoltbotConfig;
       if (!config.channels) {
         config.channels = {};
       }
@@ -92,7 +92,7 @@ export const dingtalkPlugin: ChannelPlugin<ResolvedDingTalkAccount> = {
       return config;
     },
     deleteAccount: ({ cfg }) => {
-      const config = { ...cfg } as ClawdbotConfig;
+      const config = { ...cfg } as MoltbotConfig;
       if (config.channels?.dingtalk) {
         delete config.channels.dingtalk;
         if (Object.keys(config.channels).length === 0) {
@@ -109,7 +109,7 @@ export const dingtalkPlugin: ChannelPlugin<ResolvedDingTalkAccount> = {
       webhookConfigured: Boolean(account.webhookUrl),
     }),
     resolveAllowFrom: ({ cfg }) => {
-      const config = (cfg as ClawdbotConfig).channels?.dingtalk;
+      const config = (cfg as MoltbotConfig).channels?.dingtalk;
       return config?.allowFrom?.map(String) ?? [];
     },
     formatAllowFrom: ({ allowFrom }) =>
@@ -126,7 +126,7 @@ export const dingtalkPlugin: ChannelPlugin<ResolvedDingTalkAccount> = {
   },
   security: {
     resolveDmPolicy: ({ cfg }) => {
-      const config = (cfg as ClawdbotConfig).channels?.dingtalk;
+      const config = (cfg as MoltbotConfig).channels?.dingtalk;
       return {
         policy: config?.dmPolicy ?? "open",
         allowFrom: config?.allowFrom ?? [],
@@ -144,7 +144,7 @@ export const dingtalkPlugin: ChannelPlugin<ResolvedDingTalkAccount> = {
     },
     collectWarnings: ({ account, cfg }) => {
       const warnings: string[] = [];
-      const defaultGroupPolicy = (cfg as ClawdbotConfig).channels?.defaults?.groupPolicy;
+      const defaultGroupPolicy = (cfg as MoltbotConfig).channels?.defaults?.groupPolicy;
       const groupPolicy = account.groupPolicy ?? defaultGroupPolicy ?? "open";
       
       if (groupPolicy === "open") {
@@ -190,7 +190,7 @@ export const dingtalkPlugin: ChannelPlugin<ResolvedDingTalkAccount> = {
   outbound: {
     send: async ({ cfg, to, message, options }) => {
       try {
-        const config = cfg as ClawdbotConfig;
+        const config = cfg as MoltbotConfig;
         const result = await sendDingTalkMessage(
           config,
           to,

@@ -2,7 +2,7 @@ import type {
   OnboardingAdapter,
   OnboardingStep,
   OnboardingStepResult,
-} from "clawdbot/plugin-sdk";
+} from "moltbot/plugin-sdk";
 
 export const dingtalkOnboardingAdapter: OnboardingAdapter = {
   id: "dingtalk",
@@ -12,7 +12,7 @@ export const dingtalkOnboardingAdapter: OnboardingAdapter = {
     {
       id: "intro",
       label: "介绍",
-      description: "钉钉机器人集成需要以下步骤：\n1. 在钉钉开放平台创建机器人\n2. 获取Webhook地址和签名密钥\n3. 配置Clawdbot接收回调",
+      description: "钉钉机器人集成需要以下步骤：\n1. 在钉钉开放平台创建机器人\n2. 获取Webhook地址和签名密钥\n3. 配置Moltbot接收回调",
       fields: [],
       validate: () => ({ valid: true }),
     },
@@ -84,7 +84,7 @@ export const dingtalkOnboardingAdapter: OnboardingAdapter = {
     {
       id: "callback",
       label: "回调配置",
-      description: "配置钉钉回调到Clawdbot",
+      description: "配置钉钉回调到Moltbot",
       fields: [
         {
           id: "callbackPath",
@@ -93,7 +93,7 @@ export const dingtalkOnboardingAdapter: OnboardingAdapter = {
           required: false,
           default: "/dingtalk/callback",
           placeholder: "/dingtalk/callback",
-          help: "Clawdbot接收钉钉回调的HTTP路径",
+          help: "Moltbot接收钉钉回调的HTTP路径",
         },
       ],
       validate: (values) => {

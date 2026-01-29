@@ -1,5 +1,5 @@
-import type { ClawdbotPluginApi } from "clawdbot/plugin-sdk";
-import { emptyPluginConfigSchema } from "clawdbot/plugin-sdk";
+import type { MoltbotPluginApi } from "moltbot/plugin-sdk";
+import { emptyPluginConfigSchema } from "moltbot/plugin-sdk";
 
 import { dingtalkPlugin } from "./src/channel.js";
 import { setDingTalkRuntime } from "./src/runtime.js";
@@ -9,7 +9,7 @@ const plugin = {
   name: "DingTalk",
   description: "DingTalk channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: ClawdbotPluginApi) {
+  register(api: MoltbotPluginApi) {
     setDingTalkRuntime(api.runtime);
     api.registerChannel({ plugin: dingtalkPlugin });
   },

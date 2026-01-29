@@ -1,9 +1,9 @@
 import crypto from "crypto";
-import type { ClawdbotConfig } from "clawdbot/plugin-sdk";
+import type { MoltbotConfig } from "moltbot/plugin-sdk";
 import type { DingTalkMessage } from "./types.js";
 
 export async function sendDingTalkMessage(
-  config: ClawdbotConfig,
+  config: MoltbotConfig,
   target: string,
   text: string,
   options?: {

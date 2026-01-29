@@ -1,9 +1,9 @@
 {
-  "name": "@clawdbot/dingtalk",
+  "name": "@moltbot/dingtalk",
   "version": "1.0.0",
   "type": "module",
-  "description": "Clawdbot DingTalk channel plugin",
-  "clawdbot": {
+  "description": "Moltbot DingTalk channel plugin",
+  "moltbot": {
     "extensions": ["./index.ts"],
     "channel": {
       "id": "dingtalk",
@@ -16,12 +16,15 @@
       "aliases": ["dt"]
     },
     "install": {
-      "npmSpec": "@clawdbot/dingtalk",
+      "npmSpec": "@moltbot/dingtalk",
       "localPath": "extensions/dingtalk",
       "defaultChoice": "npm"
     }
   },
-  "dependencies": {
-    "clawdbot": "workspace:*"
+  "devDependencies": {
+    "moltbot": "workspace:*"
+  },
+  "peerDependencies": {
+    "moltbot": "*"
   }
 }

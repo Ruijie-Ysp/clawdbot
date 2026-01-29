@@ -1,14 +1,14 @@
 import type {
   ChannelOutboundAdapter,
-  ClawdbotConfig,
-} from "clawdbot/plugin-sdk";
+  MoltbotConfig,
+} from "moltbot/plugin-sdk";
 import { sendDingTalkMessage } from "./send.js";
 
 export const dingtalkOutbound: ChannelOutboundAdapter = {
   id: "dingtalk",
   send: async ({ cfg, to, message, options }) => {
     try {
-      const config = cfg as ClawdbotConfig;
+      const config = cfg as MoltbotConfig;
       
       // 解析选项
       const atUserIds = options?.atUserIds as string[] | undefined;
@@ -44,13 +44,13 @@ export const dingtalkOutbound: ChannelOutboundAdapter = {
   },
   
   canSend: ({ cfg }) => {
-    const config = cfg as ClawdbotConfig;
+    const config = cfg as MoltbotConfig;
     const dingtalkConfig = config.channels?.dingtalk;
     return Boolean(dingtalkConfig?.enabled !== false && dingtalkConfig?.webhookUrl);
   },
-  
+
   describe: ({ cfg }) => {
-    const config = cfg as ClawdbotConfig;
+    const config = cfg as MoltbotConfig;
     const dingtalkConfig = config.channels?.dingtalk;
     
     if (!dingtalkConfig) {

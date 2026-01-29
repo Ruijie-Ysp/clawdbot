@@ -1,12 +1,12 @@
-import type { ClawdbotRuntime } from "clawdbot/plugin-sdk";
+import type { MoltbotRuntime } from "moltbot/plugin-sdk";
 
-let dingtalkRuntime: ClawdbotRuntime | undefined;
+let dingtalkRuntime: MoltbotRuntime | undefined;
 
-export function setDingTalkRuntime(runtime: ClawdbotRuntime) {
+export function setDingTalkRuntime(runtime: MoltbotRuntime) {
   dingtalkRuntime = runtime;
 }
 
-export function getDingTalkRuntime(): ClawdbotRuntime {
+export function getDingTalkRuntime(): MoltbotRuntime {
   if (!dingtalkRuntime) {
     throw new Error("DingTalk runtime not initialized");
   }
