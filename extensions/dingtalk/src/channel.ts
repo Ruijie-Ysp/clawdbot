@@ -1,217 +1,837 @@
+import { DWClient, TOPIC_ROBOT } from "dingtalk-stream";
+import axios from "axios";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import * as os from "node:os";
+import { randomUUID } from "node:crypto";
 import {
   buildChannelConfigSchema,
-  DEFAULT_ACCOUNT_ID,
-  formatPairingApproveHint,
-  getChatChannelMeta,
-  type ChannelPlugin,
   type MoltbotConfig,
-} from "moltbot/plugin-sdk";
+  type ChannelPlugin,
+} from "clawdbot/plugin-sdk";
 
+import { maskSensitiveData, cleanupOrphanedTempFiles, retryWithBackoff } from "./utils.js";
+import { getDingTalkRuntime } from "./runtime.js";
 import { DingTalkConfigSchema } from "./config-schema.js";
-import { dingtalkOnboardingAdapter } from "./onboarding.js";
-import { sendDingTalkMessage } from "./send.js";
-import type { ResolvedDingTalkAccount } from "./types.js";
+import type {
+  DingTalkConfig,
+  TokenInfo,
+  DingTalkInboundMessage,
+  MessageContent,
+  SendMessageOptions,
+  MediaFile,
+  HandleDingTalkMessageParams,
+  ProactiveMessagePayload,
+  SessionWebhookResponse,
+  Logger,
+  GatewayStartContext,
+  GatewayStopResult,
+  InteractiveCardData,
+  InteractiveCardSendRequest,
+  InteractiveCardUpdateRequest,
+  CardInstance,
+  ResolvedAccount,
+} from "./types.js";
 
-const meta = getChatChannelMeta("dingtalk");
+// Build config schema
+export const dingtalkConfigSchema = buildChannelConfigSchema(DingTalkConfigSchema);
 
-function normalizeDingTalkMessagingTarget(raw: string): string | null {
-  const trimmed = raw?.trim();
-  if (!trimmed) return null;
-  
-  // 钉钉目标格式：user:userId 或 chat:chatId
-  if (trimmed.startsWith("user:") || trimmed.startsWith("chat:")) {
-    return trimmed;
+// Access Token cache
+let accessToken: string | null = null;
+let accessTokenExpiry = 0;
+
+// Card instance cache for streaming updates
+const cardInstances = new Map<string, CardInstance>();
+
+// Card update throttling
+const cardUpdateTimestamps = new Map<string, number>();
+const CARD_UPDATE_MIN_INTERVAL = 500;
+
+// Card update timeout tracking
+const cardUpdateTimeouts = new Map<string, NodeJS.Timeout>();
+const CARD_UPDATE_TIMEOUT = 60000;
+
+// Card cache TTL (1 hour)
+const CARD_CACHE_TTL = 60 * 60 * 1000;
+
+// Cleanup interval
+let cleanupIntervalId: NodeJS.Timeout | null = null;
+
+// Clean up old card instances from cache
+function cleanupCardCache() {
+  const now = Date.now();
+  for (const [cardBizId, instance] of cardInstances.entries()) {
+    if (now - instance.lastUpdated > CARD_CACHE_TTL) {
+      cardInstances.delete(cardBizId);
+      cardUpdateTimestamps.delete(cardBizId);
+      const timeout = cardUpdateTimeouts.get(cardBizId);
+      if (timeout) {
+        clearTimeout(timeout);
+        cardUpdateTimeouts.delete(cardBizId);
+      }
+    }
   }
-  
-  // 检查是否是用户ID格式
-  if (/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
-    return `user:${trimmed}`;
-  }
-  
-  // 检查是否是会话ID格式
-  if (trimmed.includes("chat") || trimmed.includes("conversation")) {
-    return `chat:${trimmed}`;
-  }
-  
-  // 默认为用户
-  return `user:${trimmed}`;
 }
 
-function resolveDingTalkAccount(
-  cfg: MoltbotConfig,
-  accountId: string = DEFAULT_ACCOUNT_ID
-): ResolvedDingTalkAccount {
-  const config = cfg.channels?.dingtalk;
+function startCardCacheCleanup() {
+  if (!cleanupIntervalId) {
+    cleanupIntervalId = setInterval(cleanupCardCache, 30 * 60 * 1000);
+  }
+}
+
+function stopCardCacheCleanup() {
+  if (cleanupIntervalId) {
+    clearInterval(cleanupIntervalId);
+    cleanupIntervalId = null;
+  }
+  for (const timeout of cardUpdateTimeouts.values()) {
+    clearTimeout(timeout);
+  }
+  cardUpdateTimeouts.clear();
+}
+
+// Helper function to detect markdown and extract title
+function detectMarkdownAndExtractTitle(
+  text: string,
+  options: SendMessageOptions,
+  defaultTitle: string
+): { useMarkdown: boolean; title: string } {
+  const hasMarkdown = /^[#*>-]|[*_`#[\]]/.test(text) || text.includes("\n");
+  const useMarkdown = options.useMarkdown !== false && (options.useMarkdown || hasMarkdown);
+
+  const title =
+    options.title ||
+    (useMarkdown
+      ? text
+          .split("\n")[0]
+          .replace(/^[#*\s\->]+/, "")
+          .slice(0, 20) || defaultTitle
+      : defaultTitle);
+
+  return { useMarkdown, title };
+}
+
+function getConfig(cfg: MoltbotConfig, accountId?: string): DingTalkConfig {
+  const dingtalkCfg = (cfg?.channels as Record<string, unknown>)?.dingtalk as DingTalkConfig | undefined;
+  if (!dingtalkCfg) return {} as DingTalkConfig;
+
+  if (accountId && dingtalkCfg.accounts?.[accountId]) {
+    return dingtalkCfg.accounts[accountId];
+  }
+
+  return dingtalkCfg;
+}
+
+function isConfigured(cfg: MoltbotConfig, accountId?: string): boolean {
+  const config = getConfig(cfg, accountId);
+  return Boolean(config.clientId && config.clientSecret);
+}
+
+// Get Access Token with retry logic
+export async function getAccessToken(config: DingTalkConfig, log?: Logger): Promise<string> {
+  const now = Date.now();
+  if (accessToken && accessTokenExpiry > now + 60000) {
+    return accessToken;
+  }
+
+  const token = await retryWithBackoff(
+    async () => {
+      const response = await axios.post<TokenInfo>(
+        "https://api.dingtalk.com/v1.0/oauth2/accessToken",
+        {
+          appKey: config.clientId,
+          appSecret: config.clientSecret,
+        }
+      );
+
+      accessToken = response.data.accessToken;
+      accessTokenExpiry = now + response.data.expireIn * 1000;
+      return accessToken;
+    },
+    { maxRetries: 3, log }
+  );
+
+  return token;
+}
+
+// Download media file
+async function downloadMedia(
+  config: DingTalkConfig,
+  downloadCode: string,
+  log?: Logger
+): Promise<MediaFile | null> {
+  if (!config.robotCode) {
+    log?.error?.("[DingTalk] downloadMedia requires robotCode to be configured.");
+    return null;
+  }
+  try {
+    const token = await getAccessToken(config, log);
+    const response = await axios.post<{ downloadUrl?: string }>(
+      "https://api.dingtalk.com/v1.0/robot/messageFiles/download",
+      { downloadCode, robotCode: config.robotCode },
+      { headers: { "x-acs-dingtalk-access-token": token } }
+    );
+    const downloadUrl = response.data?.downloadUrl;
+    if (!downloadUrl) return null;
+    const mediaResponse = await axios.get(downloadUrl, { responseType: "arraybuffer" });
+    const contentType = (mediaResponse.headers["content-type"] as string) || "application/octet-stream";
+    const ext = contentType.split("/")[1]?.split(";")[0] || "bin";
+    const tempPath = path.join(os.tmpdir(), `dingtalk_${Date.now()}.${ext}`);
+    fs.writeFileSync(tempPath, Buffer.from(mediaResponse.data as ArrayBuffer));
+    return { path: tempPath, mimeType: contentType };
+  } catch (err: unknown) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    log?.error?.(`[DingTalk] Failed to download media: ${errMsg}`);
+    return null;
+  }
+}
+
+function extractMessageContent(data: DingTalkInboundMessage): MessageContent {
+  const msgtype = data.msgtype || "text";
+
+  if (msgtype === "text") {
+    return { text: data.text?.content?.trim() || "", messageType: "text" };
+  }
+
+  if (msgtype === "richText") {
+    const richTextParts = data.content?.richText || [];
+    let text = "";
+    for (const part of richTextParts) {
+      if (part.type === "text" && part.text) text += part.text;
+      if (part.type === "at" && part.atName) text += `@${part.atName} `;
+    }
+    return { text: text.trim() || "[富文本消息]", messageType: "richText" };
+  }
+
+  if (msgtype === "picture") {
+    return { text: "[图片]", mediaPath: data.content?.downloadCode, mediaType: "image", messageType: "picture" };
+  }
+
+  if (msgtype === "audio") {
+    return {
+      text: data.content?.recognition || "[语音消息]",
+      mediaPath: data.content?.downloadCode,
+      mediaType: "audio",
+      messageType: "audio",
+    };
+  }
+
+  if (msgtype === "video") {
+    return { text: "[视频]", mediaPath: data.content?.downloadCode, mediaType: "video", messageType: "video" };
+  }
+
+  if (msgtype === "file") {
+    return {
+      text: `[文件: ${data.content?.fileName || "文件"}]`,
+      mediaPath: data.content?.downloadCode,
+      mediaType: "file",
+      messageType: "file",
+    };
+  }
+
+  return { text: data.text?.content?.trim() || `[${msgtype}消息]`, messageType: msgtype };
+}
+
+// Send proactive message via DingTalk OpenAPI
+export async function sendProactiveMessage(
+  config: DingTalkConfig,
+  target: string,
+  text: string,
+  options: SendMessageOptions = {}
+): Promise<unknown> {
+  const token = await getAccessToken(config, options.log);
+  const isGroup = target.startsWith("cid");
+
+  const url = isGroup
+    ? "https://api.dingtalk.com/v1.0/robot/groupMessages/send"
+    : "https://api.dingtalk.com/v1.0/robot/oToMessages/batchSend";
+
+  const { useMarkdown, title } = detectMarkdownAndExtractTitle(text, options, "Moltbot 提醒");
+  const msgKey = useMarkdown ? "sampleMarkdown" : "sampleText";
+
+  const payload: ProactiveMessagePayload = {
+    robotCode: config.robotCode || config.clientId,
+    msgKey,
+    msgParam: JSON.stringify({ title, text }),
+  };
+
+  if (isGroup) {
+    payload.openConversationId = target;
+  } else {
+    payload.userIds = [target];
+  }
+
+  const result = await axios({
+    url,
+    method: "POST",
+    data: payload,
+    headers: { "x-acs-dingtalk-access-token": token, "Content-Type": "application/json" },
+  });
+  return result.data;
+}
+
+// Send message via sessionWebhook
+export async function sendBySession(
+  config: DingTalkConfig,
+  sessionWebhook: string,
+  text: string,
+  options: SendMessageOptions = {}
+): Promise<unknown> {
+  const token = await getAccessToken(config, options.log);
+  const { useMarkdown, title } = detectMarkdownAndExtractTitle(text, options, "Moltbot 消息");
+
+  let body: SessionWebhookResponse;
+  if (useMarkdown) {
+    let finalText = text;
+    if (options.atUserId) finalText = `${finalText} @${options.atUserId}`;
+    body = { msgtype: "markdown", markdown: { title, text: finalText } };
+  } else {
+    body = { msgtype: "text", text: { content: text } };
+  }
+
+  if (options.atUserId) body.at = { atUserIds: [options.atUserId], isAtAll: false };
+
+  const result = await axios({
+    url: sessionWebhook,
+    method: "POST",
+    data: body,
+    headers: { "x-acs-dingtalk-access-token": token, "Content-Type": "application/json" },
+  });
+  return result.data;
+}
+
+// Send interactive card
+export async function sendInteractiveCard(
+  config: DingTalkConfig,
+  conversationId: string,
+  text: string,
+  options: SendMessageOptions = {}
+): Promise<{ cardBizId: string; response: unknown }> {
+  const robotCode = config.robotCode || config.clientId;
+  if (!robotCode) {
+    throw new Error("[DingTalk] robotCode or clientId is required for sending interactive cards");
+  }
+
+  const token = await getAccessToken(config, options.log);
+  const isGroup = conversationId.startsWith("cid");
+  const cardBizId = `card_${randomUUID()}`;
+  const { useMarkdown, title } = detectMarkdownAndExtractTitle(text, options, "Moltbot 消息");
+
+  const cardData: InteractiveCardData = {
+    config: { autoLayout: true, enableForward: true },
+    header: { title: { type: "text", text: title } },
+    contents: [{ type: useMarkdown ? "markdown" : "text", text }],
+  };
+
+  const payload: InteractiveCardSendRequest = {
+    cardTemplateId: config.cardTemplateId || "StandardCard",
+    cardBizId,
+    robotCode,
+    cardData: JSON.stringify(cardData),
+  };
+
+  if (isGroup) {
+    payload.openConversationId = conversationId;
+  } else {
+    payload.singleChatReceiver = JSON.stringify({ userId: conversationId });
+  }
+
+  const apiUrl = config.cardSendApiUrl || "https://api.dingtalk.com/v1.0/im/v1.0/robot/interactiveCards/send";
+
+  const result = await retryWithBackoff(
+    async () => {
+      return await axios({
+        url: apiUrl,
+        method: "POST",
+        data: payload,
+        headers: { "x-acs-dingtalk-access-token": token, "Content-Type": "application/json" },
+      });
+    },
+    { maxRetries: 3, log: options.log }
+  );
+
+  cardInstances.set(cardBizId, {
+    cardBizId,
+    conversationId,
+    createdAt: Date.now(),
+    lastUpdated: Date.now(),
+  });
+
+  return { cardBizId, response: result.data };
+}
+
+// Update existing interactive card
+export async function updateInteractiveCard(
+  config: DingTalkConfig,
+  cardBizId: string,
+  text: string,
+  options: SendMessageOptions = {}
+): Promise<unknown> {
+  const token = await getAccessToken(config, options.log);
+  const { useMarkdown, title } = detectMarkdownAndExtractTitle(text, options, "Moltbot 消息");
+
+  const cardData: InteractiveCardData = {
+    config: { autoLayout: true, enableForward: true },
+    header: { title: { type: "text", text: title } },
+    contents: [{ type: useMarkdown ? "markdown" : "text", text }],
+  };
+
+  const payload: InteractiveCardUpdateRequest = {
+    cardBizId,
+    cardData: JSON.stringify(cardData),
+    updateOptions: { updateCardDataByKey: false },
+  };
+
+  const apiUrl = config.cardUpdateApiUrl || "https://api.dingtalk.com/v1.0/im/robots/interactiveCards";
+
+  try {
+    const result = await retryWithBackoff(
+      async () => {
+        return await axios({
+          url: apiUrl,
+          method: "PUT",
+          data: payload,
+          headers: { "x-acs-dingtalk-access-token": token, "Content-Type": "application/json" },
+        });
+      },
+      { maxRetries: 3, log: options.log }
+    );
+
+    const instance = cardInstances.get(cardBizId);
+    if (instance) {
+      instance.lastUpdated = Date.now();
+    }
+
+    return result.data;
+  } catch (err: unknown) {
+    const error = err as { response?: { status?: number } };
+    const statusCode = error.response?.status;
+    if (statusCode === 404 || statusCode === 410 || statusCode === 403) {
+      options.log?.debug?.(`[DingTalk] Removing card ${cardBizId} from cache due to error ${statusCode}`);
+      cardInstances.delete(cardBizId);
+    }
+    throw err;
+  }
+}
+
+// Authorization helpers
+type NormalizedAllowFrom = {
+  entries: string[];
+  entriesLower: string[];
+  hasWildcard: boolean;
+  hasEntries: boolean;
+};
+
+function normalizeAllowFrom(list?: string[]): NormalizedAllowFrom {
+  const entries = (list ?? []).map((value) => String(value).trim()).filter(Boolean);
+  const hasWildcard = entries.includes("*");
+  const normalized = entries
+    .filter((value) => value !== "*")
+    .map((value) => value.replace(/^(dingtalk|dd|ding):/i, ""));
+  const normalizedLower = normalized.map((value) => value.toLowerCase());
   return {
-    accountId,
-    enabled: config?.enabled !== false,
-    configured: Boolean(config?.webhookUrl),
-    webhookUrl: config?.webhookUrl,
-    secret: config?.secret,
-    callbackPath: config?.callbackPath,
-    dmPolicy: config?.dmPolicy,
-    allowFrom: config?.allowFrom,
-    groupPolicy: config?.groupPolicy,
-    groupAllowFrom: config?.groupAllowFrom,
+    entries: normalized,
+    entriesLower: normalizedLower,
+    hasWildcard,
+    hasEntries: entries.length > 0,
   };
 }
 
-function listDingTalkAccountIds(cfg: MoltbotConfig): string[] {
-  return [DEFAULT_ACCOUNT_ID];
+function isSenderAllowed(params: { allow: NormalizedAllowFrom; senderId?: string }): boolean {
+  const { allow, senderId } = params;
+  if (!allow.hasEntries) return true;
+  if (allow.hasWildcard) return true;
+  if (senderId && allow.entriesLower.includes(senderId.toLowerCase())) return true;
+  return false;
 }
 
-export const dingtalkPlugin: ChannelPlugin<ResolvedDingTalkAccount> = {
+// Message handler
+async function handleDingTalkMessage(params: HandleDingTalkMessageParams): Promise<void> {
+  const { cfg, accountId, data, sessionWebhook, log, dingtalkConfig } = params;
+  const rt = getDingTalkRuntime();
+
+  log?.debug?.("[DingTalk] Full Inbound Data:", JSON.stringify(maskSensitiveData(data)));
+
+  // Filter robot self-messages
+  if (data.senderId === data.chatbotUserId || data.senderStaffId === data.chatbotUserId) {
+    log?.debug?.("[DingTalk] Ignoring robot self-message");
+    return;
+  }
+
+  const content = extractMessageContent(data);
+  if (!content.text) return;
+
+  const isDirect = data.conversationType === "1";
+  const senderId = data.senderStaffId || data.senderId;
+  const senderName = data.senderNick || "Unknown";
+  const groupId = data.conversationId;
+  const groupName = data.conversationTitle || "Group";
+
+  // Check authorization for direct messages
+  let commandAuthorized = true;
+  if (isDirect) {
+    const dmPolicy = dingtalkConfig.dmPolicy || "open";
+    const allowFrom = dingtalkConfig.allowFrom || [];
+
+    if (dmPolicy === "allowlist") {
+      const normalizedAllowFrom = normalizeAllowFrom(allowFrom);
+      const isAllowed = isSenderAllowed({ allow: normalizedAllowFrom, senderId });
+
+      if (!isAllowed) {
+        log?.debug?.(`[DingTalk] DM blocked: senderId=${senderId} not in allowlist`);
+        try {
+          await sendBySession(
+            dingtalkConfig,
+            sessionWebhook,
+            `⛔ 访问受限\n\n您的用户ID：\`${senderId}\`\n\n请联系管理员将此ID添加到允许列表中。`,
+            { log }
+          );
+        } catch (err: unknown) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          log?.debug?.(`[DingTalk] Failed to send access denied message: ${errMsg}`);
+        }
+        return;
+      }
+    }
+  }
+
+  let mediaPath: string | undefined;
+  let mediaType: string | undefined;
+  if (content.mediaPath && dingtalkConfig.robotCode) {
+    const media = await downloadMedia(dingtalkConfig, content.mediaPath, log);
+    if (media) {
+      mediaPath = media.path;
+      mediaType = media.mimeType;
+    }
+  }
+
+  const route = rt.channel.routing.resolveAgentRoute({
+    cfg,
+    channel: "dingtalk",
+    accountId,
+    peer: { kind: isDirect ? "dm" : "group", id: isDirect ? senderId : groupId },
+  });
+
+  const storePath = rt.channel.session.resolveStorePath(cfg.session?.store, { agentId: route.agentId });
+  const envelopeOptions = rt.channel.reply.resolveEnvelopeFormatOptions(cfg);
+  const previousTimestamp = rt.channel.session.readSessionUpdatedAt({ storePath, sessionKey: route.sessionKey });
+
+  const fromLabel = isDirect ? `${senderName} (${senderId})` : `${groupName} - ${senderName}`;
+  const body = rt.channel.reply.formatInboundEnvelope({
+    channel: "DingTalk",
+    from: fromLabel,
+    timestamp: data.createAt,
+    body: content.text,
+    chatType: isDirect ? "direct" : "group",
+    sender: { name: senderName, id: senderId },
+    previousTimestamp,
+    envelope: envelopeOptions,
+  });
+
+  const to = isDirect ? senderId : groupId;
+  const ctx = rt.channel.reply.finalizeInboundContext({
+    Body: body,
+    RawBody: content.text,
+    CommandBody: content.text,
+    From: to,
+    To: to,
+    SessionKey: route.sessionKey,
+    AccountId: accountId,
+    ChatType: isDirect ? "direct" : "group",
+    ConversationLabel: fromLabel,
+    GroupSubject: isDirect ? undefined : groupName,
+    SenderName: senderName,
+    SenderId: senderId,
+    Provider: "dingtalk",
+    Surface: "dingtalk",
+    MessageSid: data.msgId,
+    Timestamp: data.createAt,
+    MediaPath: mediaPath,
+    MediaType: mediaType,
+    MediaUrl: mediaPath,
+    CommandAuthorized: commandAuthorized,
+    OriginatingChannel: "dingtalk",
+    OriginatingTo: to,
+  });
+
+  await rt.channel.session.recordInboundSession({
+    storePath,
+    sessionKey: ctx.SessionKey || route.sessionKey,
+    ctx,
+    updateLastRoute: { sessionKey: route.mainSessionKey, channel: "dingtalk", to, accountId },
+  });
+
+  log?.info?.(`[DingTalk] Inbound: from=${senderName} text="${content.text.slice(0, 50)}..."`);
+
+  // Feedback: Thinking...
+  let currentCardBizId: string | undefined;
+  const useCardMode = dingtalkConfig.messageType === "card";
+
+  if (dingtalkConfig.showThinking !== false) {
+    try {
+      if (useCardMode) {
+        const result = await sendInteractiveCard(dingtalkConfig, to, "🤔 思考中，请稍候...", { log });
+        currentCardBizId = result.cardBizId;
+      } else {
+        await sendBySession(dingtalkConfig, sessionWebhook, "🤔 思考中，请稍候...", {
+          atUserId: !isDirect ? senderId : null,
+          log,
+        });
+      }
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      log?.debug?.(`[DingTalk] Thinking message failed: ${errMsg}`);
+    }
+  }
+
+  const { dispatcher, replyOptions, markDispatchIdle } = rt.channel.reply.createReplyDispatcherWithTyping({
+    responsePrefix: "",
+    deliver: async (payload: { markdown?: string; text?: string }) => {
+      try {
+        const textToSend = payload.markdown || payload.text;
+        if (!textToSend) return { ok: true };
+
+        if (useCardMode) {
+          if (currentCardBizId) {
+            await updateInteractiveCard(dingtalkConfig, currentCardBizId, textToSend, { log });
+          } else {
+            const result = await sendInteractiveCard(dingtalkConfig, to, textToSend, { log });
+            currentCardBizId = result.cardBizId;
+          }
+        } else {
+          await sendBySession(dingtalkConfig, sessionWebhook, textToSend, {
+            atUserId: !isDirect ? senderId : null,
+            log,
+          });
+        }
+        return { ok: true };
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        log?.error?.(`[DingTalk] Reply failed: ${errMsg}`);
+        return { ok: false, error: errMsg };
+      }
+    },
+  });
+
+  try {
+    await rt.channel.reply.dispatchReplyFromConfig({ ctx, cfg, dispatcher, replyOptions });
+  } finally {
+    markDispatchIdle();
+    if (mediaPath && fs.existsSync(mediaPath)) {
+      try {
+        fs.unlinkSync(mediaPath);
+      } catch {
+        // Ignore cleanup errors
+      }
+    }
+  }
+}
+
+// DingTalk Channel Plugin Definition
+export const dingtalkPlugin: ChannelPlugin<ResolvedAccount> = {
   id: "dingtalk",
   meta: {
-    ...meta,
-    showConfigured: true,
-    quickstartAllowFrom: true,
+    id: "dingtalk",
+    label: "DingTalk",
+    selectionLabel: "DingTalk (钉钉)",
+    docsPath: "/channels/dingtalk",
+    blurb: "钉钉企业内部机器人，使用 Stream 模式，无需公网 IP。",
+    aliases: ["dd", "ding"],
   },
-  onboarding: dingtalkOnboardingAdapter,
+  configSchema: dingtalkConfigSchema,
   capabilities: {
     chatTypes: ["direct", "group"],
+    reactions: false,
+    threads: false,
     media: true,
-    atMembers: true,
-    markdown: true,
+    nativeCommands: false,
   },
   reload: { configPrefixes: ["channels.dingtalk"] },
-  configSchema: buildChannelConfigSchema(DingTalkConfigSchema),
   config: {
-    listAccountIds: (cfg) => listDingTalkAccountIds(cfg as MoltbotConfig),
-    resolveAccount: (cfg, accountId) => resolveDingTalkAccount(cfg as MoltbotConfig, accountId),
-    defaultAccountId: () => DEFAULT_ACCOUNT_ID,
-    setAccountEnabled: ({ cfg, accountId, enabled }) => {
-      const config = { ...cfg } as MoltbotConfig;
-      if (!config.channels) {
-        config.channels = {};
-      }
-      if (!config.channels.dingtalk) {
-        config.channels.dingtalk = {};
-      }
-      config.channels.dingtalk.enabled = enabled;
-      return config;
+    listAccountIds: (cfg: MoltbotConfig): string[] => {
+      const config = getConfig(cfg);
+      return config.accounts ? Object.keys(config.accounts) : isConfigured(cfg) ? ["default"] : [];
     },
-    deleteAccount: ({ cfg }) => {
-      const config = { ...cfg } as MoltbotConfig;
-      if (config.channels?.dingtalk) {
-        delete config.channels.dingtalk;
-        if (Object.keys(config.channels).length === 0) {
-          delete config.channels;
-        }
-      }
-      return config;
+    resolveAccount: (cfg: MoltbotConfig, accountId?: string) => {
+      const config = getConfig(cfg);
+      const id = accountId || "default";
+      const account = config.accounts?.[id];
+      return account
+        ? { accountId: id, config: account, enabled: account.enabled !== false }
+        : { accountId: "default", config, enabled: config.enabled !== false };
     },
-    isConfigured: (account) => account.configured,
-    describeAccount: (account) => ({
+    defaultAccountId: (): string => "default",
+    isConfigured: (account: ResolvedAccount): boolean =>
+      Boolean(account.config?.clientId && account.config?.clientSecret),
+    describeAccount: (account: ResolvedAccount) => ({
       accountId: account.accountId,
+      name: account.config?.name || "DingTalk",
       enabled: account.enabled,
-      configured: account.configured,
-      webhookConfigured: Boolean(account.webhookUrl),
+      configured: Boolean(account.config?.clientId),
     }),
-    resolveAllowFrom: ({ cfg }) => {
-      const config = (cfg as MoltbotConfig).channels?.dingtalk;
-      return config?.allowFrom?.map(String) ?? [];
-    },
-    formatAllowFrom: ({ allowFrom }) =>
-      allowFrom
-        .map((entry) => String(entry).trim())
-        .filter(Boolean)
-        .map((entry) => {
-          // 标准化用户ID格式
-          if (!entry.startsWith("user:")) {
-            return `user:${entry}`;
-          }
-          return entry;
-        }),
   },
   security: {
-    resolveDmPolicy: ({ cfg }) => {
-      const config = (cfg as MoltbotConfig).channels?.dingtalk;
-      return {
-        policy: config?.dmPolicy ?? "open",
-        allowFrom: config?.allowFrom ?? [],
-        policyPath: "channels.dingtalk.dmPolicy",
-        allowFromPath: "channels.dingtalk.allowFrom",
-        approveHint: formatPairingApproveHint("dingtalk"),
-        normalizeEntry: (raw) => {
-          const trimmed = raw.trim();
-          if (!trimmed.startsWith("user:")) {
-            return `user:${trimmed}`;
+    resolveDmPolicy: ({ account }: { account: ResolvedAccount }) => ({
+      policy: account.config?.dmPolicy || "open",
+      allowFrom: account.config?.allowFrom || [],
+      policyPath: "channels.dingtalk.dmPolicy",
+      allowFromPath: "channels.dingtalk.allowFrom",
+      approveHint: "使用 /allow dingtalk:<userId> 批准用户",
+      normalizeEntry: (raw: string) => raw.replace(/^(dingtalk|dd|ding):/i, ""),
+    }),
+  },
+  groups: {
+    resolveRequireMention: ({ cfg }: { cfg: MoltbotConfig }): boolean => getConfig(cfg).groupPolicy !== "open",
+  },
+  messaging: {
+    normalizeTarget: ({ target }: { target?: string }) =>
+      target ? { targetId: target.replace(/^(dingtalk|dd|ding):/i, "") } : null,
+    targetResolver: { looksLikeId: (id: string): boolean => /^[\w-]+$/.test(id), hint: "<conversationId>" },
+  },
+  outbound: {
+    deliveryMode: "direct",
+    resolveTarget: ({ to }: { to?: string | null }) => {
+      const trimmed = to?.trim();
+      if (!trimmed) {
+        return { ok: false, error: new Error("DingTalk message requires --to <conversationId>") };
+      }
+      return { ok: true, to: trimmed };
+    },
+    sendText: async ({ cfg, to, text, accountId, log }: {
+      cfg: MoltbotConfig;
+      to: string;
+      text: string;
+      accountId?: string;
+      log?: Logger;
+    }) => {
+      const config = getConfig(cfg, accountId);
+      try {
+        const result = await sendProactiveMessage(config, to, text, { log });
+        return { ok: true, data: result };
+      } catch (err: unknown) {
+        const error = err as { response?: { data?: unknown }; message?: string };
+        return { ok: false, error: error.response?.data || error.message };
+      }
+    },
+    sendMedia: async ({ cfg, to, mediaPath, accountId, log }: {
+      cfg: MoltbotConfig;
+      to: string;
+      mediaPath: string;
+      accountId?: string;
+      log?: Logger;
+    }) => {
+      const config = getConfig(cfg, accountId);
+      if (!config.clientId) {
+        return { ok: false, error: "DingTalk not configured" };
+      }
+      try {
+        const mediaDescription = `[媒体消息: ${mediaPath}]`;
+        const result = await sendProactiveMessage(config, to, mediaDescription, { log });
+        return { ok: true, data: result };
+      } catch (err: unknown) {
+        const error = err as { response?: { data?: unknown }; message?: string };
+        return { ok: false, error: error.response?.data || error.message };
+      }
+    },
+  },
+  gateway: {
+    startAccount: async (ctx: GatewayStartContext): Promise<GatewayStopResult> => {
+      const { account, cfg, abortSignal } = ctx;
+      const config = account.config;
+      if (!config.clientId || !config.clientSecret) {
+        throw new Error("DingTalk clientId and clientSecret are required");
+      }
+      ctx.log?.info?.(`[${account.accountId}] Starting DingTalk Stream client...`);
+
+      cleanupOrphanedTempFiles(ctx.log);
+      startCardCacheCleanup();
+
+      const client = new DWClient({
+        clientId: config.clientId,
+        clientSecret: config.clientSecret,
+        debug: config.debug || false,
+      });
+
+      client.registerCallbackListener(TOPIC_ROBOT, async (res: { headers?: { messageId?: string }; data: string }) => {
+        // 调试日志：回调被触发
+        ctx.log?.info?.(`[DingTalk] ========== CALLBACK RECEIVED ==========`);
+        ctx.log?.info?.(`[DingTalk] Raw response headers: ${JSON.stringify(res.headers)}`);
+        ctx.log?.info?.(`[DingTalk] Raw response data: ${res.data?.substring(0, 500)}`);
+        console.log("[DingTalk] ========== CALLBACK RECEIVED ==========");
+        console.log("[DingTalk] Raw data:", res.data?.substring(0, 500));
+
+        const messageId = res.headers?.messageId;
+        try {
+          if (messageId) {
+            client.socketCallBackResponse(messageId, { success: true });
           }
-          return trimmed;
+          const data = JSON.parse(res.data) as DingTalkInboundMessage;
+          await handleDingTalkMessage({
+            cfg,
+            accountId: account.accountId,
+            data,
+            sessionWebhook: data.sessionWebhook,
+            log: ctx.log,
+            dingtalkConfig: config,
+          });
+        } catch (error: unknown) {
+          const errMsg = error instanceof Error ? error.message : String(error);
+          ctx.log?.error?.(`[DingTalk] Error processing message: ${errMsg}`);
+        }
+      });
+
+      await client.connect();
+      ctx.log?.info?.(`[${account.accountId}] DingTalk Stream client connected`);
+
+      const rt = getDingTalkRuntime();
+      rt.channel.activity.record("dingtalk", account.accountId, "start");
+
+      let stopped = false;
+      if (abortSignal) {
+        abortSignal.addEventListener("abort", () => {
+          if (stopped) return;
+          stopped = true;
+          ctx.log?.info?.(`[${account.accountId}] Stopping DingTalk Stream client...`);
+          rt.channel.activity.record("dingtalk", account.accountId, "stop");
+        });
+      }
+
+      return {
+        stop: () => {
+          if (stopped) return;
+          stopped = true;
+          ctx.log?.info?.(`[${account.accountId}] DingTalk provider stopped`);
+          rt.channel.activity.record("dingtalk", account.accountId, "stop");
+          stopCardCacheCleanup();
         },
       };
     },
-    collectWarnings: ({ account, cfg }) => {
-      const warnings: string[] = [];
-      const defaultGroupPolicy = (cfg as MoltbotConfig).channels?.defaults?.groupPolicy;
-      const groupPolicy = account.groupPolicy ?? defaultGroupPolicy ?? "open";
-      
-      if (groupPolicy === "open") {
-        warnings.push(
-          `- 钉钉群聊: groupPolicy="open" 允许任何群成员触发（需要@机器人）。设置为 "allowlist" 并配置 groupAllowFrom 来限制群聊。`
-        );
-      }
-      
-      if (account.dmPolicy === "open") {
-        warnings.push(
-          `- 钉钉私聊: dmPolicy="open" 允许任何人私聊触发。建议设置为 "allowlist" 或 "pairing" 以提高安全性。`
-        );
-      }
-      
-      return warnings;
-    },
   },
-  messaging: {
-    normalizeTarget: normalizeDingTalkMessagingTarget,
-    targetResolver: {
-      looksLikeId: (raw) => {
-        const trimmed = raw.trim();
-        if (!trimmed) return false;
-        
-        // 用户ID格式
-        if (trimmed.startsWith("user:")) {
-          const userId = trimmed.slice(5).trim();
-          return userId.length > 0;
-        }
-        
-        // 群聊ID格式
-        if (trimmed.startsWith("chat:")) {
-          const chatId = trimmed.slice(5).trim();
-          return chatId.length > 0;
-        }
-        
-        // 简单的ID格式
-        return /^[a-zA-Z0-9_-]+$/.test(trimmed);
-      },
-      hint: "user:<userId> 或 chat:<chatId>",
-    },
-  },
-  outbound: {
-    send: async ({ cfg, to, message, options }) => {
+  status: {
+    defaultRuntime: { accountId: "default", running: false, lastStartAt: null, lastStopAt: null, lastError: null },
+    probe: async ({ cfg }: { cfg: MoltbotConfig }) => {
+      if (!isConfigured(cfg)) return { ok: false, error: "Not configured" };
       try {
-        const config = cfg as MoltbotConfig;
-        const result = await sendDingTalkMessage(
-          config,
-          to,
-          message,
-          options as any
-        );
-        return { success: true, data: result };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : String(error),
-        };
+        const config = getConfig(cfg);
+        await getAccessToken(config);
+        return { ok: true, details: { clientId: config.clientId } };
+      } catch (error: unknown) {
+        const errMsg = error instanceof Error ? error.message : String(error);
+        return { ok: false, error: errMsg };
       }
     },
-  },
-  agentPrompt: {
-    messageToolHints: () => [
-      "- 钉钉支持文本和Markdown消息格式",
-      "- 使用 @ 功能：可以通过 atUserIds 或 atMobiles 参数@特定用户",
-      "- 支持 @所有人：设置 isAtAll: true",
-      "- 目标格式：user:<userId> 用于私聊，chat:<chatId> 用于群聊",
-    ],
+    buildChannelSummary: ({ snapshot }: { snapshot?: {
+      configured?: boolean;
+      running?: boolean;
+      lastStartAt?: number | null;
+      lastStopAt?: number | null;
+      lastError?: string | null;
+    } }) => ({
+      configured: snapshot?.configured ?? false,
+      running: snapshot?.running ?? false,
+      lastStartAt: snapshot?.lastStartAt ?? null,
+      lastStopAt: snapshot?.lastStopAt ?? null,
+      lastError: snapshot?.lastError ?? null,
+    }),
   },
 };

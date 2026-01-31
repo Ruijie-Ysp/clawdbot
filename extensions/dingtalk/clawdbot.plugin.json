@@ -1,7 +1,8 @@
 {
   "id": "dingtalk",
   "name": "DingTalk",
-  "description": "DingTalk channel plugin for Clawdbot",
+  "description": "DingTalk (钉钉) channel plugin - Stream mode, 无需公网 IP",
+  "channels": ["dingtalk"],
   "configSchema": {
     "type": "object",
     "additionalProperties": false,

@@ -1,4 +1,6 @@
-import type { MoltbotRuntime } from "moltbot/plugin-sdk";
+import type { PluginRuntime } from "clawdbot/plugin-sdk";
+
+type MoltbotRuntime = PluginRuntime;
 
 let dingtalkRuntime: MoltbotRuntime | undefined;
 

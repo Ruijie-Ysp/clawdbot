@@ -102,7 +102,8 @@ start_gateway() {
     extra=($GATEWAY_ARGS)
   fi
 
-  local cmd=(pnpm gateway:dev)
+  # Use --dev gateway directly without CLAWDBOT_SKIP_CHANNELS to load all channels (including dingtalk)
+  local cmd=(node scripts/run-node.mjs --dev gateway)
   if ((${#extra[@]})); then
     cmd+=("${extra[@]}")
   fi
@@ -152,31 +153,45 @@ start_ui() {
 stop_process() {
   local name="$1"
   local pidfile="$2"
+  local port="$3"
   local pid
   pid="$(read_pid "$pidfile" || true)"
-  if [[ -z "$pid" ]]; then
-    echo "$name not running."
-    return 0
-  fi
-  if ! kill -0 "$pid" >/dev/null 2>&1; then
-    echo "$name not running (stale pid $pid)."
-    rm -f "$pidfile"
-    return 0
+
+  if [[ -z "$pid" ]] || ! kill -0 "$pid" >/dev/null 2>&1; then
+    if [[ -n "$pid" ]]; then
+      echo "$name not running (stale pid $pid)."
+      rm -f "$pidfile"
+    else
+      echo "$name not running (no pid file)."
+    fi
+  else
+    echo "Stopping $name (pid $pid)..."
+    kill "$pid" >/dev/null 2>&1 || true
+    for _ in {1..50}; do
+      if ! kill -0 "$pid" >/dev/null 2>&1; then
+        rm -f "$pidfile"
+        echo "$name stopped."
+        break
+      fi
+      sleep 0.1
+    done
+    if kill -0 "$pid" >/dev/null 2>&1; then
+      echo "$name still running; sending SIGKILL."
+      kill -9 "$pid" >/dev/null 2>&1 || true
+      rm -f "$pidfile"
+    fi
   fi
 
-  echo "Stopping $name (pid $pid)..."
-  kill "$pid" >/dev/null 2>&1 || true
-  for _ in {1..50}; do
-    if ! kill -0 "$pid" >/dev/null 2>&1; then
-      rm -f "$pidfile"
-      echo "$name stopped."
-      return 0
+  # Always clean up port to handle orphaned child processes
+  if [[ -n "$port" ]]; then
+    local pids
+    pids="$(lsof -ti:"$port" 2>/dev/null || true)"
+    if [[ -n "$pids" ]]; then
+      echo "Cleaning up orphaned processes on port $port: $pids"
+      echo "$pids" | xargs kill -9 2>/dev/null || true
+      sleep 0.5
     fi
-    sleep 0.1
-  done
-  echo "$name still running; sending SIGKILL."
-  kill -9 "$pid" >/dev/null 2>&1 || true
-  rm -f "$pidfile"
+  fi
 }
 
 status() {
@@ -220,12 +235,12 @@ main() {
       start_ui
       ;;
     stop)
-      stop_process "UI" "$UI_PID"
-      stop_process "Gateway" "$GATEWAY_PID"
+      stop_process "UI" "$UI_PID" "$UI_PORT"
+      stop_process "Gateway" "$GATEWAY_PID" "$GATEWAY_PORT"
       ;;
     restart)
-      stop_process "UI" "$UI_PID"
-      stop_process "Gateway" "$GATEWAY_PID"
+      stop_process "UI" "$UI_PID" "$UI_PORT"
+      stop_process "Gateway" "$GATEWAY_PID" "$GATEWAY_PORT"
       require_pnpm
       start_gateway
       start_ui

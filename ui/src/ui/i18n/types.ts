@@ -510,6 +510,9 @@ export interface Translations {
     select: string;
     delete: string;
     confirmDelete: string;
+    selectAll: string;
+    deleteSelected: string;
+    confirmDeleteMultiple: string;
     subtitle: string;
     activeWithin: string;
     limit: string;

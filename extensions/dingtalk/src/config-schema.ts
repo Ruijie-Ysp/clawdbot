@@ -1,36 +1,66 @@
 import { z } from "zod";
 
+/**
+ * DingTalk configuration schema using Zod
+ * Supports Stream mode (WebSocket) - no public IP required
+ */
 export const DingTalkConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  webhookUrl: z.string().url().optional().describe({
-    label: "Webhook URL",
-    placeholder: "https://oapi.dingtalk.com/robot/send?access_token=xxx",
-    help: "钉钉机器人的Webhook地址",
-  }),
-  secret: z.string().optional().describe({
-    label: "签名密钥",
-    sensitive: true,
-    help: "钉钉机器人的加签密钥",
-  }),
-  callbackPath: z.string().default("/dingtalk/callback").describe({
-    label: "回调路径",
-    placeholder: "/dingtalk/callback",
-    help: "接收钉钉回调的HTTP路径",
-  }),
-  dmPolicy: z.enum(["open", "allowlist", "pairing"]).default("open").describe({
-    label: "私聊策略",
-    help: "控制谁可以通过私聊触发机器人",
-  }),
-  allowFrom: z.array(z.string()).default([]).describe({
-    label: "允许来源",
-    help: "允许触发机器人的用户ID列表",
-  }),
-  groupPolicy: z.enum(["open", "allowlist"]).default("open").describe({
-    label: "群聊策略",
-    help: "控制群聊中的触发策略",
-  }),
-  groupAllowFrom: z.array(z.string()).default([]).describe({
-    label: "允许的群聊",
-    help: "允许触发机器人的群聊ID列表",
-  }),
+  /** Account name (optional display name) */
+  name: z.string().optional(),
+
+  /** Whether this channel is enabled */
+  enabled: z.boolean().optional().default(true),
+
+  /** DingTalk App Key (Client ID) - required for authentication */
+  clientId: z.string().optional(),
+
+  /** DingTalk App Secret (Client Secret) - required for authentication */
+  clientSecret: z.string().optional(),
+
+  /** DingTalk Robot Code for media download */
+  robotCode: z.string().optional(),
+
+  /** DingTalk Corporation ID */
+  corpId: z.string().optional(),
+
+  /** DingTalk Application ID (Agent ID) */
+  agentId: z.union([z.string(), z.number()]).optional(),
+
+  /** Direct message policy: open, pairing, or allowlist */
+  dmPolicy: z.enum(["open", "pairing", "allowlist"]).optional().default("open"),
+
+  /** Group message policy: open or allowlist */
+  groupPolicy: z.enum(["open", "allowlist"]).optional().default("open"),
+
+  /** List of allowed user IDs for allowlist policy */
+  allowFrom: z.array(z.string()).optional(),
+
+  /** Show thinking indicator while processing */
+  showThinking: z.boolean().optional().default(true),
+
+  /** Enable debug logging */
+  debug: z.boolean().optional().default(false),
+
+  /** Message type for replies: text, markdown, or card */
+  messageType: z.enum(["text", "markdown", "card"]).optional().default("markdown"),
+
+  /** Card template ID for interactive cards (e.g., 'StandardCard') */
+  cardTemplateId: z.string().optional().default("StandardCard"),
+
+  /** API endpoint for sending interactive cards */
+  cardSendApiUrl: z
+    .string()
+    .optional()
+    .default("https://api.dingtalk.com/v1.0/im/v1.0/robot/interactiveCards/send"),
+
+  /** API endpoint for updating interactive cards */
+  cardUpdateApiUrl: z
+    .string()
+    .optional()
+    .default("https://api.dingtalk.com/v1.0/im/robots/interactiveCards"),
+
+  /** Multi-account configuration */
+  accounts: z.record(z.string(), z.unknown()).optional(),
 });
+
+export type DingTalkConfigType = z.infer<typeof DingTalkConfigSchema>;
