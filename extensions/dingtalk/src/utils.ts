@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
-import * as path from "node:path";
 import * as os from "node:os";
+import * as path from "node:path";
 import type { Logger, RetryOptions } from "./types.js";
 
 /**
@@ -17,11 +17,11 @@ export function maskSensitiveData(data: unknown): unknown {
   }
 
   const masked = JSON.parse(JSON.stringify(data)) as Record<string, unknown>;
-  const sensitiveFields = ["token", "accessToken", "clientSecret", "secret"];
+  const sensitiveFields = new Set(["token", "accessToken", "clientSecret", "secret"]);
 
   function maskObj(obj: Record<string, unknown>): void {
     for (const key in obj) {
-      if (sensitiveFields.includes(key)) {
+      if (sensitiveFields.has(key)) {
         const val = obj[key];
         if (typeof val === "string" && val.length > 6) {
           obj[key] = val.slice(0, 3) + "*".repeat(val.length - 6) + val.slice(-3);
@@ -53,7 +53,9 @@ export function cleanupOrphanedTempFiles(log?: Logger): number {
     const maxAge = 24 * 60 * 60 * 1000;
 
     for (const file of files) {
-      if (!dingtalkPattern.test(file)) continue;
+      if (!dingtalkPattern.test(file)) {
+        continue;
+      }
 
       const filePath = path.join(tempDir, file);
       try {
@@ -86,7 +88,7 @@ export function cleanupOrphanedTempFiles(log?: Logger): number {
  */
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  options: RetryOptions = {}
+  options: RetryOptions = {},
 ): Promise<T> {
   const { maxRetries = 3, baseDelayMs = 100, log } = options;
 
@@ -111,4 +113,3 @@ export async function retryWithBackoff<T>(
 
   throw new Error("Retry exhausted without returning");
 }
-

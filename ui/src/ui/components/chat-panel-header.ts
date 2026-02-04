@@ -4,7 +4,7 @@
 
 import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import type { GatewayAgentRow } from "../types";
+import type { GatewayAgentRow } from "../types.ts";
 
 @customElement("chat-panel-header")
 export class ChatPanelHeader extends LitElement {
@@ -76,7 +76,7 @@ export class ChatPanelHeader extends LitElement {
           detail: { agentId: newAgentId, panelIndex: this.panelIndex },
           bubbles: true,
           composed: true,
-        })
+        }),
       );
     }
   }
@@ -87,7 +87,7 @@ export class ChatPanelHeader extends LitElement {
         <span class="panel-index">${this.panelIndex + 1}</span>
         <select
           class="agent-select"
-          @change=${this._handleAgentChange}
+          @change=${(e: Event) => this._handleAgentChange(e)}
           aria-label="选择 Agent"
         >
           ${this.agents.map(
@@ -98,7 +98,7 @@ export class ChatPanelHeader extends LitElement {
               >
                 ${agent.identity?.emoji ?? ""} ${agent.identity?.name ?? agent.name ?? agent.id}
               </option>
-            `
+            `,
           )}
         </select>
       </div>
@@ -111,4 +111,3 @@ declare global {
     "chat-panel-header": ChatPanelHeader;
   }
 }
-

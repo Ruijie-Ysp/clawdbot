@@ -25,21 +25,22 @@
 
 ### 开发模式 vs Docker 模式对比
 
-| 特性 | 开发模式（当前） | Docker 模式（部署后） |
-|------|----------------|---------------------|
-| 前端访问 | `http://localhost:5173` | `http://localhost:18789` |
-| 后端访问 | `ws://localhost:18789` | `ws://localhost:18789` |
-| 前端服务器 | Vite dev server | Gateway 内置（生产构建） |
-| 热重载 | ✅ 支持 | ❌ 不支持（需要重建镜像） |
-| 启动方式 | 两个命令（ui:dev + gateway:dev） | 一个命令（docker compose up） |
-| 数据位置 | `~/.moltbot`, `~/clawd` | `~/.moltbot`, `~/clawd` (完全相同) |
-| 适用场景 | 开发调试、修改代码 | 生产使用、稳定运行 |
+| 特性       | 开发模式（当前）                 | Docker 模式（部署后）              |
+| ---------- | -------------------------------- | ---------------------------------- |
+| 前端访问   | `http://localhost:5173`          | `http://localhost:18789`           |
+| 后端访问   | `ws://localhost:18789`           | `ws://localhost:18789`             |
+| 前端服务器 | Vite dev server                  | Gateway 内置（生产构建）           |
+| 热重载     | ✅ 支持                          | ❌ 不支持（需要重建镜像）          |
+| 启动方式   | 两个命令（ui:dev + gateway:dev） | 一个命令（docker compose up）      |
+| 数据位置   | `~/.moltbot`, `~/clawd`          | `~/.moltbot`, `~/clawd` (完全相同) |
+| 适用场景   | 开发调试、修改代码               | 生产使用、稳定运行                 |
 
 ---
 
 ## 🎯 关键差异：访问地址变化
 
 ### 开发模式（当前）
+
 ```
 http://localhost:5173  ← 前端（Vite dev server）
           ↓
@@ -49,6 +50,7 @@ ws://localhost:18789   ← 后端（Gateway）
 ```
 
 ### Docker 模式（部署后）
+
 ```
 http://localhost:18789  ← 前端 + 后端（集成）
 ```
@@ -88,6 +90,7 @@ cd /Users/yangshengpeng/Desktop/openAI/moltbot
 ```
 
 **脚本会自动**：
+
 - ✅ 检测现有数据（`~/.moltbot/`, `~/clawd/`）
 - ✅ 备份数据到 `~/moltbot-backup-<时间戳>/`
 - ✅ 构建 Docker 镜像（包含前端构建）
@@ -97,11 +100,13 @@ cd /Users/yangshengpeng/Desktop/openAI/moltbot
 ### 步骤 3: 访问新地址
 
 **旧地址（停用）**：
+
 ```
 http://localhost:5173
 ```
 
 **新地址（使用这个）**：
+
 ```
 http://localhost:18789
 ```
@@ -136,12 +141,14 @@ Docker 容器通过 volume 挂载这些目录，**数据位置完全不变**！
 ## 🎨 界面功能对比
 
 ### 开发模式（5173）
+
 - Web UI 控制面板
 - WebChat 聊天界面
 - 实时热重载
 - 开发者工具
 
 ### Docker 模式（18789）
+
 - ✅ Web UI 控制面板（相同）
 - ✅ WebChat 聊天界面（相同）
 - ✅ 所有功能（相同）
@@ -242,6 +249,7 @@ cd /Users/yangshengpeng/Desktop/openAI/moltbot
 ```
 
 **以后每次重启后只需要**：
+
 ```bash
 # 如果容器没有自动启动
 docker compose up -d moltbot-gateway
@@ -258,6 +266,7 @@ docker compose up -d moltbot-gateway
 
 **Q: 本地不需要再做任何操作吧？**
 ✅ **对的！除了：**
+
 1. 停止当前的开发服务（vite 和 gateway）
 2. 改用新地址访问：`http://localhost:18789`（而不是 5173）
 

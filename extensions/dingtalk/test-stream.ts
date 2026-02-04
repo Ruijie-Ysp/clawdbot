@@ -30,17 +30,18 @@ const client = new DWClient({
 });
 
 // 注册回调监听器
-client.registerCallbackListener(TOPIC_ROBOT, async (res: any) => {
+client.registerCallbackListener(TOPIC_ROBOT, async (res: unknown) => {
+  const response = res as { headers?: { messageId?: string }; data?: unknown };
   console.log("");
   console.log("==========================================");
   console.log("🎉 收到钉钉消息！回调已触发！");
   console.log("==========================================");
-  console.log("Headers:", JSON.stringify(res.headers, null, 2));
-  console.log("Data:", res.data);
+  console.log("Headers:", JSON.stringify(response.headers, null, 2));
+  console.log("Data:", response.data);
   console.log("");
 
   // 响应消息
-  const messageId = res.headers?.messageId;
+  const messageId = response.headers?.messageId;
   if (messageId) {
     client.socketCallBackResponse(messageId, { success: true });
     console.log("✅ 已发送回调响应");
@@ -81,12 +82,13 @@ client
     console.log("");
     console.log("按 Ctrl+C 退出");
   })
-  .catch((err: any) => {
+  .catch((err: unknown) => {
+    const error = err as Error;
     console.error("");
     console.error("==========================================");
     console.error("❌ 连接失败！");
     console.error("==========================================");
-    console.error("错误信息:", err.message || err);
+    console.error("错误信息:", error.message || err);
     console.error("");
     console.error("请检查：");
     console.error("1. ClientId 和 ClientSecret 是否正确");
@@ -100,4 +102,3 @@ process.on("SIGINT", () => {
   console.log("正在断开连接...");
   process.exit(0);
 });
-

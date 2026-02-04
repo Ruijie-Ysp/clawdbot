@@ -3,9 +3,11 @@
 ## 修复的安全漏洞
 
 ### 1. 远程代码执行（RCE）漏洞 - 已修复
+
 **文件**: `src/browser/pw-tools-core.interactions.ts`
 **问题**: 使用`eval()`函数执行用户提供的JavaScript代码
-**修复**: 
+**修复**:
+
 - 替换`eval()`为更安全的`new Function()`
 - 添加输入验证函数`isSafeJavaScript()`
 - 实现代码安全检查，包括：
@@ -15,17 +17,21 @@
   - 字符串字面量移除以避免误报
 
 ### 2. 命令注入漏洞 - 已修复
+
 **文件**: `src/infra/ssh-tunnel.ts`
 **问题**: 用户输入可能包含命令注入字符
 **修复**:
+
 - 添加`isValidSshTarget()`验证函数
 - 检查危险字符（; & | ` $等）
 - 验证端口范围（1-65535）
 - 检查命令注入模式
 
 ### 3. 新增安全工具 - 已添加
+
 **文件**: `src/security/safe-eval.ts`
 **功能**:
+
 - `safeEval()`: 安全的代码评估函数
 - `isSafeJavaScript()`: JavaScript代码安全检查
 - `safeParseJSON()`: 安全的JSON解析
@@ -33,6 +39,7 @@
 
 **文件**: `src/security/middleware.ts`
 **功能**:
+
 - `validateContentType()`: 验证请求内容类型
 - `preventNoSqlInjection()`: 防止NoSQL注入
 - `preventXSS()`: 防止跨站脚本攻击
@@ -44,12 +51,15 @@
 ## 安全改进详情
 
 ### 1. 代码评估安全改进
+
 **之前**:
+
 ```typescript
 var candidate = eval("(" + fnBody + ")");
 ```
 
 **之后**:
+
 ```typescript
 // 使用Function而不是eval
 var fn = new Function(fnBody);
@@ -57,37 +67,42 @@ return fn();
 ```
 
 **安全检查**:
+
 - 禁止访问危险全局对象（window, document, localStorage等）
 - 禁止使用eval、Function、setTimeout等
 - 检查代码长度和括号平衡
 - 移除字符串字面量以避免绕过检测
 
 ### 2. 输入验证改进
+
 **SSH目标验证**:
+
 ```typescript
 function isValidSshTarget(target: string): boolean {
   // 长度限制
   if (target.length > 256) return false;
-  
+
   // 危险字符检查
   const dangerousChars = /[;&|`$(){}[\]<>!]/;
   if (dangerousChars.test(target)) return false;
-  
+
   // 命令注入模式检查
   const injectionPatterns = [
-    /;\s*\w+/i,    // 分号后跟命令
-    /\|\s*\w+/i,   // 管道后跟命令
-    /&\s*\w+/i,    // 后台执行
-    /`.*`/,        // 反引号命令替换
-    /\$\(.*\)/,    // 命令替换
+    /;\s*\w+/i, // 分号后跟命令
+    /\|\s*\w+/i, // 管道后跟命令
+    /&\s*\w+/i, // 后台执行
+    /`.*`/, // 反引号命令替换
+    /\$\(.*\)/, // 命令替换
   ];
-  
-  return !injectionPatterns.some(pattern => pattern.test(target));
+
+  return !injectionPatterns.some((pattern) => pattern.test(target));
 }
 ```
 
 ### 3. API安全中间件
+
 **包含的功能**:
+
 - **内容类型验证**: 确保POST/PUT/PATCH请求使用application/json
 - **NoSQL注入防护**: 检测并阻止MongoDB操作符
 - **XSS防护**: 自动转义HTML特殊字符
@@ -98,6 +113,7 @@ function isValidSshTarget(target: string): boolean {
 ## 使用指南
 
 ### 1. 使用安全代码评估
+
 ```typescript
 import { safeEval, isSafeJavaScript } from "./security/safe-eval.js";
 
@@ -108,6 +124,7 @@ if (isSafeJavaScript(userCode)) {
 ```
 
 ### 2. 应用安全中间件
+
 ```typescript
 import { securityMiddleware } from "./security/middleware.js";
 import express from "express";
@@ -118,6 +135,7 @@ app.use(securityMiddleware);
 ```
 
 ### 3. 验证文件路径
+
 ```typescript
 import { isSafeFilePath } from "./security/safe-eval.js";
 
@@ -150,6 +168,6 @@ if (isSafeFilePath(userPath, allowedBase)) {
 
 ---
 
-*修复完成时间: $(date)*
-*修复者: Claude AI Assistant*
-*版本: 2026.1.25*
+_修复完成时间: $(date)_
+_修复者: Claude AI Assistant_
+_版本: 2026.1.25_

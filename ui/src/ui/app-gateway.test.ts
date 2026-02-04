@@ -20,23 +20,24 @@ vi.mock("./gateway", () => ({
 vi.mock("./controllers/debug", () => ({ loadDebug: loadDebugMock }));
 vi.mock("./controllers/presence", () => ({ loadPresence: loadPresenceMock }));
 
-vi.mock("./app-settings", async () => {
-  const actual = await vi.importActual<typeof import("./app-settings")>("./app-settings");
+vi.mock("./app-settings.ts", async () => {
+  const actual = await vi.importActual<typeof import("./app-settings.ts")>("./app-settings.ts");
   return {
     ...actual,
     refreshActiveTab: refreshActiveTabMock,
   };
 });
 
-vi.mock("./controllers/chat", async () => {
-  const actual = await vi.importActual<typeof import("./controllers/chat")>("./controllers/chat");
+vi.mock("./controllers/chat.ts", async () => {
+  const actual =
+    await vi.importActual<typeof import("./controllers/chat.ts")>("./controllers/chat.ts");
   return {
     ...actual,
     loadChatHistory: loadChatHistoryMock,
   };
 });
 
-import { connectGateway } from "./app-gateway";
+import { connectGateway } from "./app-gateway.ts";
 
 async function flushMicrotasks() {
   await Promise.resolve();
@@ -82,7 +83,9 @@ function getOnGap() {
   const opts = lastGatewayClientOpts as {
     onGap?: (info: { expected: number; received: number }) => void;
   };
-  if (!opts?.onGap) throw new Error("Expected GatewayBrowserClient onGap option to be set");
+  if (!opts?.onGap) {
+    throw new Error("Expected GatewayBrowserClient onGap option to be set");
+  }
   return opts.onGap;
 }
 

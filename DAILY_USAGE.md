@@ -15,6 +15,7 @@ docker compose ps
 ```
 
 **预期输出**：
+
 ```
 NAME                        STATUS              PORTS
 moltbot-moltbot-gateway-1   Up 2 minutes        0.0.0.0:18789->18789/tcp
@@ -23,6 +24,7 @@ moltbot-moltbot-gateway-1   Up 2 minutes        0.0.0.0:18789->18789/tcp
 ### 2. 访问 Web UI
 
 打开浏览器，访问：
+
 ```
 http://localhost:18789/?token=c13e4c31e46e3659c599e0e105710339
 ```
@@ -269,16 +271,19 @@ docker compose restart moltbot-gateway
 ### 局域网访问
 
 确保 `.env` 中设置：
+
 ```bash
 CLAWDBOT_GATEWAY_BIND=0.0.0.0
 ```
 
 然后重启：
+
 ```bash
 docker compose up -d moltbot-gateway
 ```
 
 访问地址（将 IP 替换为你的 Mac IP）：
+
 ```
 http://192.168.x.x:18789/?token=c13e4c31e46e3659c599e0e105710339
 ```
@@ -315,6 +320,7 @@ open "http://localhost:18789/?token=c13e4c31e46e3659c599e0e105710339"
 ## 🔖 常用 URL
 
 ### 本地访问
+
 ```
 http://localhost:18789/?token=c13e4c31e46e3659c599e0e105710339
 ```
@@ -339,11 +345,13 @@ alias moltbot-backup='tar -czf ~/moltbot-backup-$(date +%Y%m%d).tar.gz ~/.moltbo
 ```
 
 重新加载配置：
+
 ```bash
 source ~/.zshrc  # 或 source ~/.bashrc
 ```
 
 使用：
+
 ```bash
 moltbot-start    # 启动
 moltbot-ui       # 打开 Web UI
@@ -356,6 +364,7 @@ moltbot-backup   # 备份
 ## 📌 重要提醒
 
 ### 数据位置
+
 ```
 ~/.moltbot/      # 配置、会话、凭据、Skills
 ~/clawd/         # 工作空间
@@ -364,11 +373,13 @@ moltbot-backup   # 备份
 ```
 
 ### Gateway Token
+
 ```
 c13e4c31e46e3659c599e0e105710339
 ```
 
 ### 设备配对
+
 ✅ **已完成，无需重复操作**
 配对信息保存在 `~/.moltbot/devices/paired.json`
 
@@ -379,11 +390,13 @@ c13e4c31e46e3659c599e0e105710339
 ### 每次使用只需：
 
 1. **启动服务**（如果没有运行）
+
    ```bash
    docker compose up -d moltbot-gateway
    ```
 
 2. **打开浏览器**
+
    ```
    http://localhost:18789/?token=c13e4c31e46e3659c599e0e105710339
    ```

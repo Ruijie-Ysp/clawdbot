@@ -10,6 +10,7 @@ cd /Users/yangshengpeng/Desktop/openAI/moltbot
 ```
 
 这个脚本会自动：
+
 - ✅ 检测并备份你的现有数据
 - ✅ 停止当前运行的 Moltbot
 - ✅ 构建 Docker 镜像
@@ -59,6 +60,7 @@ docker compose logs -f moltbot-gateway
 打开浏览器访问: `http://localhost:18789`
 
 如果需要 token，查看日志获取：
+
 ```bash
 docker compose logs moltbot-gateway | grep -i token
 ```

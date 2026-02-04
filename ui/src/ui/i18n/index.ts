@@ -18,13 +18,13 @@ const allTranslations: Record<Locale, Translations> = {
 // Language detection and mapping
 const LANGUAGE_MAPPINGS: Record<string, Locale> = {
   // English variants
-  "en": "en",
+  en: "en",
   "en-US": "en",
   "en-GB": "en",
   "en-CA": "en",
   "en-AU": "en",
   // Chinese variants
-  "zh": "zh-CN",
+  zh: "zh-CN",
   "zh-CN": "zh-CN",
   "zh-Hans": "zh-CN",
   "zh-Hans-CN": "zh-CN",

@@ -1,6 +1,7 @@
 import type { GatewayBrowserClient } from "../gateway.ts";
 import type { SessionsListResult } from "../types.ts";
 import { toNumber } from "../format.ts";
+import { tp } from "../i18n/index.js";
 
 export type SessionsState = {
   client: GatewayBrowserClient | null;
@@ -137,12 +138,20 @@ export function toggleAllSessions(state: SessionsState, selectAll: boolean) {
 }
 
 export async function deleteSelectedSessions(state: SessionsState) {
-  if (!state.client || !state.connected) return;
-  if (state.sessionsLoading) return;
+  if (!state.client || !state.connected) {
+    return;
+  }
+  if (state.sessionsLoading) {
+    return;
+  }
   const count = state.sessionsSelected.size;
-  if (count === 0) return;
+  if (count === 0) {
+    return;
+  }
   const confirmed = window.confirm(tp("sessions.confirmDeleteMultiple", { count }));
-  if (!confirmed) return;
+  if (!confirmed) {
+    return;
+  }
   state.sessionsLoading = true;
   state.sessionsError = null;
   try {

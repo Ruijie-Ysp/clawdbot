@@ -28,7 +28,6 @@ const createHost = (tab: Tab): SettingsHost => ({
       { agentId: "main", sessionKey: "main" },
     ],
   },
-  password: "",
   theme: "system",
   themeResolved: "dark",
   applySessionKey: "main",

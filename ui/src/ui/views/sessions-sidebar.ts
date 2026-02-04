@@ -1,10 +1,9 @@
 import { html, nothing } from "lit";
 import { repeat } from "lit/directives/repeat.js";
-
-import { formatAgo } from "../format";
+import type { GatewaySessionRow, SessionsListResult } from "../types.ts";
+import { formatAgo } from "../format.ts";
 import { t, tp } from "../i18n/index.js";
-import { icons } from "../icons";
-import type { GatewaySessionRow, SessionsListResult } from "../types";
+import { icons } from "../icons.ts";
 
 export type SessionsSidebarProps = {
   open: boolean;
@@ -25,11 +24,10 @@ export type SessionsSidebarProps = {
   onEditLabelChange: (value: string) => void;
 };
 
-function filterSessions(
-  sessions: GatewaySessionRow[],
-  query: string,
-): GatewaySessionRow[] {
-  if (!query.trim()) return sessions;
+function filterSessions(sessions: GatewaySessionRow[], query: string): GatewaySessionRow[] {
+  if (!query.trim()) {
+    return sessions;
+  }
   const lower = query.toLowerCase();
   return sessions.filter((s) => {
     const name = (s.displayName ?? s.key).toLowerCase();
@@ -134,12 +132,12 @@ function renderSessionItem(ctx: SessionItemContext) {
           <span class="sessions-sidebar__item-name">${displayName}</span>
         </div>
         <div class="sessions-sidebar__item-meta">
-          ${kindBadge
-            ? html`<span class="sessions-sidebar__item-kind">${kindBadge}</span>`
-            : nothing}
-          ${updated
-            ? html`<span class="sessions-sidebar__item-time">${updated}</span>`
-            : nothing}
+          ${
+            kindBadge
+              ? html`<span class="sessions-sidebar__item-kind">${kindBadge}</span>`
+              : nothing
+          }
+          ${updated ? html`<span class="sessions-sidebar__item-time">${updated}</span>` : nothing}
         </div>
       </button>
       <button
@@ -209,29 +207,30 @@ export function renderSessionsSidebar(props: SessionsSidebarProps) {
       </div>
 
       <div class="sessions-sidebar__list">
-        ${props.loading
-          ? html`<div class="sessions-sidebar__loading">${t("common.loading")}</div>`
-          : filtered.length === 0
-            ? html`<div class="sessions-sidebar__empty">
-                ${props.searchQuery
-                  ? t("sessionsSidebar.noResults")
-                  : t("sessions.noSessions")}
+        ${
+          props.loading
+            ? html`<div class="sessions-sidebar__loading">${t("common.loading")}</div>`
+            : filtered.length === 0
+              ? html`<div class="sessions-sidebar__empty">
+                ${props.searchQuery ? t("sessionsSidebar.noResults") : t("sessions.noSessions")}
               </div>`
-            : repeat(
-                filtered,
-                (s) => s.key,
-                (s) => renderSessionItem({
-                  session: s,
-                  isCurrent: s.key === props.currentSessionKey,
-                  isEditing: s.key === props.editingSessionKey,
-                  editingLabel: props.editingLabel,
-                  onSelect: props.onSessionSelect,
-                  onStartEdit: props.onStartEdit,
-                  onCancelEdit: props.onCancelEdit,
-                  onSaveEdit: props.onSaveEdit,
-                  onEditLabelChange: props.onEditLabelChange,
-                }),
-              )}
+              : repeat(
+                  filtered,
+                  (s) => s.key,
+                  (s) =>
+                    renderSessionItem({
+                      session: s,
+                      isCurrent: s.key === props.currentSessionKey,
+                      isEditing: s.key === props.editingSessionKey,
+                      editingLabel: props.editingLabel,
+                      onSelect: props.onSessionSelect,
+                      onStartEdit: props.onStartEdit,
+                      onCancelEdit: props.onCancelEdit,
+                      onSaveEdit: props.onSaveEdit,
+                      onEditLabelChange: props.onEditLabelChange,
+                    }),
+                )
+        }
       </div>
 
       <div class="sessions-sidebar__footer">
@@ -242,4 +241,3 @@ export function renderSessionsSidebar(props: SessionsSidebarProps) {
     </div>
   `;
 }
-

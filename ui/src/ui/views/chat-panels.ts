@@ -3,8 +3,13 @@
  */
 
 import { html } from "lit";
-import type { ChatLayoutMode, ChatPanelState } from "../storage";
-import type { AgentsListResult, GatewayAgentRow, SessionsListResult } from "../types";
+import type { ChatLayoutMode, ChatPanelState } from "../storage.ts";
+import type {
+  AgentsListResult,
+  GatewayAgentRow,
+  GatewaySessionRow,
+  SessionsListResult,
+} from "../types.ts";
 
 export type ChatPanelsProps = {
   layoutMode: ChatLayoutMode;
@@ -26,16 +31,12 @@ function getAgentsList(agents: AgentsListResult | null): GatewayAgentRow[] {
 function getPanelAgentId(
   panels: ChatPanelState[],
   panelIndex: number,
-  defaultAgentId: string
+  defaultAgentId: string,
 ): string {
   return panels[panelIndex]?.agentId ?? defaultAgentId;
 }
 
-function getPanelSessionKey(
-  panels: ChatPanelState[],
-  panelIndex: number,
-  agentId: string
-): string {
+function getPanelSessionKey(panels: ChatPanelState[], panelIndex: number, agentId: string): string {
   const panel = panels[panelIndex];
   if (panel?.sessionKey) {
     return panel.sessionKey;
@@ -48,7 +49,7 @@ function resolveSessionOptions(sessionKey: string, sessions: SessionsListResult 
   const seen = new Set<string>();
   const options: Array<{ key: string; displayName?: string }> = [];
 
-  const resolvedCurrent = sessions?.sessions?.find((s) => s.key === sessionKey);
+  const resolvedCurrent = sessions?.sessions?.find((s: GatewaySessionRow) => s.key === sessionKey);
   const normalizedSessionKey = sessionKey.trim();
 
   if (normalizedSessionKey) {
@@ -113,7 +114,7 @@ export function renderChatPanels(props: ChatPanelsProps) {
                         ${agent.identity?.emoji ?? ""}
                         ${agent.identity?.name ?? agent.name ?? agent.id}
                       </option>
-                    `
+                    `,
                   )}
                 </select>
                 <select
@@ -135,14 +136,10 @@ export function renderChatPanels(props: ChatPanelsProps) {
                 </select>
               </div>
               <div class="chat-panel__content">
-                ${props.renderPanelContent(
-                  panel.index,
-                  panel.agentId,
-                  panel.sessionKey
-                )}
+                ${props.renderPanelContent(panel.index, panel.agentId, panel.sessionKey)}
               </div>
             </div>
-          `
+          `,
         )}
       </div>
     </div>

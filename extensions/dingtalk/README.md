@@ -15,6 +15,7 @@
 ## 安装
 
 ### 从源码安装
+
 ```bash
 # 在clawdbot项目目录中
 cd extensions/dingtalk
@@ -22,6 +23,7 @@ pnpm install
 ```
 
 ### 启用插件
+
 在Clawdbot配置文件中启用插件：
 
 ```json
@@ -39,11 +41,13 @@ pnpm install
 ## 配置
 
 ### 钉钉机器人设置
+
 1. 在钉钉开放平台创建机器人
 2. 获取Webhook地址和签名密钥
 3. 配置IP白名单（如果需要）
 
 ### Clawdbot配置示例
+
 ```json
 {
   "channels": {
@@ -69,6 +73,7 @@ pnpm install
 ## 使用方法
 
 ### 发送消息
+
 ```bash
 # 通过CLI发送消息
 clawdbot message --channel dingtalk --target "user:user123" --message "Hello from Clawdbot"
@@ -81,6 +86,7 @@ clawdbot message --channel dingtalk --target "chat:chat123" --message "请查看
 ```
 
 ### 接收消息
+
 1. 配置钉钉机器人的回调URL为：`http://your-server:3000/dingtalk/callback`
 2. 钉钉用户发送消息后，Clawdbot会自动接收并处理
 3. 可以在Clawdbot会话中回复消息
@@ -88,6 +94,7 @@ clawdbot message --channel dingtalk --target "chat:chat123" --message "请查看
 ## 消息格式
 
 ### 文本消息
+
 ```json
 {
   "msgtype": "text",
@@ -102,6 +109,7 @@ clawdbot message --channel dingtalk --target "chat:chat123" --message "请查看
 ```
 
 ### Markdown消息
+
 ```json
 {
   "msgtype": "markdown",
@@ -115,9 +123,11 @@ clawdbot message --channel dingtalk --target "chat:chat123" --message "请查看
 ## 安全设置
 
 ### 加签验证
+
 如果钉钉机器人启用了加签，需要在配置中设置`secret`字段。
 
 ### 访问控制
+
 - `dmPolicy`: 私聊策略（open/allowlist/pairing）
 - `allowFrom`: 允许私聊的用户列表
 - `groupPolicy`: 群聊策略（open/allowlist）
@@ -126,6 +136,7 @@ clawdbot message --channel dingtalk --target "chat:chat123" --message "请查看
 ## 开发
 
 ### 项目结构
+
 ```
 extensions/dingtalk/
 ├── package.json
@@ -143,6 +154,7 @@ extensions/dingtalk/
 ```
 
 ### 构建
+
 ```bash
 cd extensions/dingtalk
 pnpm build
@@ -151,6 +163,7 @@ pnpm build
 ## 故障排除
 
 ### 常见问题
+
 1. **消息发送失败**
    - 检查Webhook URL是否正确
    - 验证签名密钥（如果启用了加签）
@@ -166,9 +179,11 @@ pnpm build
    - 检查安全策略设置
 
 ### 日志查看
+
 ```bash
 clawdbot logs --channel dingtalk
 ```
 
 ## 许可证
+
 MIT

@@ -3,8 +3,8 @@
  */
 
 import { html, nothing } from "lit";
-import { icons } from "../icons.js";
 import { t, type Locale } from "../i18n/index.js";
+import { icons } from "../icons.js";
 
 export type CompactionIndicatorStatus = {
   active: boolean;
@@ -16,9 +16,11 @@ const COMPACTION_TOAST_DURATION_MS = 5000;
 
 export function renderCompactionIndicator(
   status: CompactionIndicatorStatus | null | undefined,
-  locale: Locale,
+  _locale: Locale,
 ) {
-  if (!status) return nothing;
+  if (!status) {
+    return nothing;
+  }
 
   // Show "compacting..." while active
   if (status.active) {
@@ -45,15 +47,13 @@ export function renderCompactionIndicator(
 }
 
 export function getChatPlaceholder(
-  locale: Locale,
+  _locale: Locale,
   connected: boolean,
   _hasAttachments?: boolean,
 ): string {
-  return connected
-    ? t("chat.inputPlaceholder")
-    : t("chat.disconnected");
+  return connected ? t("chat.inputPlaceholder") : t("chat.disconnected");
 }
 
-export function getLoadingText(locale: Locale): string {
+export function getLoadingText(_locale: Locale): string {
   return t("common.loading");
 }

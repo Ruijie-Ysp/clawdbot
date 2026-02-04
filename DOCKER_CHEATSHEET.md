@@ -10,6 +10,7 @@
 ## 日常操作
 
 ### 查看状态
+
 ```bash
 # 查看运行中的容器
 docker ps | grep moltbot
@@ -19,6 +20,7 @@ docker compose ps
 ```
 
 ### 日志管理
+
 ```bash
 # 实时查看日志
 docker compose logs -f moltbot-gateway
@@ -31,6 +33,7 @@ docker compose logs --since 1h moltbot-gateway
 ```
 
 ### 服务控制
+
 ```bash
 # 启动服务
 docker compose up -d moltbot-gateway
@@ -46,6 +49,7 @@ docker compose down
 ```
 
 ### 使用 CLI 工具
+
 ```bash
 # 查看会话列表
 docker compose run --rm moltbot-cli sessions list
@@ -67,6 +71,7 @@ docker compose run --rm moltbot-cli --help
 ```
 
 ### 频道管理
+
 ```bash
 # WhatsApp 登录（扫码）
 docker compose run --rm moltbot-cli channels login
@@ -82,6 +87,7 @@ docker compose run --rm moltbot-cli channels status
 ```
 
 ### 进入容器
+
 ```bash
 # 进入运行中的容器
 docker compose exec moltbot-gateway /bin/bash
@@ -94,6 +100,7 @@ docker compose exec -u root moltbot-gateway bash
 ```
 
 ### 检查挂载数据
+
 ```bash
 # 检查配置目录
 docker compose exec moltbot-gateway ls -la /home/node/.clawdbot
@@ -111,6 +118,7 @@ docker compose exec moltbot-gateway ls -la /home/node/.clawdbot/sessions/
 ## 更新与维护
 
 ### 更新代码和镜像
+
 ```bash
 # 拉取最新代码
 git pull
@@ -123,6 +131,7 @@ docker compose up -d moltbot-gateway
 ```
 
 ### 清理和重建
+
 ```bash
 # 完全重建（保留数据）
 docker compose down
@@ -132,6 +141,7 @@ docker compose up -d moltbot-gateway
 ```
 
 ### 数据备份
+
 ```bash
 # 备份配置和会话
 tar -czf moltbot-backup-$(date +%Y%m%d).tar.gz \
@@ -146,6 +156,7 @@ cp -r ~/clawd ~/backups/moltbot-workspace-$(date +%Y%m%d)
 ## 故障排查
 
 ### 容器启动失败
+
 ```bash
 # 查看详细日志
 docker compose logs moltbot-gateway
@@ -159,6 +170,7 @@ netstat -an | grep 18789
 ```
 
 ### 数据访问问题
+
 ```bash
 # 检查权限
 ls -la ~/.moltbot
@@ -170,12 +182,14 @@ chmod -R 755 ~/clawd
 ```
 
 ### 重新生成配置
+
 ```bash
 # 进入容器运行 onboard
 docker compose run --rm moltbot-cli onboard --no-install-daemon
 ```
 
 ### 清理所有容器和镜像（危险操作）
+
 ```bash
 # 停止所有容器
 docker compose down
@@ -190,6 +204,7 @@ docker system prune -a
 ## 性能优化
 
 ### 查看资源使用
+
 ```bash
 # 查看容器资源使用
 docker stats moltbot-gateway
@@ -199,6 +214,7 @@ docker compose top moltbot-gateway
 ```
 
 ### 限制资源（修改 docker-compose.yml）
+
 ```yaml
 services:
   moltbot-gateway:
@@ -206,16 +222,17 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2.0'
+          cpus: "2.0"
           memory: 4G
         reservations:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 2G
 ```
 
 ## 网络配置
 
 ### 从其他设备访问
+
 ```bash
 # 修改 .env 文件
 echo "CLAWDBOT_GATEWAY_BIND=0.0.0.0" >> .env
@@ -225,6 +242,7 @@ docker compose up -d moltbot-gateway
 ```
 
 ### 检查网络连接
+
 ```bash
 # 测试健康检查
 curl http://localhost:18789/health
@@ -236,6 +254,7 @@ docker compose exec moltbot-gateway curl http://localhost:18789/health
 ## 多环境部署
 
 ### 开发环境
+
 ```bash
 # 使用不同的配置目录
 export CLAWDBOT_CONFIG_DIR=$HOME/.moltbot-dev
@@ -246,6 +265,7 @@ docker compose up -d moltbot-gateway
 ```
 
 ### 生产环境
+
 ```bash
 # 使用生产配置
 export CLAWDBOT_CONFIG_DIR=/opt/moltbot/config
@@ -258,6 +278,7 @@ docker compose up -d moltbot-gateway
 ## 安全建议
 
 ### 设置强密码
+
 ```bash
 # 生成新 token
 openssl rand -hex 32
@@ -267,6 +288,7 @@ openssl rand -hex 32
 ```
 
 ### 仅本地访问
+
 ```bash
 # 在 .env 中设置
 CLAWDBOT_GATEWAY_BIND=loopback
@@ -276,6 +298,7 @@ docker compose up -d moltbot-gateway
 ```
 
 ### 防火墙配置
+
 ```bash
 # 仅允许本地访问（Linux）
 sudo ufw allow from 127.0.0.1 to any port 18789

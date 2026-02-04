@@ -4,7 +4,7 @@
 
 import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import type { ChatLayoutMode } from "../storage";
+import type { ChatLayoutMode } from "../storage.ts";
 
 @customElement("chat-layout-switcher")
 export class ChatLayoutSwitcher extends LitElement {
@@ -89,7 +89,7 @@ export class ChatLayoutSwitcher extends LitElement {
           detail: { mode: newMode },
           bubbles: true,
           composed: true,
-        })
+        }),
       );
     }
   }
@@ -100,7 +100,12 @@ export class ChatLayoutSwitcher extends LitElement {
       <div class="layout-icon layout-icon--${mode}">
         ${Array(cells)
           .fill(0)
-          .map(() => html`<div class="layout-icon-cell"></div>`)}
+          .map(
+            () =>
+              html`
+                <div class="layout-icon-cell"></div>
+              `,
+          )}
       </div>
     `;
   }
@@ -119,7 +124,7 @@ export class ChatLayoutSwitcher extends LitElement {
             >
               ${this._renderLayoutIcon(m)}
             </button>
-          `
+          `,
         )}
       </div>
     `;
@@ -131,4 +136,3 @@ declare global {
     "chat-layout-switcher": ChatLayoutSwitcher;
   }
 }
-

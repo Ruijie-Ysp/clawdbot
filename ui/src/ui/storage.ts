@@ -117,7 +117,7 @@ export function loadSettings(): UiSettings {
             typeof p === "object" &&
             p !== null &&
             typeof p.agentId === "string" &&
-            typeof p.sessionKey === "string"
+            typeof p.sessionKey === "string",
         )
           ? parsed.chatPanels
           : defaults.chatPanels,

@@ -1,29 +1,9 @@
 {
   "name": "@moltbot/dingtalk",
   "version": "2.0.0",
+  "description": "Moltbot DingTalk channel plugin - Stream mode (无需公网IP)",
   "type": "module",
   "main": "index.ts",
-  "description": "Moltbot DingTalk channel plugin - Stream mode (无需公网IP)",
-  "moltbot": {
-    "extensions": ["./index.ts"],
-    "channels": ["dingtalk"],
-    "installDependencies": true,
-    "channel": {
-      "id": "dingtalk",
-      "label": "钉钉",
-      "selectionLabel": "钉钉（企业通讯）",
-      "docsPath": "/channels/dingtalk",
-      "docsLabel": "dingtalk",
-      "blurb": "钉钉企业内部机器人，使用 Stream 模式，无需公网 IP。",
-      "order": 70,
-      "aliases": ["dd", "ding"]
-    },
-    "install": {
-      "npmSpec": "@moltbot/dingtalk",
-      "localPath": "extensions/dingtalk",
-      "defaultChoice": "local"
-    }
-  },
   "dependencies": {
     "axios": "^1.6.0",
     "dingtalk-stream": "^2.1.4"
@@ -33,5 +13,32 @@
   },
   "peerDependencies": {
     "moltbot": "*"
+  },
+  "moltbot": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "channels": [
+      "dingtalk"
+    ],
+    "installDependencies": true,
+    "channel": {
+      "id": "dingtalk",
+      "label": "钉钉",
+      "selectionLabel": "钉钉（企业通讯）",
+      "docsPath": "/channels/dingtalk",
+      "docsLabel": "dingtalk",
+      "blurb": "钉钉企业内部机器人，使用 Stream 模式，无需公网 IP。",
+      "order": 70,
+      "aliases": [
+        "dd",
+        "ding"
+      ]
+    },
+    "install": {
+      "npmSpec": "@moltbot/dingtalk",
+      "localPath": "extensions/dingtalk",
+      "defaultChoice": "local"
+    }
   }
 }

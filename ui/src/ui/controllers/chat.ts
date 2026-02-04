@@ -1,13 +1,13 @@
 import type { GatewayBrowserClient } from "../gateway.ts";
 import type { ChatAttachment } from "../ui-types.ts";
 import { extractText } from "../chat/message-extract.ts";
-import { generateUUID } from "../uuid.ts";
 import { t, tp } from "../i18n/index.js";
 import {
   compressImageDataUrlForGateway,
   ImageCompressionError,
   estimateDecodedBytesFromDataUrl,
 } from "../media/image-compress.ts";
+import { generateUUID } from "../uuid.ts";
 
 export type ChatState = {
   client: GatewayBrowserClient | null;
@@ -117,15 +117,12 @@ export async function sendChatMessage(
   try {
     // Convert attachments to API format, with best-effort client-side compression
     // to stay within the Gateway's 5MB per-image limit.
-    let apiAttachments:
-      | Array<{ type: "image"; mimeType: string; content: string }>
-      | undefined;
+    let apiAttachments: Array<{ type: "image"; mimeType: string; content: string }> | undefined;
     if (hasAttachments) {
       apiAttachments = [];
       for (const att of attachments) {
         const approx = estimateDecodedBytesFromDataUrl(att.dataUrl);
-        const needsCompress =
-          typeof approx === "number" && approx > GATEWAY_ATTACHMENT_MAX_BYTES;
+        const needsCompress = typeof approx === "number" && approx > GATEWAY_ATTACHMENT_MAX_BYTES;
         const prepared = needsCompress
           ? await compressImageDataUrlForGateway(att.dataUrl, {
               maxBytes: GATEWAY_ATTACHMENT_MAX_BYTES,
@@ -202,7 +199,6 @@ export async function sendChatMessage(
     state.chatSending = false;
   }
 }
-
 
 export async function abortChatRun(state: ChatState): Promise<boolean> {
   if (!state.client || !state.connected) {

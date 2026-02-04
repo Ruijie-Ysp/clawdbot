@@ -4,7 +4,13 @@ import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { GatewayEventFrame, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
 import type { UiSettings } from "./storage.ts";
-import type { AgentsListResult, PresenceEntry, HealthSnapshot, StatusSummary } from "./types.ts";
+import type {
+  AgentsListResult,
+  PresenceEntry,
+  HealthSnapshot,
+  StatusSummary,
+  GatewaySessionRow,
+} from "./types.ts";
 import { CHAT_SESSIONS_ACTIVE_MINUTES, flushChatQueueForEvent } from "./app-chat.ts";
 import {
   applySettings,
@@ -13,10 +19,12 @@ import {
   setLastActiveSessionKey,
 } from "./app-settings.ts";
 import { handleAgentEvent, resetToolStream, type AgentEventPayload } from "./app-tool-stream.ts";
+import { findChatPanelByRunId, findChatPanelsBySessionKey } from "./chat-panel-registry.ts";
 import { loadAgents } from "./controllers/agents.ts";
 import { loadAssistantIdentity } from "./controllers/assistant-identity.ts";
 import { loadChatHistory } from "./controllers/chat.ts";
 import { handleChatEvent, type ChatEventPayload, type ChatState } from "./controllers/chat.ts";
+import { loadDebug } from "./controllers/debug.ts";
 import { loadDevices } from "./controllers/devices.ts";
 import {
   addExecApproval,
@@ -25,11 +33,9 @@ import {
   removeExecApproval,
 } from "./controllers/exec-approval.ts";
 import { loadNodes } from "./controllers/nodes.ts";
+import { loadPresence } from "./controllers/presence.ts";
 import { loadSessions, patchSession } from "./controllers/sessions.ts";
 import { GatewayBrowserClient } from "./gateway.ts";
-import { findChatPanelByRunId, findChatPanelsBySessionKey } from "./chat-panel-registry.ts";
-import { loadDebug } from "./controllers/debug.ts";
-import { loadPresence } from "./controllers/presence.ts";
 import { t, tp } from "./i18n/index.js";
 
 const GAP_SELF_HEAL_DEBOUNCE_MS = 3000;
@@ -74,15 +80,21 @@ function recordLocalEvent(host: GatewayHost, event: string, payload: unknown) {
 
 async function attemptGapSelfHeal(host: GatewayHost, info: { expected: number; received: number }) {
   // Gap can only happen on a live stream, but keep this resilient.
-  if (!host.client || !host.connected) return;
+  if (!host.client || !host.connected) {
+    return;
+  }
 
   const now = Date.now();
   const state = (host.gapRecovery ??= {
     lastAttemptAt: Number.NEGATIVE_INFINITY,
     inFlight: false,
   });
-  if (state.inFlight) return;
-  if (now - state.lastAttemptAt < GAP_SELF_HEAL_DEBOUNCE_MS) return;
+  if (state.inFlight) {
+    return;
+  }
+  if (now - state.lastAttemptAt < GAP_SELF_HEAL_DEBOUNCE_MS) {
+    return;
+  }
 
   const prevError = host.lastError;
   state.lastAttemptAt = now;
@@ -125,7 +137,6 @@ async function attemptGapSelfHeal(host: GatewayHost, info: { expected: number; r
   }
 }
 
-
 type SessionDefaultsSnapshot = {
   defaultAgentId?: string;
   mainKey?: string;
@@ -146,16 +157,18 @@ async function maybeGenerateSessionTitle(
 ): Promise<void> {
   // Only generate title if the session has no label
   const sessions = host.sessionsResult?.sessions ?? [];
-  const currentSession = sessions.find(
-    (s: GatewaySessionRow) => s.key === params.sessionKey,
-  );
+  const currentSession = sessions.find((s: GatewaySessionRow) => s.key === params.sessionKey);
 
   // Skip if session already has a label or if we can't find the session
-  if (!currentSession || currentSession.label?.trim()) return;
+  if (!currentSession || currentSession.label?.trim()) {
+    return;
+  }
 
   // Get the first user message from chat history
   const firstUserMessage = params.messages.find((m) => m.role === "user");
-  if (!firstUserMessage) return;
+  if (!firstUserMessage) {
+    return;
+  }
 
   // Extract text from the first user message
   let messageText = "";
@@ -174,7 +187,9 @@ async function maybeGenerateSessionTitle(
     }
   }
 
-  if (!messageText.trim()) return;
+  if (!messageText.trim()) {
+    return;
+  }
 
   // Generate a concise title from the message (simple truncation for now)
   // We take the first meaningful part of the message
@@ -189,7 +204,9 @@ async function maybeGenerateSessionTitle(
   }
 
   // Don't generate empty or too short titles
-  if (title.length < 2) return;
+  if (title.length < 2) {
+    return;
+  }
 
   // Update the session label
   try {
@@ -296,8 +313,8 @@ export function connectGateway(host: GatewayHost) {
     },
     onEvent: (evt) => handleGatewayEvent(host, evt),
     onGap: ({ expected, received }) => {
-	      recordLocalEvent(host, "gateway.gap", { expected, received });
-	      void attemptGapSelfHeal(host, { expected, received });
+      recordLocalEvent(host, "gateway.gap", { expected, received });
+      void attemptGapSelfHeal(host, { expected, received });
     },
   });
   host.client.start();
@@ -321,7 +338,9 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
   }
 
   if (evt.event === "agent") {
-    if (host.onboarding) return;
+    if (host.onboarding) {
+      return;
+    }
     const payload = evt.payload as AgentEventPayload | undefined;
     const sessionKey = typeof payload?.sessionKey === "string" ? payload.sessionKey : "";
     if (sessionKey) {

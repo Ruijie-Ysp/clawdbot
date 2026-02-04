@@ -1,14 +1,13 @@
 import type { PluginRuntime } from "openclaw/plugin-sdk";
 
-type MoltbotRuntime = PluginRuntime;
+// oxlint-disable-next-line typescript-eslint/no-redundant-type-constituents
+let dingtalkRuntime: PluginRuntime | undefined;
 
-let dingtalkRuntime: MoltbotRuntime | undefined;
-
-export function setDingTalkRuntime(runtime: MoltbotRuntime) {
+export function setDingTalkRuntime(runtime: PluginRuntime) {
   dingtalkRuntime = runtime;
 }
 
-export function getDingTalkRuntime(): MoltbotRuntime {
+export function getDingTalkRuntime(): PluginRuntime {
   if (!dingtalkRuntime) {
     throw new Error("DingTalk runtime not initialized");
   }

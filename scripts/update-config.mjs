@@ -13,7 +13,7 @@ config.agents.list = [
     name: "通用助手",
     workspace: "~/clawd",
     identity: { name: "Clawd", emoji: "🦞" },
-    subagents: { allowAgents: ["monitor", "medical", "coding"] }
+    subagents: { allowAgents: ["monitor", "medical", "coding"] },
   },
   {
     id: "monitor",
@@ -21,7 +21,7 @@ config.agents.list = [
     model: { primary: "deepseek/deepseek-chat" },
     workspace: "~/clawd-monitor",
     identity: { name: "MonitorBot", emoji: "📊" },
-    subagents: { allowAgents: ["main"] }
+    subagents: { allowAgents: ["main"] },
   },
   {
     id: "medical",
@@ -29,7 +29,7 @@ config.agents.list = [
     model: { primary: "moonshot/kimi-k2.5" },
     workspace: "~/clawd-medical",
     identity: { name: "MediBot", emoji: "🏥" },
-    subagents: { allowAgents: ["main"] }
+    subagents: { allowAgents: ["main"] },
   },
   {
     id: "coding",
@@ -37,8 +37,8 @@ config.agents.list = [
     model: { primary: "moonshot/kimi-k2.5" },
     workspace: "~/clawd-coding",
     identity: { name: "CodeBot", emoji: "💻" },
-    subagents: { allowAgents: ["main"] }
-  }
+    subagents: { allowAgents: ["main"] },
+  },
 ];
 
 // 添加 tools.agentToAgent 启用 agent 间调用
@@ -52,4 +52,3 @@ config.meta.lastTouchedAt = new Date().toISOString();
 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 console.log("✅ 配置已更新成功！");
 console.log("配置文件:", configPath);
-

@@ -10,6 +10,7 @@ Helps users discover, search, and understand OpenClaw skills.
 ## Quick Start
 
 Search for skills by keyword:
+
 ```bash
 # Search local skills
 python scripts/search_skills.py --keyword "pdf"
@@ -24,6 +25,7 @@ python scripts/search_skills.py --list-all
 ## When to Use This Skill
 
 **Use this skill when users ask:**
+
 - "有没有处理PDF的技能？"
 - "搜索一下医疗相关的skill"
 - "列出所有可用的技能"
@@ -34,6 +36,7 @@ python scripts/search_skills.py --list-all
 ## Capabilities
 
 ### 1. Local Skill Discovery
+
 Search skills installed in the local workspace:
 
 ```bash
@@ -45,6 +48,7 @@ python scripts/search_skills.py --description "data"
 ```
 
 ### 2. Skill Details
+
 View detailed information about a specific skill:
 
 ```bash
@@ -56,6 +60,7 @@ python scripts/search_skills.py --readme "skill-creator"
 ```
 
 ### 3. Recommendations
+
 Get skill recommendations based on task description:
 
 ```bash
@@ -66,10 +71,12 @@ python scripts/search_skills.py --recommend "处理医疗文献数据"
 ## Skill Directory Structure
 
 Skills are located at:
+
 - **Local skills**: `/Users/yangshengpeng/Desktop/openAI/moltbot/skills/`
 - **Community skills**: `https://github.com/openclaw/skills/tree/main/skills`
 
 Each skill contains:
+
 - `SKILL.md` - Skill definition and instructions
 - `scripts/` - Executable scripts (optional)
 - `references/` - Documentation (optional)
@@ -78,9 +85,11 @@ Each skill contains:
 ## Usage Examples
 
 ### Example 1: Find skills for a specific task
+
 **User**: "我想处理PDF文件，有什么技能可以用？"
 
 **Action**:
+
 ```bash
 python scripts/search_skills.py --keyword "pdf"
 ```
@@ -88,25 +97,31 @@ python scripts/search_skills.py --keyword "pdf"
 **Result**: Returns matching skills like `nano-pdf`
 
 ### Example 2: Get skill details
+
 **User**: "medical-data-search 技能是做什么的？"
 
 **Action**:
+
 ```bash
 python scripts/search_skills.py --info "medical-data-search"
 ```
 
 ### Example 3: Browse all skills
+
 **User**: "列出所有可用的技能"
 
 **Action**:
+
 ```bash
 python scripts/search_skills.py --list-all
 ```
 
 ### Example 4: Smart recommendation
+
 **User**: "我要做医疗数据搜索，推荐一个技能"
 
 **Action**:
+
 ```bash
 python scripts/search_skills.py --recommend "医疗数据搜索"
 ```
@@ -120,26 +135,29 @@ python scripts/search_skills.py --recommend "医疗数据搜索"
 
 ## Common Skill Categories
 
-| Category | Example Skills |
-|----------|---------------|
+| Category            | Example Skills               |
+| ------------------- | ---------------------------- |
 | Document Processing | nano-pdf, medical-doc-upload |
-| Data Search | medical-data-search |
-| Development | coding-agent, skill-creator |
-| Media | video-frames |
-| Utilities | weather, session-logs |
+| Data Search         | medical-data-search          |
+| Development         | coding-agent, skill-creator  |
+| Media               | video-frames                 |
+| Utilities           | weather, session-logs        |
 
 ## Troubleshooting
 
 **No skills found?**
+
 - Try broader keywords
 - Check if the skill directory path is correct
 - Some skills may not be installed locally
 
 **Want to install a new skill?**
+
 - Skills from GitHub can be cloned to the skills directory
 - Or create custom skills using `skill-creator`
 
 **Skill not working?**
+
 - Check the skill's SKILL.md for prerequisites
 - Verify scripts have executable permissions
 - Check for missing dependencies

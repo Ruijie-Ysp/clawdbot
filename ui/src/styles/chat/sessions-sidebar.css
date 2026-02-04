@@ -43,7 +43,9 @@
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  transition: background 150ms, color 150ms;
+  transition:
+    background 150ms,
+    color 150ms;
   flex-shrink: 0;
 }
 
@@ -127,7 +129,9 @@
   border-radius: 8px;
   background: transparent;
   text-align: left;
-  transition: background 150ms, border-color 150ms;
+  transition:
+    background 150ms,
+    border-color 150ms;
 }
 
 .sessions-sidebar__item:hover {
@@ -254,4 +258,3 @@
   font-size: 12px;
   color: var(--muted);
 }
-

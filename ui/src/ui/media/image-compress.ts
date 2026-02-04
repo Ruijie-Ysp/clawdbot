@@ -15,7 +15,9 @@ export class ImageCompressionError extends Error {
 
 function dataUrlToBase64(dataUrl: string): { mimeType: string; content: string } | null {
   const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl);
-  if (!match) return null;
+  if (!match) {
+    return null;
+  }
   return { mimeType: match[1], content: match[2] };
 }
 
@@ -28,15 +30,22 @@ export function estimateDecodedBytesFromBase64(content: string): number {
 
 export function estimateDecodedBytesFromDataUrl(dataUrl: string): number | null {
   const parsed = dataUrlToBase64(dataUrl);
-  if (!parsed) return null;
+  if (!parsed) {
+    return null;
+  }
   return estimateDecodedBytesFromBase64(parsed.content);
 }
 
 async function blobToDataUrl(blob: Blob): Promise<string> {
   return await new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(reader.error ?? new Error("FileReader failed"));
+    reader.addEventListener("load", () => {
+      const result = reader.result;
+      resolve(typeof result === "string" ? result : "");
+    });
+    reader.addEventListener("error", () => {
+      reject(reader.error ?? new Error("FileReader failed"));
+    });
     reader.readAsDataURL(blob);
   });
 }
@@ -44,7 +53,12 @@ async function blobToDataUrl(blob: Blob): Promise<string> {
 async function decodeToDrawable(
   dataUrl: string,
   blob: Blob,
-): Promise<{ width: number; height: number; draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void; cleanup: () => void }> {
+): Promise<{
+  width: number;
+  height: number;
+  draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void;
+  cleanup: () => void;
+}> {
   // Prefer ImageBitmap (fast, supports many formats), but fall back to <img> for compatibility.
   if (typeof createImageBitmap === "function") {
     try {
@@ -62,8 +76,8 @@ async function decodeToDrawable(
 
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const el = new Image();
-    el.onload = () => resolve(el);
-    el.onerror = () => reject(new Error("Image decode failed"));
+    el.addEventListener("load", () => resolve(el));
+    el.addEventListener("error", () => reject(new Error("Image decode failed")));
     el.src = dataUrl;
   });
   return {
@@ -82,7 +96,9 @@ async function canvasToBlob(
   return await new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
-        if (!blob) return reject(new Error("canvas.toBlob returned null"));
+        if (!blob) {
+          return reject(new Error("canvas.toBlob returned null"));
+        }
         resolve(blob);
       },
       mimeType,
@@ -122,10 +138,7 @@ export async function compressImageDataUrlForGateway(
   try {
     drawable = await decodeToDrawable(dataUrl, blob);
   } catch (err) {
-    throw new ImageCompressionError(
-      "decode_failed",
-      `Failed to decode image: ${String(err)}`,
-    );
+    throw new ImageCompressionError("decode_failed", `Failed to decode image: ${String(err)}`);
   }
 
   const srcW = Math.max(1, drawable.width);
@@ -170,10 +183,7 @@ export async function compressImageDataUrlForGateway(
         try {
           outBlob = await canvasToBlob(canvas, opts.outputMimeType, q);
         } catch (err) {
-          throw new ImageCompressionError(
-            "encode_failed",
-            `Failed to encode JPEG: ${String(err)}`,
-          );
+          throw new ImageCompressionError("encode_failed", `Failed to encode JPEG: ${String(err)}`);
         }
         if (outBlob.size > 0 && outBlob.size <= opts.maxBytes) {
           const outDataUrl = await blobToDataUrl(outBlob);

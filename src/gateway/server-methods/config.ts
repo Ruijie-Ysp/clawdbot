@@ -119,7 +119,6 @@ export const configHandlers: GatewayRequestHandlers = {
       );
       return;
     }
-    const locale = (params as { locale?: string }).locale;
     const cfg = loadConfig();
     const workspaceDir = resolveAgentWorkspaceDir(cfg, resolveDefaultAgentId(cfg));
     const pluginRegistry = loadOpenClawPlugins({
@@ -133,7 +132,6 @@ export const configHandlers: GatewayRequestHandlers = {
       },
     });
     const schema = buildConfigSchema({
-      locale,
       plugins: pluginRegistry.plugins.map((plugin) => ({
         id: plugin.id,
         name: plugin.name,

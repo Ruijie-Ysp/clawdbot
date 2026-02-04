@@ -67,7 +67,7 @@ export class LanguageSwitcher extends LitElement {
       .language-label {
         display: none;
       }
-      
+
       .language-select {
         min-width: 100px;
       }
@@ -105,7 +105,7 @@ export class LanguageSwitcher extends LitElement {
     const select = e.target as HTMLSelectElement;
     const newLocale = select.value;
     if (newLocale !== this._currentLocale) {
-      setLocale(newLocale as any);
+      setLocale(newLocale as Parameters<typeof setLocale>[0]);
       // Note: No need to reload page - components should react to locale changes
     }
   }
@@ -113,19 +113,19 @@ export class LanguageSwitcher extends LitElement {
   // Get flag emoji for locale
   private _getFlagEmoji(localeCode: string): string {
     const flagMap: Record<string, string> = {
-      "en": "🇺🇸", // US flag for English
+      en: "🇺🇸", // US flag for English
       "zh-CN": "🇨🇳", // China flag for Simplified Chinese
       "zh-TW": "🇹🇼", // Taiwan flag for Traditional Chinese
-      "ja": "🇯🇵", // Japan flag for Japanese
-      "ko": "🇰🇷", // South Korea flag for Korean
-      "fr": "🇫🇷", // France flag for French
-      "de": "🇩🇪", // Germany flag for German
-      "es": "🇪🇸", // Spain flag for Spanish
-      "ru": "🇷🇺", // Russia flag for Russian
-      "pt": "🇵🇹", // Portugal flag for Portuguese
-      "it": "🇮🇹", // Italy flag for Italian
+      ja: "🇯🇵", // Japan flag for Japanese
+      ko: "🇰🇷", // South Korea flag for Korean
+      fr: "🇫🇷", // France flag for French
+      de: "🇩🇪", // Germany flag for German
+      es: "🇪🇸", // Spain flag for Spanish
+      ru: "🇷🇺", // Russia flag for Russian
+      pt: "🇵🇹", // Portugal flag for Portuguese
+      it: "🇮🇹", // Italy flag for Italian
     };
-    
+
     return flagMap[localeCode] || "🌐";
   }
 
@@ -135,7 +135,7 @@ export class LanguageSwitcher extends LitElement {
         <span class="language-label">🌐</span>
         <select
           class="language-select"
-          @change=${this._handleLocaleChange}
+          @change=${(e: Event) => this._handleLocaleChange(e)}
           aria-label="Language"
           title="Select language"
         >
@@ -148,7 +148,7 @@ export class LanguageSwitcher extends LitElement {
               >
                 ${this._getFlagEmoji(locale.code)} ${locale.native} (${locale.name})
               </option>
-            `
+            `,
           )}
         </select>
       </div>

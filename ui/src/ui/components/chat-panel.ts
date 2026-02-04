@@ -1,32 +1,31 @@
 import { LitElement, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-
-import type { GatewayBrowserClient, GatewayHelloOk } from "../gateway";
-import type { SessionsListResult } from "../types";
-import type { UiSettings } from "../storage";
-import type { ResolvedTheme, ThemeMode } from "../theme";
-import type { ChatAttachment, ChatQueueItem } from "../ui-types";
-import { renderChat } from "../views/chat";
-import { loadChatHistory } from "../controllers/chat";
+import type { GatewayBrowserClient, GatewayHelloOk } from "../gateway.ts";
+import type { UiSettings } from "../storage.ts";
+import type { ResolvedTheme, ThemeMode } from "../theme.ts";
+import type { SessionsListResult } from "../types.ts";
+import type { ChatAttachment, ChatQueueItem } from "../ui-types.ts";
+import { parseAgentSessionKey } from "../../../../src/routing/session-key.js";
 import {
   handleAbortChat as handleAbortChatInternal,
   handleSendChat as handleSendChatInternal,
   removeQueuedMessage as removeQueuedMessageInternal,
   refreshChatAvatar as refreshChatAvatarInternal,
-} from "../app-chat";
-import {
-  resetToolStream as resetToolStreamInternal,
-  type CompactionStatus,
-  type ToolStreamEntry,
-} from "../app-tool-stream";
+} from "../app-chat.ts";
 import {
   handleChatScroll as handleChatScrollInternal,
   scheduleChatScroll as scheduleChatScrollInternal,
   resetChatScroll as resetChatScrollInternal,
-} from "../app-scroll";
-import { generateUUID } from "../uuid";
-import { parseAgentSessionKey } from "../../../../src/routing/session-key.js";
-import { registerChatPanel } from "../chat-panel-registry";
+} from "../app-scroll.ts";
+import {
+  resetToolStream as resetToolStreamInternal,
+  type CompactionStatus,
+  type ToolStreamEntry,
+} from "../app-tool-stream.ts";
+import { registerChatPanel } from "../chat-panel-registry.ts";
+import { loadChatHistory } from "../controllers/chat.ts";
+import { generateUUID } from "../uuid.ts";
+import { renderChat } from "../views/chat.ts";
 
 @customElement("openclaw-chat-panel")
 export class OpenClawChatPanel extends LitElement {
@@ -251,7 +250,9 @@ export class OpenClawChatPanel extends LitElement {
 
   private updateSessionKey(next: string) {
     const trimmed = next.trim();
-    if (!trimmed || trimmed === this.sessionKey) return;
+    if (!trimmed || trimmed === this.sessionKey) {
+      return;
+    }
     this.sessionKey = trimmed;
     this.onSessionKeyPersist?.(this.panelIndex, trimmed);
   }
@@ -298,7 +299,9 @@ export class OpenClawChatPanel extends LitElement {
       window.clearTimeout(this.sidebarCloseTimer);
     }
     this.sidebarCloseTimer = window.setTimeout(() => {
-      if (this.sidebarOpen) return;
+      if (this.sidebarOpen) {
+        return;
+      }
       this.sidebarContent = null;
       this.sidebarError = null;
       this.sidebarCloseTimer = null;
@@ -312,7 +315,10 @@ export class OpenClawChatPanel extends LitElement {
   }
 
   private handleChatScroll(event: Event) {
-    handleChatScrollInternal(this as unknown as Parameters<typeof handleChatScrollInternal>[0], event);
+    handleChatScrollInternal(
+      this as unknown as Parameters<typeof handleChatScrollInternal>[0],
+      event,
+    );
   }
 
   private async handleSendChat() {
@@ -324,14 +330,17 @@ export class OpenClawChatPanel extends LitElement {
   }
 
   private removeQueuedMessage(id: string) {
-    removeQueuedMessageInternal(this as unknown as Parameters<typeof removeQueuedMessageInternal>[0], id);
+    removeQueuedMessageInternal(
+      this as unknown as Parameters<typeof removeQueuedMessageInternal>[0],
+      id,
+    );
   }
 
   render() {
     return html`
       ${renderChat({
         sessionKey: this.sessionKey,
-        onSessionKeyChange: (next) => this.updateSessionKey(next),
+        onSessionKeyChange: (next: string) => this.updateSessionKey(next),
         thinkingLevel: this.chatThinkingLevel,
         showThinking: this.showThinking,
         loading: this.chatLoading,
@@ -355,16 +364,15 @@ export class OpenClawChatPanel extends LitElement {
           return this.refreshChat();
         },
         onToggleFocusMode: () => this.onToggleFocusMode?.(),
-        onChatScroll: (event) => this.handleChatScroll(event),
-        onDraftChange: (next) => (this.chatMessage = next),
+        onChatScroll: (event: Event) => this.handleChatScroll(event),
+        onDraftChange: (next: string) => (this.chatMessage = next),
         attachments: this.chatAttachments,
-        onAttachmentsChange: (next) => (this.chatAttachments = next),
+        onAttachmentsChange: (next: ChatAttachment[]) => (this.chatAttachments = next),
         onSend: () => this.handleSendChat(),
         canAbort: Boolean(this.chatRunId),
         onAbort: () => this.handleAbortChat(),
-        onQueueRemove: (id) => this.removeQueuedMessage(id),
+        onQueueRemove: (id: string) => this.removeQueuedMessage(id),
         onNewSession: () => this.handleCreateNewSession(),
-        onFallbackToMain: () => this.handleFallbackToMain(),
         sidebarOpen: this.sidebarOpen,
         sidebarContent: this.sidebarContent,
         sidebarError: this.sidebarError,

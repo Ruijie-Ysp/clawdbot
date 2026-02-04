@@ -5,10 +5,12 @@
 ## 当前数据位置
 
 根据你的系统检测，当前数据存储在：
+
 - **配置目录**: `~/.clawdbot` → `~/.moltbot` (符号链接)
 - **工作空间**: `~/clawd`
 
 这些目录包含：
+
 - 会话历史 (`~/.moltbot/sessions/`)
 - 配置文件 (`~/.moltbot/moltbot.json`)
 - 认证凭据 (`~/.moltbot/credentials/`)

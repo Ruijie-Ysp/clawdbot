@@ -155,7 +155,7 @@ export function extractRawText(message: unknown): string | null {
   return null;
 }
 
-export function formatReasoningMarkdown(text: string, label: string): string {
+export function formatReasoningMarkdown(text: string): string {
   const trimmed = text.trim();
   if (!trimmed) {
     return "";
@@ -165,6 +165,5 @@ export function formatReasoningMarkdown(text: string, label: string): string {
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => `_${line}_`);
-  const heading = `_${label}:_`;
-  return lines.length ? [heading, ...lines].join("\n") : "";
+  return lines.length ? ["_Reasoning:_", ...lines].join("\n") : "";
 }

@@ -49,6 +49,7 @@ RUN pnpm ui:build
 ```
 
 **这意味着**：
+
 - ✅ 镜像构建时已经编译了后端（TypeScript → JavaScript）
 - ✅ 镜像构建时已经构建了前端（Vite → 静态文件）
 - ✅ 前端静态文件被打包进镜像，由 Gateway 服务提供
@@ -67,6 +68,7 @@ docker compose up -d moltbot-gateway
 ```
 
 **这个命令会**：
+
 - ✅ 启动 Gateway 服务（后端）
 - ✅ 自动提供 Web UI（前端）
 - ✅ 暴露端口 18789（前后端共用）
@@ -98,11 +100,13 @@ http://localhost:18789
 ```
 
 **你会看到**：
+
 - 🎨 Control UI（控制面板）
 - 💬 WebChat（聊天界面）
 - ⚙️ 配置界面
 
 **如果需要 Token**：
+
 ```bash
 # 查看 token
 cat .env | grep CLAWDBOT_GATEWAY_TOKEN
@@ -118,23 +122,23 @@ docker compose logs moltbot-gateway | grep -i token
 ### 启动的服务
 
 ```yaml
-moltbot-gateway:  # ✅ 自动启动
+moltbot-gateway: # ✅ 自动启动
   - 后端服务（Gateway Server）
   - 前端服务（Web UI）
   - WebSocket 服务
   - 端口：18789, 18790
 
-moltbot-cli:      # ❌ 不自动启动（按需使用）
+moltbot-cli: # ❌ 不自动启动（按需使用）
   - 命令行工具
   - 手动运行：docker compose run --rm moltbot-cli <command>
 ```
 
 ### 端口映射
 
-| 宿主机端口 | 容器端口 | 用途 |
-|-----------|---------|------|
-| 18789 | 18789 | Gateway + Web UI |
-| 18790 | 18790 | Bridge（设备连接） |
+| 宿主机端口 | 容器端口 | 用途               |
+| ---------- | -------- | ------------------ |
+| 18789      | 18789    | Gateway + Web UI   |
+| 18790      | 18790    | Bridge（设备连接） |
 
 ---
 
@@ -161,6 +165,7 @@ docker ps | grep moltbot
 ```
 
 **预期输出**：
+
 ```
 CONTAINER ID   IMAGE          COMMAND                  STATUS         PORTS
 abc123def456   moltbot:local  "node dist/index.js …"   Up 2 minutes   0.0.0.0:18789->18789/tcp
@@ -173,6 +178,7 @@ docker compose logs -f moltbot-gateway
 ```
 
 **预期看到**：
+
 ```
 [INFO] Gateway server started
 [INFO] Listening on http://0.0.0.0:18789
@@ -201,6 +207,7 @@ curl http://localhost:18789/health
 访问 `http://localhost:18789` 后你可以：
 
 ### 控制面板功能
+
 - 📊 查看 Gateway 状态
 - 📨 查看消息历史
 - 🔧 管理频道连接
@@ -209,6 +216,7 @@ curl http://localhost:18789/health
 - 📈 查看统计信息
 
 ### WebChat 功能
+
 - 💬 直接在浏览器与 AI 对话
 - 📎 上传文件和图片
 - 📝 查看对话历史
@@ -221,21 +229,25 @@ curl http://localhost:18789/health
 ### Q1: 启动后无法访问 18789 端口？
 
 **检查容器状态**：
+
 ```bash
 docker ps | grep moltbot
 ```
 
 **查看日志**：
+
 ```bash
 docker compose logs moltbot-gateway
 ```
 
 **检查端口占用**：
+
 ```bash
 lsof -i :18789
 ```
 
 **解决方法**：
+
 - 如果端口被占用，修改 `.env` 中的 `CLAWDBOT_GATEWAY_PORT`
 - 重启容器：`docker compose restart moltbot-gateway`
 
@@ -280,6 +292,7 @@ docker compose up -d moltbot-gateway
 ## 📊 服务架构对比
 
 ### 传统分离式架构（需要多个服务）
+
 ```
 前端服务器 (Vite/Nginx) :3000  ←→  后端服务 :18789
      ↓                                  ↓
@@ -288,6 +301,7 @@ docker compose up -d moltbot-gateway
 ```
 
 ### Moltbot 集成式架构（单一服务）✅
+
 ```
 Gateway Container :18789
     ├── 后端 API
@@ -303,11 +317,13 @@ Gateway Container :18789
 ### 你需要做的：
 
 1. **构建镜像**（一次）：
+
    ```bash
    docker build -t moltbot:local -f Dockerfile .
    ```
 
 2. **启动服务**（每次重启后）：
+
    ```bash
    docker compose up -d moltbot-gateway
    ```

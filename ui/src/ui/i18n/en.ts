@@ -160,9 +160,11 @@ export const en: Translations = {
     toggleFocusDisabled: "Disabled during onboarding",
     errorMessage: "Error: {error}",
     errorFallback: "chat error",
-	    attachmentFormatUnsupported: "This image format isn't supported yet. Please convert it to JPG/PNG and try again.",
-	    attachmentTooLarge: "This image is too large to send (limit: 5MB). Please remove it or use a smaller image.",
-	    attachmentProcessingFailed: "Failed to process the image. Please try again.",
+    attachmentFormatUnsupported:
+      "This image format isn't supported yet. Please convert it to JPG/PNG and try again.",
+    attachmentTooLarge:
+      "This image is too large to send (limit: 5MB). Please remove it or use a smaller image.",
+    attachmentProcessingFailed: "Failed to process the image. Please try again.",
     loadTimeout: "Loading chat history timed out. The session may not exist or the server is busy.",
     fallbackToMain: "Switch to main session",
     youLabel: "You",
@@ -295,7 +297,8 @@ export const en: Translations = {
       connectHint: "Click Connect to apply connection changes.",
     },
     authHint: {
-      missingCredentials: "This gateway requires auth. Add a token or password, then click Connect.",
+      missingCredentials:
+        "This gateway requires auth. Add a token or password, then click Connect.",
       tokenizedUrl: "tokenized URL",
       setToken: "set token",
       docsLabel: "Docs: Control UI auth",
@@ -420,7 +423,7 @@ export const en: Translations = {
       profileTitle: "Profile",
       editProfile: "Edit Profile",
       profilePictureAlt: "Profile picture",
-      noProfile: "No profile set. Click \"Edit Profile\" to add your name, bio, and avatar.",
+      noProfile: 'No profile set. Click "Edit Profile" to add your name, bio, and avatar.',
     },
   },
   nostrProfile: {
@@ -492,10 +495,12 @@ export const en: Translations = {
     create: "Create Session",
     select: "Select Session",
     delete: "Delete Session",
-    confirmDelete: "Delete session \"{key}\"? This deletes the session entry and archives its transcript.",
+    confirmDelete:
+      'Delete session "{key}"? This deletes the session entry and archives its transcript.',
     selectAll: "Select all",
     deleteSelected: "Delete selected",
-    confirmDeleteMultiple: "Delete {count} sessions? This deletes the session entries and archives their transcripts.",
+    confirmDeleteMultiple:
+      "Delete {count} sessions? This deletes the session entries and archives their transcripts.",
     subtitle: "Active session keys and per-session overrides.",
     activeWithin: "Active within (minutes)",
     limit: "Limit",
@@ -950,7 +955,7 @@ export const en: Translations = {
     unsupportedNode: "Unsupported schema node. Use Raw mode.",
     unsupportedType: "Unsupported type: {type}. Use Raw mode.",
     unsupportedArray: "Unsupported array schema. Use Raw mode.",
-    noSettingsMatch: "No settings match \"{query}\"",
+    noSettingsMatch: 'No settings match "{query}"',
     noSettingsInSection: "No settings in this section",
     resetDefault: "Reset to default",
     defaultPlaceholder: "Default: {value}",
@@ -961,7 +966,7 @@ export const en: Translations = {
     removeEntry: "Remove entry",
     itemsCountSingle: "{count} item",
     itemsCountPlural: "{count} items",
-    noItems: "No items yet. Click \"Add\" to create one.",
+    noItems: 'No items yet. Click "Add" to create one.',
     customEntries: "Custom entries",
     noCustomEntries: "No custom entries.",
     keyPlaceholder: "Key",

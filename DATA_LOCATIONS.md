@@ -13,20 +13,24 @@
 ```
 
 **用途**:
+
 - ✅ 构建 Docker 镜像
 - ✅ 更新代码时重新构建
 - ✅ 查看文档和脚本
 
 **可以删除的时机**:
+
 - Docker 镜像已构建完成
 - 不需要更新或修改代码
 
 **建议保留的原因**:
+
 1. 更新 Moltbot 需要重新构建镜像
 2. 包含有用的脚本和文档
 3. 便于排查问题和自定义配置
 
 **迁移策略**:
+
 ```bash
 # 可以移动到其他位置
 mv /Users/yangshengpeng/Desktop/openAI/moltbot ~/Documents/moltbot-source
@@ -137,6 +141,7 @@ volumes:
 我创建的 `deploy-docker.sh` 脚本已经完全考虑了这些：
 
 ### 1. 自动检测数据位置
+
 ```bash
 # 脚本会自动检测
 if [ -d "$HOME/.moltbot" ]; then
@@ -146,6 +151,7 @@ fi
 ```
 
 ### 2. 自动备份
+
 ```bash
 # 部署前自动备份
 BACKUP_DIR="$HOME/moltbot-backup-$(date +%Y%m%d-%H%M%S)"
@@ -154,6 +160,7 @@ cp -r "$MOLTBOT_WORKSPACE_DIR" "$BACKUP_DIR/workspace"
 ```
 
 ### 3. 正确挂载
+
 ```bash
 # .env 配置会正确指向数据目录
 CLAWDBOT_CONFIG_DIR=/Users/yangshengpeng/.moltbot
@@ -166,15 +173,15 @@ CLAWDBOT_WORKSPACE_DIR=/Users/yangshengpeng/clawd
 
 ### 必须永久保留的数据
 
-| 文件/目录 | 内容 | 重要性 | 位置 |
-|----------|------|--------|------|
-| `moltbot.json` | 模型配置、API Keys、Gateway Token | ⭐⭐⭐⭐⭐ | `~/.moltbot/` |
-| `agents/*/sessions/*.jsonl` | 所有对话历史 | ⭐⭐⭐⭐⭐ | `~/.moltbot/agents/` |
-| `credentials/` | 频道认证信息 | ⭐⭐⭐⭐⭐ | `~/.moltbot/` |
-| `skills/` | 自定义Skills | ⭐⭐⭐⭐ | `~/.moltbot/` |
-| `~/clawd/` | 工作空间配置 | ⭐⭐⭐⭐ | `~/clawd/` |
-| `identity/` | 身份配置 | ⭐⭐⭐ | `~/.moltbot/` |
-| `cron/` | 定时任务 | ⭐⭐⭐ | `~/.moltbot/` |
+| 文件/目录                   | 内容                              | 重要性     | 位置                 |
+| --------------------------- | --------------------------------- | ---------- | -------------------- |
+| `moltbot.json`              | 模型配置、API Keys、Gateway Token | ⭐⭐⭐⭐⭐ | `~/.moltbot/`        |
+| `agents/*/sessions/*.jsonl` | 所有对话历史                      | ⭐⭐⭐⭐⭐ | `~/.moltbot/agents/` |
+| `credentials/`              | 频道认证信息                      | ⭐⭐⭐⭐⭐ | `~/.moltbot/`        |
+| `skills/`                   | 自定义Skills                      | ⭐⭐⭐⭐   | `~/.moltbot/`        |
+| `~/clawd/`                  | 工作空间配置                      | ⭐⭐⭐⭐   | `~/clawd/`           |
+| `identity/`                 | 身份配置                          | ⭐⭐⭐     | `~/.moltbot/`        |
+| `cron/`                     | 定时任务                          | ⭐⭐⭐     | `~/.moltbot/`        |
 
 ### 你当前的重要数据
 
@@ -235,6 +242,7 @@ chmod +x ~/backup-moltbot.sh
 ```
 
 **使用**:
+
 ```bash
 # 手动备份
 ~/backup-moltbot.sh
@@ -309,14 +317,14 @@ cd /path/to/moltbot-source
 
 ## 📊 数据增长预估
 
-| 数据类型 | 初始大小 | 增长速度 | 预计大小（1年） |
-|---------|---------|---------|----------------|
-| 配置文件 | ~10KB | 极慢 | ~15KB |
-| 会话历史 | ~20KB | 中等 | ~500MB-5GB |
-| Skills | ~84KB | 慢 | ~200KB-1MB |
-| 凭据 | ~1KB | 极慢 | ~2KB |
-| 工作空间 | ~64KB | 慢 | ~500KB-5MB |
-| **总计** | **~180KB** | - | **~500MB-5GB** |
+| 数据类型 | 初始大小   | 增长速度 | 预计大小（1年） |
+| -------- | ---------- | -------- | --------------- |
+| 配置文件 | ~10KB      | 极慢     | ~15KB           |
+| 会话历史 | ~20KB      | 中等     | ~500MB-5GB      |
+| Skills   | ~84KB      | 慢       | ~200KB-1MB      |
+| 凭据     | ~1KB       | 极慢     | ~2KB            |
+| 工作空间 | ~64KB      | 慢       | ~500KB-5MB      |
+| **总计** | **~180KB** | -        | **~500MB-5GB**  |
 
 **说明**: 主要增长来自会话历史，取决于使用频率。
 
