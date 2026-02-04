@@ -18,6 +18,7 @@ import {
   mergeDeliveryContext,
   normalizeDeliveryContext,
 } from "../utils/delivery-context.js";
+import { isInternalMessageChannel } from "../utils/message-channel.js";
 import {
   isEmbeddedPiRunActive,
   queueEmbeddedPiMessage,
@@ -486,6 +487,13 @@ export async function runSubagentAnnounceFlow(params: {
     // Build instructional message for main agent
     const announceType = params.announceType ?? "subagent task";
     const taskLabel = params.label || params.task || "task";
+
+    // Product intent: if the requester came from an external, deliverable channel
+    // (e.g. DingTalk), we should never silently suppress the response.
+    const requesterChannel = requesterOrigin?.channel;
+    const isExternalRequester = Boolean(
+      requesterChannel && !isInternalMessageChannel(requesterChannel),
+    );
     const triggerMessage = [
       `A ${announceType} "${taskLabel}" just ${statusLabel}.`,
       "",
@@ -496,7 +504,14 @@ export async function runSubagentAnnounceFlow(params: {
       "",
       "Summarize this naturally for the user. Keep it brief (1-2 sentences). Flow it into the conversation naturally.",
       `Do not mention technical details like tokens, stats, or that this was a ${announceType}.`,
-      "You can respond with NO_REPLY if no announcement is needed (e.g., internal task with no user-facing result).",
+      `Do not mention technical details like tokens, stats, or that this was a ${announceType}.`,
+      ...(isExternalRequester
+        ? [
+            "You MUST reply to the user. Do NOT respond with NO_REPLY for external-channel requests.",
+          ]
+        : [
+            "You can respond with NO_REPLY if no announcement is needed (e.g., internal task with no user-facing result).",
+          ]),
     ].join("\n");
 
     const queued = await maybeQueueSubagentAnnounce({

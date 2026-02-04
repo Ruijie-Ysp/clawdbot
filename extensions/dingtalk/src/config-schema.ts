@@ -38,6 +38,15 @@ export const DingTalkConfigSchema = z.object({
   /** Show thinking indicator while processing */
   showThinking: z.boolean().optional().default(true),
 
+  /** Cache TTL for sessionWebhook-based outbound fallback (ms). 0 disables caching. */
+  sessionWebhookCacheTtlMs: z.number().int().min(0).optional().default(6 * 60 * 60 * 1000),
+
+  /** If proactive send fails, fall back to sessionWebhook send (Stream mode). */
+  outboundFallbackToSessionWebhook: z.boolean().optional().default(true),
+
+  /** In group chats, best-effort @ the last triggering sender when using sessionWebhook fallback. */
+  mentionSenderInGroupFallback: z.boolean().optional().default(true),
+
   /** Enable debug logging */
   debug: z.boolean().optional().default(false),
 

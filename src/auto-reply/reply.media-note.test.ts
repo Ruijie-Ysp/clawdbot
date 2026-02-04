@@ -52,6 +52,34 @@ function makeCfg(home: string) {
 }
 
 describe("getReplyFromConfig media note plumbing", () => {
+  it("does not reject media-only messages when opts.images is present", async () => {
+    await withTempHome(async (home) => {
+      let seenPrompt: string | undefined;
+      vi.mocked(runEmbeddedPiAgent).mockImplementation(async (params) => {
+        seenPrompt = params.prompt;
+        return makeResult("ok");
+      });
+
+      const cfg = makeCfg(home);
+      const res = await getReplyFromConfig(
+        {
+          Body: "",
+          From: "+1001",
+          To: "+2000",
+        },
+        {
+          images: [{ type: "image", data: "AA==", mimeType: "image/png" }],
+        },
+        cfg,
+      );
+
+      const text = Array.isArray(res) ? res[0]?.text : res?.text;
+      expect(text).toBe("ok");
+      expect(seenPrompt).toBeTruthy();
+      expect(seenPrompt).toContain("用户发送了图片但没有附加文字");
+    });
+  });
+
   it("includes all MediaPaths in the agent prompt", async () => {
     await withTempHome(async (home) => {
       let seenPrompt: string | undefined;

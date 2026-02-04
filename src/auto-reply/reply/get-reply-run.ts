@@ -52,6 +52,11 @@ type ExecOverrides = Pick<ExecToolDefaults, "host" | "security" | "ask" | "node"
 const BARE_SESSION_RESET_PROMPT =
   "A new session was started via /new or /reset. Greet the user in your configured persona, if one is provided. Be yourself - use your defined voice, mannerisms, and mood. Keep it to 1-3 sentences and ask what they want to do. If the runtime model differs from default_model in the system prompt, mention the default model. Do not mention internal steps, files, tools, or reasoning.";
 
+// Fallback prompt for media-only inbound messages (e.g., WebUI chat sends images via opts.images
+// while leaving Body empty when there's no caption).
+const MEDIA_ONLY_FALLBACK_PROMPT =
+  "用户发送了图片但没有附加文字。请先简要描述图片内容，并询问用户希望你接下来做什么（例如：总结、提取信息、翻译、生成回复等）。不要提及内部步骤、文件、工具或推理。";
+
 type RunPreparedReplyParams = {
   ctx: MsgContext;
   sessionCtx: TemplateContext;
@@ -205,14 +210,30 @@ export async function runPreparedReply(
   const isBareSessionReset =
     isNewSession &&
     ((baseBodyTrimmedRaw.length === 0 && rawBodyTrimmed.length > 0) || isBareNewOrReset);
-  const baseBodyFinal = isBareSessionReset ? BARE_SESSION_RESET_PROMPT : baseBody;
+  let baseBodyFinal = isBareSessionReset ? BARE_SESSION_RESET_PROMPT : baseBody;
+  let baseBodyTrimmed = baseBodyFinal.trim();
+  const hasInboundMedia =
+    (opts?.images?.length ?? 0) > 0 ||
+    Boolean(
+      ctx.MediaPath ||
+      ctx.MediaUrl ||
+      (ctx.MediaPaths && ctx.MediaPaths.length > 0) ||
+      (ctx.MediaUrls && ctx.MediaUrls.length > 0),
+    );
+
+  // If this is a media-only message (common in WebUI when user sends an image without caption),
+  // don't short-circuit the run. Inject a stable prompt so the agent can proceed.
+  if (!baseBodyTrimmed && hasInboundMedia) {
+    baseBodyFinal = MEDIA_ONLY_FALLBACK_PROMPT;
+    baseBodyTrimmed = baseBodyFinal.trim();
+  }
   const inboundUserContext = buildInboundUserContextPrefix(
     isNewSession ? sessionCtx : { ...sessionCtx, ThreadStarterBody: undefined },
   );
   const baseBodyForPrompt = isBareSessionReset
     ? baseBodyFinal
     : [inboundUserContext, baseBodyFinal].filter(Boolean).join("\n\n");
-  const baseBodyTrimmed = baseBodyForPrompt.trim();
+  baseBodyTrimmed = baseBodyForPrompt.trim();
   if (!baseBodyTrimmed) {
     await typing.onReplyStart();
     logVerbose("Inbound body empty after normalization; skipping agent run");

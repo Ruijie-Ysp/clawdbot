@@ -8,7 +8,7 @@ import {
   buildChannelConfigSchema,
   type MoltbotConfig,
   type ChannelPlugin,
-} from "clawdbot/plugin-sdk";
+} from "openclaw/plugin-sdk";
 
 import { maskSensitiveData, cleanupOrphanedTempFiles, retryWithBackoff } from "./utils.js";
 import { getDingTalkRuntime } from "./runtime.js";
@@ -43,6 +43,18 @@ let accessTokenExpiry = 0;
 // Card instance cache for streaming updates
 const cardInstances = new Map<string, CardInstance>();
 
+type SessionWebhookCacheEntry = {
+  sessionWebhook: string;
+  senderId?: string;
+  isDirect: boolean;
+  expiresAt: number;
+  lastSeenAt: number;
+};
+
+// sessionWebhook cache (Stream mode): (accountId + to) -> sessionWebhook
+// Note: in-memory only, never persisted, to avoid sensitive data leakage.
+const sessionWebhookCache = new Map<string, SessionWebhookCacheEntry>();
+
 // Card update throttling
 const cardUpdateTimestamps = new Map<string, number>();
 const CARD_UPDATE_MIN_INTERVAL = 500;
@@ -73,9 +85,64 @@ function cleanupCardCache() {
   }
 }
 
+function resolveSessionWebhookCacheKey(params: { accountId?: string; to: string }): string {
+  return `${params.accountId ?? "default"}:${params.to}`;
+}
+
+function cleanupSessionWebhookCache() {
+  const now = Date.now();
+  for (const [key, entry] of sessionWebhookCache.entries()) {
+    if (now >= entry.expiresAt) {
+      sessionWebhookCache.delete(key);
+    }
+  }
+}
+
+function cacheSessionWebhook(params: {
+  accountId?: string;
+  to: string;
+  sessionWebhook?: string;
+  senderId?: string;
+  isDirect: boolean;
+  ttlMs?: number;
+}) {
+  const { accountId, to, sessionWebhook, senderId, isDirect } = params;
+  if (!sessionWebhook) return;
+
+  const ttlCandidate = params.ttlMs;
+  const ttlMs =
+    typeof ttlCandidate === "number" && Number.isFinite(ttlCandidate) && ttlCandidate >= 0
+      ? ttlCandidate
+      : 6 * 60 * 60 * 1000;
+  if (ttlMs === 0) return;
+
+  const now = Date.now();
+  sessionWebhookCache.set(resolveSessionWebhookCacheKey({ accountId, to }), {
+    sessionWebhook,
+    senderId,
+    isDirect,
+    expiresAt: now + ttlMs,
+    lastSeenAt: now,
+  });
+}
+
+function getCachedSessionWebhook(params: { accountId?: string; to: string }): SessionWebhookCacheEntry | undefined {
+  const key = resolveSessionWebhookCacheKey(params);
+  const entry = sessionWebhookCache.get(key);
+  if (!entry) return undefined;
+  if (Date.now() >= entry.expiresAt) {
+    sessionWebhookCache.delete(key);
+    return undefined;
+  }
+  return entry;
+}
+
 function startCardCacheCleanup() {
   if (!cleanupIntervalId) {
-    cleanupIntervalId = setInterval(cleanupCardCache, 30 * 60 * 1000);
+    cleanupIntervalId = setInterval(() => {
+      cleanupCardCache();
+      cleanupSessionWebhookCache();
+    }, 30 * 60 * 1000);
   }
 }
 
@@ -529,6 +596,17 @@ async function handleDingTalkMessage(params: HandleDingTalkMessageParams): Promi
   });
 
   const to = isDirect ? senderId : groupId;
+
+  // Cache sessionWebhook for best-effort outbound fallback (used by async announces, etc.)
+  cacheSessionWebhook({
+    accountId,
+    to,
+    sessionWebhook,
+    senderId,
+    isDirect,
+    ttlMs: dingtalkConfig.sessionWebhookCacheTtlMs,
+  });
+
   const ctx = rt.channel.reply.finalizeInboundContext({
     Body: body,
     RawBody: content.text,
@@ -709,8 +787,35 @@ export const dingtalkPlugin: ChannelPlugin<ResolvedAccount> = {
         const result = await sendProactiveMessage(config, to, text, { log });
         return { ok: true, data: result };
       } catch (err: unknown) {
-        const error = err as { response?: { data?: unknown }; message?: string };
-        return { ok: false, error: error.response?.data || error.message };
+        const proactiveError = err as { response?: { data?: unknown }; message?: string };
+        const proactiveErrorPayload = proactiveError.response?.data || proactiveError.message;
+
+        if (config.outboundFallbackToSessionWebhook !== false) {
+          const cached = getCachedSessionWebhook({ accountId, to });
+          if (cached) {
+            try {
+              const atUserId =
+                config.mentionSenderInGroupFallback !== false && !cached.isDirect ? cached.senderId ?? null : null;
+              const result = await sendBySession(config, cached.sessionWebhook, text, {
+                atUserId,
+                log,
+              });
+              log?.debug?.("[DingTalk] Proactive send failed; delivered via sessionWebhook fallback");
+              return { ok: true, data: result };
+            } catch (fallbackErr: unknown) {
+              const fallbackError = fallbackErr as { response?: { data?: unknown }; message?: string };
+              return {
+                ok: false,
+                error: {
+                  proactive: proactiveErrorPayload,
+                  fallback: fallbackError.response?.data || fallbackError.message,
+                },
+              };
+            }
+          }
+        }
+
+        return { ok: false, error: proactiveErrorPayload };
       }
     },
     sendMedia: async ({ cfg, to, mediaPath, accountId, log }: {
@@ -729,8 +834,37 @@ export const dingtalkPlugin: ChannelPlugin<ResolvedAccount> = {
         const result = await sendProactiveMessage(config, to, mediaDescription, { log });
         return { ok: true, data: result };
       } catch (err: unknown) {
-        const error = err as { response?: { data?: unknown }; message?: string };
-        return { ok: false, error: error.response?.data || error.message };
+        const proactiveError = err as { response?: { data?: unknown }; message?: string };
+        const proactiveErrorPayload = proactiveError.response?.data || proactiveError.message;
+
+        if (config.outboundFallbackToSessionWebhook !== false) {
+          const cached = getCachedSessionWebhook({ accountId, to });
+          if (cached) {
+            try {
+              const atUserId =
+                config.mentionSenderInGroupFallback !== false && !cached.isDirect ? cached.senderId ?? null : null;
+              const result = await sendBySession(config, cached.sessionWebhook, `[媒体消息]
+
+${mediaPath}`, {
+                atUserId,
+                log,
+              });
+              log?.debug?.("[DingTalk] Proactive media send failed; delivered via sessionWebhook fallback");
+              return { ok: true, data: result };
+            } catch (fallbackErr: unknown) {
+              const fallbackError = fallbackErr as { response?: { data?: unknown }; message?: string };
+              return {
+                ok: false,
+                error: {
+                  proactive: proactiveErrorPayload,
+                  fallback: fallbackError.response?.data || fallbackError.message,
+                },
+              };
+            }
+          }
+        }
+
+        return { ok: false, error: proactiveErrorPayload };
       }
     },
   },

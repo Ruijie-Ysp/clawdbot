@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-01-31T17:21:03.907823",
+  "total_files": 1,
+  "successful_uploads": 1,
+  "failed_uploads": 0,
+  "success_rate": "100.0%",
+  "uploaded_files": [
+    {
+      "file": "/Users/yangshengpeng/clawd-dev/dvt_temp/DVT的诊断和治疗指南.pdf",
+      "doc_id": "DOC-20260131-42FDEEF3",
+      "status": "UPLOADED"
+    }
+  ],
+  "failed_files": []
+}

@@ -9,7 +9,7 @@
  * - Session and token management
  */
 
-import type { MoltbotConfig } from "clawdbot/plugin-sdk";
+import type { MoltbotConfig } from "openclaw/plugin-sdk";
 
 /**
  * DingTalk channel configuration
@@ -26,6 +26,12 @@ export interface DingTalkConfig {
   groupPolicy?: "open" | "allowlist";
   allowFrom?: string[];
   showThinking?: boolean;
+  /** Cache TTL for sessionWebhook-based outbound fallback (ms). 0 disables caching. */
+  sessionWebhookCacheTtlMs?: number;
+  /** If proactive send fails, fall back to sessionWebhook send (Stream mode). */
+  outboundFallbackToSessionWebhook?: boolean;
+  /** In group chats, best-effort @ the last triggering sender when using sessionWebhook fallback. */
+  mentionSenderInGroupFallback?: boolean;
   debug?: boolean;
   messageType?: "text" | "markdown" | "card";
   cardTemplateId?: string;

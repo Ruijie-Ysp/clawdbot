@@ -3,7 +3,7 @@
  * 提供通用的安全验证功能
  */
 
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction, RequestHandler } from "express";
 
 /**
  * 验证请求内容类型
@@ -13,12 +13,10 @@ export function validateContentType(req: Request, res: Response, next: NextFunct
 
   if (req.method === "POST" || req.method === "PUT" || req.method === "PATCH") {
     if (!contentType || !contentType.includes("application/json")) {
-      res
-        .status(415)
-        .json({
-          error: "Unsupported Media Type",
-          message: "Content-Type must be application/json",
-        });
+      res.status(415).json({
+        error: "Unsupported Media Type",
+        message: "Content-Type must be application/json",
+      });
       return;
     }
   }
@@ -127,7 +125,7 @@ export function preventXSS(req: Request, res: Response, next: NextFunction): voi
 /**
  * 速率限制中间件（简化版）
  */
-export function createRateLimiter(maxRequests: number, windowMs: number) {
+export function createRateLimiter(maxRequests: number, windowMs: number): RequestHandler {
   const requests = new Map<string, { count: number; resetTime: number }>();
 
   return function rateLimit(req: Request, res: Response, next: NextFunction): void {
@@ -163,7 +161,7 @@ export function createRateLimiter(maxRequests: number, windowMs: number) {
 /**
  * 验证输入长度
  */
-export function validateInputLength(maxLength: number = 10000) {
+export function validateInputLength(maxLength: number = 10000): RequestHandler {
   return function (req: Request, res: Response, next: NextFunction): void {
     const checkLength = (obj: unknown): boolean => {
       if (typeof obj === "string") {
@@ -182,12 +180,10 @@ export function validateInputLength(maxLength: number = 10000) {
     };
 
     if (req.body && !checkLength(req.body)) {
-      res
-        .status(400)
-        .json({
-          error: "Bad Request",
-          message: `Input too long. Maximum length is ${maxLength} characters.`,
-        });
+      res.status(400).json({
+        error: "Bad Request",
+        message: `Input too long. Maximum length is ${maxLength} characters.`,
+      });
       return;
     }
 
@@ -212,7 +208,7 @@ export function securityHeaders(req: Request, res: Response, next: NextFunction)
 /**
  * 组合所有安全中间件
  */
-export const securityMiddleware = [
+export const securityMiddleware: RequestHandler[] = [
   validateContentType,
   preventNoSqlInjection,
   preventXSS,

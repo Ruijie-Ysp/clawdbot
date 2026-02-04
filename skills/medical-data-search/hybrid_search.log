@@ -1,0 +1,2 @@
+2026-02-03 19:38:45,731 - INFO - 执行混合检索: 感染性腹主动脉瘤 (模式: hybrid)
+2026-02-03 19:38:45,744 - ERROR - 混合检索请求失败: 401 Client Error: Unauthorized for url: http://localhost:48200/api/v1/search/hybrid

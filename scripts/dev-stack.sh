@@ -14,7 +14,19 @@ TAIL_LINES="${TAIL_LINES:-200}"
 GATEWAY_ARGS="${GATEWAY_ARGS:-}"
 UI_ARGS="${UI_ARGS:-}"
 
-GATEWAY_PORT="${GATEWAY_PORT:-19001}"
+# Resolved pnpm command (array) used by start_ui().
+# Default to `pnpm` and resolve to an absolute path if PATH is missing common bin dirs.
+PNPM_CMD=(pnpm)
+
+# DEV_MODE: 0 = normal user mode (default), 1 = dev mode (C-3PO debug agent)
+DEV_MODE="${DEV_MODE:-0}"
+
+# Default ports: normal mode uses 18789, dev mode uses 19001
+if [[ "$DEV_MODE" == "1" ]]; then
+  GATEWAY_PORT="${GATEWAY_PORT:-19001}"
+else
+  GATEWAY_PORT="${GATEWAY_PORT:-18789}"
+fi
 UI_PORT="${UI_PORT:-5173}"
 
 usage() {
@@ -22,11 +34,16 @@ usage() {
 Usage: scripts/dev-stack.sh <start|stop|restart|status|logs> [gateway|ui|all]
 
 Environment:
-  GATEWAY_ARGS="--raw-stream --ws-log full"  Extra args for gateway dev.
+  DEV_MODE=0                                  0 = normal user mode (default), 1 = dev mode (C-3PO).
+  GATEWAY_ARGS="--raw-stream --ws-log full"  Extra args for gateway.
   UI_ARGS="--host"                            Extra args for UI dev.
   TAIL_LINES=200                              Lines to show when tailing logs.
-  GATEWAY_PORT=19001                          Gateway port (default: 19001).
+  GATEWAY_PORT=18789                          Gateway port (default: 18789 normal, 19001 dev).
   UI_PORT=5173                                UI port (default: 5173).
+
+Examples:
+  scripts/dev-stack.sh start                  Start in normal user mode (Clawd 🦞)
+  DEV_MODE=1 scripts/dev-stack.sh start       Start in dev mode (C-3PO 🤖)
 EOF
 }
 
@@ -43,10 +60,40 @@ kill_port() {
 }
 
 require_pnpm() {
-  if ! command -v pnpm >/dev/null 2>&1; then
-    echo "pnpm not found in PATH." >&2
-    exit 1
+  # Some shells/GUI terminals may start with a restricted PATH (missing /usr/local/bin, etc.).
+  # Make the script robust by best-effort augmenting PATH and resolving pnpm.
+  local d
+  for d in "/usr/local/bin" "/opt/homebrew/bin" "$HOME/Library/pnpm"; do
+    if [[ -d "$d" ]]; then
+      case ":$PATH:" in
+        *":$d:"*) ;;
+        *) PATH="$d:$PATH" ;;
+      esac
+    fi
+  done
+  export PATH
+
+  if command -v pnpm >/dev/null 2>&1; then
+    PNPM_CMD=(pnpm)
+    return 0
   fi
+
+  if [[ -x "/usr/local/bin/pnpm" ]]; then
+    PNPM_CMD=("/usr/local/bin/pnpm")
+    return 0
+  fi
+  if [[ -x "/opt/homebrew/bin/pnpm" ]]; then
+    PNPM_CMD=("/opt/homebrew/bin/pnpm")
+    return 0
+  fi
+  if [[ -x "$HOME/Library/pnpm/pnpm" ]]; then
+    PNPM_CMD=("$HOME/Library/pnpm/pnpm")
+    return 0
+  fi
+
+  echo "pnpm not found. Please install pnpm (recommended) or ensure it is on PATH." >&2
+  echo "PATH=$PATH" >&2
+  exit 1
 }
 
 rotate_log() {
@@ -102,8 +149,18 @@ start_gateway() {
     extra=($GATEWAY_ARGS)
   fi
 
-  # Use --dev gateway directly without CLAWDBOT_SKIP_CHANNELS to load all channels (including dingtalk)
-  local cmd=(node scripts/run-node.mjs --dev gateway)
+  # Build gateway command based on DEV_MODE
+  # DEV_MODE=0 (default): normal user mode, uses existing ~/.openclaw/ config
+  # DEV_MODE=1: dev mode with --dev flag, uses C-3PO debug agent
+  local cmd
+  if [[ "$DEV_MODE" == "1" ]]; then
+    echo "Starting gateway in DEV mode (C-3PO 🤖)..."
+    cmd=(node scripts/run-node.mjs --dev gateway)
+  else
+    echo "Starting gateway in NORMAL mode (Clawd 🦞)..."
+    cmd=(node scripts/run-node.mjs gateway --port "$GATEWAY_PORT")
+  fi
+
   if ((${#extra[@]})); then
     cmd+=("${extra[@]}")
   fi
@@ -111,10 +168,17 @@ start_gateway() {
   local prev_dir
   prev_dir="$(pwd)"
   cd "$ROOT_DIR"
-  CLAWDBOT_RUNNER_LOG=1 nohup "${cmd[@]}" >> "$GATEWAY_LOG" 2>&1 &
+  # Use exec to ensure the child process replaces the shell, so PID is correct
+  nohup bash -c 'exec "$@"' _ "${cmd[@]}" >> "$GATEWAY_LOG" 2>&1 &
   echo $! > "$GATEWAY_PID"
   cd "$prev_dir"
-  echo "Gateway started (pid $(cat "$GATEWAY_PID"))."
+  # Wait a moment and verify the process actually started
+  sleep 0.5
+  if ! is_running "$GATEWAY_PID"; then
+    echo "Gateway failed to start. Check log: $GATEWAY_LOG"
+    return 1
+  fi
+  echo "Gateway started (pid $(cat "$GATEWAY_PID")), port: $GATEWAY_PORT"
   echo "Gateway log: $GATEWAY_LOG"
 }
 
@@ -123,6 +187,9 @@ start_ui() {
     echo "UI already running (pid $(cat "$UI_PID"))."
     return 0
   fi
+
+  # Ensure pnpm is available for UI start.
+  require_pnpm
 
   # Ensure port is free before starting
   kill_port "$UI_PORT"
@@ -135,7 +202,7 @@ start_ui() {
     extra=($UI_ARGS)
   fi
 
-  local cmd=(pnpm ui:dev --)
+  local cmd=("${PNPM_CMD[@]}" ui:dev --)
   if ((${#extra[@]})); then
     cmd+=("${extra[@]}")
   fi
@@ -143,11 +210,33 @@ start_ui() {
   local prev_dir
   prev_dir="$(pwd)"
   cd "$ROOT_DIR"
-  nohup "${cmd[@]}" >> "$UI_LOG" 2>&1 &
+  # Use exec to ensure the child process replaces the shell, so PID is correct
+  nohup bash -c 'exec "$@"' _ "${cmd[@]}" >> "$UI_LOG" 2>&1 &
   echo $! > "$UI_PID"
   cd "$prev_dir"
+  # Wait a moment and verify the process actually started
+  sleep 0.5
+  if ! is_running "$UI_PID"; then
+    echo "UI failed to start. Check log: $UI_LOG"
+    return 1
+  fi
   echo "UI started (pid $(cat "$UI_PID"))."
   echo "UI log: $UI_LOG"
+}
+
+# Kill all descendant processes recursively
+try_kill_children() {
+  local parent_pid="$1"
+  # Find all direct children and kill them first (recursively)
+  local children
+  children=$(pgrep -P "$parent_pid" 2>/dev/null || true)
+  if [[ -n "$children" ]]; then
+    local child
+    for child in $children; do
+      try_kill_children "$child"
+      kill -9 "$child" 2>/dev/null || true
+    done
+  fi
 }
 
 stop_process() {
@@ -166,6 +255,8 @@ stop_process() {
     fi
   else
     echo "Stopping $name (pid $pid)..."
+    # Kill all descendant processes first to prevent orphans
+    try_kill_children "$pid"
     kill "$pid" >/dev/null 2>&1 || true
     for _ in {1..50}; do
       if ! kill -0 "$pid" >/dev/null 2>&1; then
@@ -182,7 +273,7 @@ stop_process() {
     fi
   fi
 
-  # Always clean up port to handle orphaned child processes
+  # Always clean up port to handle any remaining orphaned processes
   if [[ -n "$port" ]]; then
     local pids
     pids="$(lsof -ti:"$port" 2>/dev/null || true)"
@@ -195,6 +286,9 @@ stop_process() {
 }
 
 status() {
+  echo "Mode: $(if [[ "$DEV_MODE" == "1" ]]; then echo "DEV (C-3PO 🤖)"; else echo "NORMAL (Clawd 🦞)"; fi)"
+  echo "Gateway port: $GATEWAY_PORT"
+  echo ""
   if is_running "$GATEWAY_PID"; then
     echo "Gateway: running (pid $(cat "$GATEWAY_PID")), log: $GATEWAY_LOG"
   else
@@ -239,9 +333,22 @@ main() {
       stop_process "Gateway" "$GATEWAY_PID" "$GATEWAY_PORT"
       ;;
     restart)
+      # Preflight before stopping services. Prevents leaving the dev stack down
+      # when pnpm is missing from PATH.
+      require_pnpm
       stop_process "UI" "$UI_PID" "$UI_PORT"
       stop_process "Gateway" "$GATEWAY_PID" "$GATEWAY_PORT"
-      require_pnpm
+      # Extra cleanup: kill any remaining openclaw-gateway processes not tracked by PID file
+      local orphaned_gateway
+      orphaned_gateway=$(pgrep -f "openclaw-gateway" 2>/dev/null || true)
+      if [[ -n "$orphaned_gateway" ]]; then
+        echo "Cleaning up orphaned gateway processes: $orphaned_gateway"
+        echo "$orphaned_gateway" | xargs kill -9 2>/dev/null || true
+        sleep 1
+      fi
+      # Ensure ports are fully released before starting
+      kill_port "$GATEWAY_PORT"
+      kill_port "$UI_PORT"
       start_gateway
       start_ui
       ;;

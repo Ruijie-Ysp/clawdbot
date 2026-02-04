@@ -74,7 +74,7 @@ export const zh_CN: Translations = {
     errors: {
       disconnected: "连接已断开（{code}）：{reason}",
       noReason: "无原因",
-      eventGap: "检测到事件缺口（期望序号 {expected}，收到 {received}）；建议刷新",
+	      eventGap: "网络波动，正在自动恢复…（如仍异常请刷新）",
     },
   },
   nav: {
@@ -160,6 +160,9 @@ export const zh_CN: Translations = {
     toggleFocusDisabled: "引导期间已禁用",
     errorMessage: "错误：{error}",
     errorFallback: "聊天错误",
+	    attachmentFormatUnsupported: "图片格式暂不支持，请转为 JPG/PNG 后再发送。",
+	    attachmentTooLarge: "图片过大无法压缩到可发送大小（上限 5MB），请删除或换小图后再发送。",
+	    attachmentProcessingFailed: "图片处理失败，请重试。",
     loadTimeout: "加载聊天记录超时。该会话可能不存在或服务器繁忙。",
     fallbackToMain: "切换到主会话",
     youLabel: "你",

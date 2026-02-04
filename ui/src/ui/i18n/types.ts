@@ -174,6 +174,9 @@ export interface Translations {
     toggleFocusDisabled: string;
     errorMessage: string;
     errorFallback: string;
+	    attachmentFormatUnsupported: string;
+	    attachmentTooLarge: string;
+	    attachmentProcessingFailed: string;
     loadTimeout: string;
     fallbackToMain: string;
     youLabel: string;

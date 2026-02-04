@@ -14,7 +14,10 @@ export type CompactionIndicatorStatus = {
 
 const COMPACTION_TOAST_DURATION_MS = 5000;
 
-export function renderCompactionIndicator(status: CompactionIndicatorStatus | null | undefined, locale: Locale) {
+export function renderCompactionIndicator(
+  status: CompactionIndicatorStatus | null | undefined,
+  locale: Locale,
+) {
   if (!status) return nothing;
 
   // Show "compacting..." while active
@@ -41,7 +44,11 @@ export function renderCompactionIndicator(status: CompactionIndicatorStatus | nu
   return nothing;
 }
 
-export function getChatPlaceholder(locale: Locale, connected: boolean): string {
+export function getChatPlaceholder(
+  locale: Locale,
+  connected: boolean,
+  _hasAttachments?: boolean,
+): string {
   return connected
     ? t("chat.inputPlaceholder")
     : t("chat.disconnected");

@@ -189,4 +189,5 @@ export function useLocale(): ReactiveLocaleState {
 }
 
 // Export current translations for direct access
+export type { Locale, Translations } from "./types.js";
 export { allTranslations, en, zh_CN };

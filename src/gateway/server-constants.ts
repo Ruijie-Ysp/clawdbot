@@ -1,4 +1,7 @@
-export const MAX_PAYLOAD_BYTES = 512 * 1024; // cap incoming frame size
+// Cap incoming WebSocket frame size.
+// Note: Control UI can send base64-encoded image attachments via WS requests (e.g. chat.send).
+// Keep this comfortably above the effective on-wire size for the 5MB decoded attachment limit.
+export const MAX_PAYLOAD_BYTES = 10 * 1024 * 1024;
 export const MAX_BUFFERED_BYTES = 1.5 * 1024 * 1024; // per-connection send buffer limit
 
 const DEFAULT_MAX_CHAT_HISTORY_MESSAGES_BYTES = 6 * 1024 * 1024; // keep history responses comfortably under client WS limits
