@@ -355,6 +355,9 @@ export interface Translations {
       invalid: string;
       unknown: string;
     };
+    errors: {
+      hashMissing: string;
+    };
     sections: Record<string, { label: string; description: string }>;
     subsections?: Record<string, Record<string, string>>;
   };
@@ -365,6 +368,10 @@ export interface Translations {
     minutesAgo: string;
     hoursAgo: string;
     daysAgo: string;
+    secondsFromNow: string;
+    minutesFromNow: string;
+    hoursFromNow: string;
+    daysFromNow: string;
     millisecondsShort: string;
     secondsShort: string;
     minutesShort: string;
@@ -379,10 +386,17 @@ export interface Translations {
     abort: string;
     defaultAssistantName: string;
     inputPlaceholder: string;
+    inputPlaceholderWithImages: string;
+    inputPlaceholderWithAttachments: string;
+    loading: string;
     compacting: string;
     compacted: string;
     focusMode: string;
     exitFocusMode: string;
+    layoutLabel: string;
+    layoutSingle: string;
+    layoutDouble: string;
+    layoutQuad: string;
     sidebarOpen: string;
     sidebarClose: string;
     disconnected: string;
@@ -414,6 +428,13 @@ export interface Translations {
     toolLabel: string;
     systemLabel: string;
     unknownLabel: string;
+    queueTitle: string;
+    queueImageCount: string;
+    removeQueuedMessage: string;
+    removeAttachment: string;
+    newMessages: string;
+    attachmentPreviewAlt: string;
+    attachedImageAlt: string;
     copyAsMarkdown: string;
     copied: string;
     copyFailed: string;
@@ -836,6 +857,10 @@ export interface Translations {
       systemEvent: string;
       agentTurn: string;
     };
+    deliveryModes: {
+      announce: string;
+      none: string;
+    };
     units: {
       minutes: string;
       hours: string;
@@ -879,10 +904,18 @@ export interface Translations {
     filterPlaceholder: string;
     shownCount: string;
     noSkills: string;
+    groups: {
+      workspace: string;
+      builtIn: string;
+      installed: string;
+      extra: string;
+      other: string;
+    };
     status: {
       eligible: string;
       blocked: string;
       disabled: string;
+      bundled: string;
     };
     messages: {
       enabled: string;
@@ -1019,6 +1052,13 @@ export interface Translations {
     snapshotsTitle: string;
     snapshotsSubtitle: string;
     statusLabel: string;
+    securityAudit: {
+      summary: string;
+      critical: string;
+      warnings: string;
+      info: string;
+      none: string;
+    };
     healthLabel: string;
     heartbeatLabel: string;
     manualRpcTitle: string;
@@ -1116,6 +1156,8 @@ export interface Translations {
     noCustomEntries: string;
     keyPlaceholder: string;
     jsonPlaceholder: string;
+    // Dynamic field labels - maps camelCase/snake_case field names to translations
+    fields?: Record<string, string>;
   };
   // Markdown sidebar
   markdownSidebar: {

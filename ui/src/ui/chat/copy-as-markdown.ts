@@ -1,11 +1,12 @@
 import { html, type TemplateResult } from "lit";
+import { t } from "../i18n/index.ts";
 import { icons } from "../icons.ts";
 
 const COPIED_FOR_MS = 1500;
 const ERROR_FOR_MS = 2000;
-const COPY_LABEL = "Copy as markdown";
-const COPIED_LABEL = "Copied";
-const ERROR_LABEL = "Copy failed";
+const COPY_LABEL_KEY = "chat.copyAsMarkdown";
+const COPIED_LABEL_KEY = "chat.copied";
+const ERROR_LABEL_KEY = "chat.copyFailed";
 
 type CopyButtonOptions = {
   text: () => string;
@@ -31,7 +32,7 @@ function setButtonLabel(button: HTMLButtonElement, label: string) {
 }
 
 function createCopyButton(options: CopyButtonOptions): TemplateResult {
-  const idleLabel = options.label ?? COPY_LABEL;
+  const idleLabel = options.label ?? t(COPY_LABEL_KEY);
   return html`
     <button
       class="chat-copy-btn"
@@ -60,7 +61,7 @@ function createCopyButton(options: CopyButtonOptions): TemplateResult {
 
         if (!copied) {
           btn.dataset.error = "1";
-          setButtonLabel(btn, ERROR_LABEL);
+          setButtonLabel(btn, t(ERROR_LABEL_KEY));
 
           window.setTimeout(() => {
             if (!btn.isConnected) {
@@ -73,7 +74,7 @@ function createCopyButton(options: CopyButtonOptions): TemplateResult {
         }
 
         btn.dataset.copied = "1";
-        setButtonLabel(btn, COPIED_LABEL);
+        setButtonLabel(btn, t(COPIED_LABEL_KEY));
 
         window.setTimeout(() => {
           if (!btn.isConnected) {
@@ -93,5 +94,5 @@ function createCopyButton(options: CopyButtonOptions): TemplateResult {
 }
 
 export function renderCopyAsMarkdownButton(markdown: string): TemplateResult {
-  return createCopyButton({ text: () => markdown, label: COPY_LABEL });
+  return createCopyButton({ text: () => markdown, label: t(COPY_LABEL_KEY) });
 }

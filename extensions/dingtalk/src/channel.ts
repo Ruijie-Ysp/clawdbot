@@ -348,10 +348,15 @@ export async function sendProactiveMessage(
   const { useMarkdown, title } = detectMarkdownAndExtractTitle(text, options, "Moltbot 提醒");
   const msgKey = useMarkdown ? "sampleMarkdown" : "sampleText";
 
+  // sampleMarkdown 需要 { title, text }，sampleText 需要 { content }
+  const msgParam = useMarkdown
+    ? JSON.stringify({ title, text })
+    : JSON.stringify({ content: text });
+
   const payload: ProactiveMessagePayload = {
     robotCode: config.robotCode || config.clientId,
     msgKey,
-    msgParam: JSON.stringify({ title, content: text }),
+    msgParam,
   };
 
   if (isGroup) {

@@ -1,4 +1,5 @@
 import type { IconName } from "./icons.ts";
+import { hasTranslation, t } from "./i18n/index.ts";
 import rawConfig from "./tool-display.json" with { type: "json" };
 
 type ToolDisplayActionSpec = {
@@ -40,7 +41,7 @@ function normalizeToolName(name?: string): string {
 function defaultTitle(name: string): string {
   const cleaned = name.replace(/_/g, " ").trim();
   if (!cleaned) {
-    return "Tool";
+    return t("toolDisplay.tools.tool");
   }
   return cleaned
     .split(/\s+/)
@@ -165,15 +166,23 @@ export function resolveToolDisplay(params: {
   const key = name.toLowerCase();
   const spec = TOOL_MAP[key];
   const icon = (spec?.icon ?? FALLBACK.icon ?? "puzzle") as IconName;
-  const title = spec?.title ?? defaultTitle(name);
-  const label = spec?.label ?? name;
+  const translationKey = `toolDisplay.tools.${key}`;
+  const translated = hasTranslation(translationKey) ? t(translationKey) : undefined;
+  const title = translated ?? spec?.title ?? defaultTitle(name);
+  const label = translated ?? spec?.label ?? name;
   const actionRaw =
     params.args && typeof params.args === "object"
       ? ((params.args as Record<string, unknown>).action as string | undefined)
       : undefined;
   const action = typeof actionRaw === "string" ? actionRaw.trim() : undefined;
   const actionSpec = resolveActionSpec(spec, action);
-  const verb = normalizeVerb(actionSpec?.label ?? action);
+  const actionKey = action ? action.toLowerCase() : "";
+  const actionTranslationKey = actionKey ? `toolDisplay.actions.${actionKey}` : "";
+  const actionLabel =
+    actionTranslationKey && hasTranslation(actionTranslationKey)
+      ? t(actionTranslationKey)
+      : (actionSpec?.label ?? action);
+  const verb = normalizeVerb(actionLabel);
 
   let detail: string | undefined;
   if (key === "read") {

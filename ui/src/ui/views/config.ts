@@ -1,7 +1,8 @@
 import { html, nothing } from "lit";
 import type { ConfigUiHints } from "../types.ts";
 import { hasTranslation, t, tp } from "../i18n/index.ts";
-import { hintForPath, humanize, schemaType, type JsonSchema } from "./config-form.shared.ts";
+import { translateFieldLabel } from "./config-form.node.ts";
+import { hintForPath, schemaType, type JsonSchema } from "./config-form.shared.ts";
 import { analyzeConfigSchema, renderConfigForm, resolveSectionMeta } from "./config-form.ts";
 
 export type ConfigProps = {
@@ -306,7 +307,7 @@ function resolveSubsections(params: {
     const labelKey = `config.subsections.${key}.${subKey}`;
     const label = hasTranslation(labelKey)
       ? t(labelKey)
-      : (hint?.label ?? node.title ?? humanize(subKey));
+      : (hint?.label ?? node.title ?? translateFieldLabel(subKey));
     const description = hint?.help ?? node.description ?? "";
     const order = hint?.order ?? 50;
     return { key: subKey, label, description, order };

@@ -5,6 +5,7 @@
 import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import type { ChatLayoutMode } from "../storage.ts";
+import { onLocaleChanged, t } from "../i18n/index.ts";
 
 @customElement("chat-layout-switcher")
 export class ChatLayoutSwitcher extends LitElement {
@@ -82,6 +83,23 @@ export class ChatLayoutSwitcher extends LitElement {
   @property({ type: Number })
   mode: ChatLayoutMode = 1;
 
+  private _localeChangeUnsubscribe: (() => void) | null = null;
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this._localeChangeUnsubscribe = onLocaleChanged(() => {
+      this.requestUpdate();
+    });
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    if (this._localeChangeUnsubscribe) {
+      this._localeChangeUnsubscribe();
+      this._localeChangeUnsubscribe = null;
+    }
+  }
+
   private _handleClick(newMode: ChatLayoutMode) {
     if (newMode !== this.mode) {
       this.dispatchEvent(
@@ -113,13 +131,13 @@ export class ChatLayoutSwitcher extends LitElement {
   render() {
     const modes: ChatLayoutMode[] = [1, 2, 4];
     return html`
-      <div class="layout-switcher" role="group" aria-label="Chat layout">
+      <div class="layout-switcher" role="group" aria-label=${t("chat.layoutLabel")}>
         ${modes.map(
           (m) => html`
             <button
               class="layout-btn ${this.mode === m ? "active" : ""}"
               @click=${() => this._handleClick(m)}
-              title="${m === 1 ? "单窗口" : m === 2 ? "双窗口" : "四窗口"}"
+              title=${m === 1 ? t("chat.layoutSingle") : m === 2 ? t("chat.layoutDouble") : t("chat.layoutQuad")}
               aria-pressed="${this.mode === m}"
             >
               ${this._renderLayoutIcon(m)}

@@ -1,6 +1,23 @@
 import { html, nothing } from "lit";
 import type { ChannelAccountSnapshot } from "../types.ts";
 import type { ChannelKey, ChannelsProps } from "./channels.types.ts";
+import { t, tp } from "../i18n/index.ts";
+
+export function formatDuration(ms?: number | null) {
+  if (!ms && ms !== 0) {
+    return t("common.na");
+  }
+  const sec = Math.round(ms / 1000);
+  if (sec < 60) {
+    return tp("time.secondsShort", { count: sec });
+  }
+  const min = Math.round(sec / 60);
+  if (min < 60) {
+    return tp("time.minutesShort", { count: min });
+  }
+  const hr = Math.round(min / 60);
+  return tp("time.hoursShort", { count: hr });
+}
 
 export function channelEnabled(key: ChannelKey, props: ChannelsProps) {
   const snapshot = props.snapshot;
@@ -34,5 +51,5 @@ export function renderChannelAccountCount(
   if (count < 2) {
     return nothing;
   }
-  return html`<div class="account-count">Accounts (${count})</div>`;
+  return html`<div class="account-count">${tp("channels.accountCount", { count })}</div>`;
 }
