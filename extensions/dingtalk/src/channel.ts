@@ -351,7 +351,7 @@ export async function sendProactiveMessage(
   const payload: ProactiveMessagePayload = {
     robotCode: config.robotCode || config.clientId,
     msgKey,
-    msgParam: JSON.stringify({ title, text }),
+    msgParam: JSON.stringify({ title, content: text }),
   };
 
   if (isGroup) {
