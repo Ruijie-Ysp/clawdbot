@@ -3,7 +3,7 @@ read_when:
   - 你需要远程跟踪 Gateway 网关日志（无需 SSH）
   - 你需要 JSON 日志行用于工具处理
 summary: "`openclaw logs` 的 CLI 参考（通过 RPC 跟踪 Gateway 网关日志）"
-title: logs
+title: logs 命令
 x-i18n:
   generated_at: "2026-02-03T07:44:57Z"
   model: claude-opus-4-5

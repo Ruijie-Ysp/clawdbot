@@ -1,5 +1,6 @@
 import { html, nothing } from "lit";
 import type { ConfigUiHints } from "../types.ts";
+import { hasTranslation, t } from "../i18n/index.ts";
 import { icons } from "../icons.ts";
 import { renderNode } from "./config-form.node.ts";
 import { hintForPath, humanize, schemaType, type JsonSchema } from "./config-form.shared.ts";
@@ -237,45 +238,21 @@ const sectionIcons = {
 };
 
 // Section metadata
-export const SECTION_META: Record<string, { label: string; description: string }> = {
-  env: {
-    label: "Environment Variables",
-    description: "Environment variables passed to the gateway process",
-  },
-  update: { label: "Updates", description: "Auto-update settings and release channel" },
-  agents: { label: "Agents", description: "Agent configurations, models, and identities" },
-  auth: { label: "Authentication", description: "API keys and authentication profiles" },
-  channels: {
-    label: "Channels",
-    description: "Messaging channels (Telegram, Discord, Slack, etc.)",
-  },
-  messages: { label: "Messages", description: "Message handling and routing settings" },
-  commands: { label: "Commands", description: "Custom slash commands" },
-  hooks: { label: "Hooks", description: "Webhooks and event hooks" },
-  skills: { label: "Skills", description: "Skill packs and capabilities" },
-  tools: { label: "Tools", description: "Tool configurations (browser, search, etc.)" },
-  gateway: { label: "Gateway", description: "Gateway server settings (port, auth, binding)" },
-  wizard: { label: "Setup Wizard", description: "Setup wizard state and history" },
-  // Additional sections
-  meta: { label: "Metadata", description: "Gateway metadata and version information" },
-  logging: { label: "Logging", description: "Log levels and output configuration" },
-  browser: { label: "Browser", description: "Browser automation settings" },
-  ui: { label: "UI", description: "User interface preferences" },
-  models: { label: "Models", description: "AI model configurations and providers" },
-  bindings: { label: "Bindings", description: "Key bindings and shortcuts" },
-  broadcast: { label: "Broadcast", description: "Broadcast and notification settings" },
-  audio: { label: "Audio", description: "Audio input/output settings" },
-  session: { label: "Session", description: "Session management and persistence" },
-  cron: { label: "Cron", description: "Scheduled tasks and automation" },
-  web: { label: "Web", description: "Web server and API settings" },
-  discovery: { label: "Discovery", description: "Service discovery and networking" },
-  canvasHost: { label: "Canvas Host", description: "Canvas rendering and display" },
-  talk: { label: "Talk", description: "Voice and speech settings" },
-  plugins: { label: "Plugins", description: "Plugin management and extensions" },
-};
-
 function getSectionIcon(key: string) {
   return sectionIcons[key as keyof typeof sectionIcons] ?? sectionIcons.default;
+}
+
+export function resolveSectionMeta(
+  key: string,
+  schema?: JsonSchema,
+): { label: string; description: string } {
+  const labelKey = `config.sections.${key}.label`;
+  const descriptionKey = `config.sections.${key}.description`;
+  const label = hasTranslation(labelKey) ? t(labelKey) : (schema?.title ?? humanize(key));
+  const description = hasTranslation(descriptionKey)
+    ? t(descriptionKey)
+    : (schema?.description ?? "");
+  return { label, description };
 }
 
 function matchesSearch(key: string, schema: JsonSchema, query: string): boolean {
@@ -283,7 +260,7 @@ function matchesSearch(key: string, schema: JsonSchema, query: string): boolean 
     return true;
   }
   const q = query.toLowerCase();
-  const meta = SECTION_META[key];
+  const meta = resolveSectionMeta(key, schema);
 
   // Check key name
   if (key.toLowerCase().includes(q)) {
@@ -291,13 +268,11 @@ function matchesSearch(key: string, schema: JsonSchema, query: string): boolean 
   }
 
   // Check label and description
-  if (meta) {
-    if (meta.label.toLowerCase().includes(q)) {
-      return true;
-    }
-    if (meta.description.toLowerCase().includes(q)) {
-      return true;
-    }
+  if (meta.label.toLowerCase().includes(q)) {
+    return true;
+  }
+  if (meta.description.toLowerCase().includes(q)) {
+    return true;
   }
 
   return schemaMatches(schema, q);
@@ -463,11 +438,7 @@ export function renderConfigForm(props: ConfigFormProps) {
             `;
             })()
           : filteredEntries.map(([key, node]) => {
-              const meta = SECTION_META[key] ?? {
-                label: key.charAt(0).toUpperCase() + key.slice(1),
-                description: node.description ?? "",
-              };
-
+              const meta = resolveSectionMeta(key, node);
               return html`
               <section class="config-section-card" id="config-section-${key}">
                 <div class="config-section-card__header">

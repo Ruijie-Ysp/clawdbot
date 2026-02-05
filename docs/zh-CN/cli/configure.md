@@ -2,7 +2,7 @@
 read_when:
   - 你想交互式地调整凭证、设备或智能体默认设置
 summary: "`openclaw configure` 的 CLI 参考（交互式配置提示）"
-title: configure
+title: configure 命令
 x-i18n:
   generated_at: "2026-02-03T07:44:46Z"
   model: claude-opus-4-5

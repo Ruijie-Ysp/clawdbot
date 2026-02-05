@@ -3,7 +3,7 @@ read_when:
   - 设置基于 ACP 的 IDE 集成
   - 调试到 Gateway 网关的 ACP 会话路由
 summary: 运行用于 IDE 集成的 ACP 桥接器
-title: acp
+title: acp 命令
 x-i18n:
   generated_at: "2026-02-03T07:44:38Z"
   model: claude-opus-4-5

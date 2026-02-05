@@ -2,7 +2,7 @@
 read_when:
   - 添加或修改智能体 CLI 入口点
 summary: 直接 `openclaw agent` CLI 运行（带可选投递）
-title: Agent Send
+title: 智能体发送
 x-i18n:
   generated_at: "2026-02-03T07:54:52Z"
   model: claude-opus-4-5

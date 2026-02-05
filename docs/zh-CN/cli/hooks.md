@@ -3,7 +3,7 @@ read_when:
   - 你想管理智能体钩子
   - 你想安装或更新钩子
 summary: CLI 参考：`openclaw hooks`（智能体钩子）
-title: hooks
+title: hooks 命令
 x-i18n:
   generated_at: "2026-02-03T10:04:32Z"
   model: claude-opus-4-5

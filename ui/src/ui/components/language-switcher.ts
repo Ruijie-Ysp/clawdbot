@@ -4,7 +4,7 @@
 
 import { LitElement, css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { getLocale, setLocale, getAvailableLocales, onLocaleChanged } from "../i18n/index.js";
+import { getLocale, setLocale, getAvailableLocales, onLocaleChanged, t } from "../i18n/index.js";
 
 @customElement("clawdbot-language-switcher")
 export class LanguageSwitcher extends LitElement {
@@ -132,12 +132,12 @@ export class LanguageSwitcher extends LitElement {
   render() {
     return html`
       <div class="language-switcher">
-        <span class="language-label">🌐</span>
+        <span class="language-label">${t("languageSwitcher.label")}</span>
         <select
           class="language-select"
           @change=${(e: Event) => this._handleLocaleChange(e)}
-          aria-label="Language"
-          title="Select language"
+          aria-label=${t("languageSwitcher.label")}
+          title=${t("languageSwitcher.label")}
         >
           ${this._availableLocales.map(
             (locale) => html`

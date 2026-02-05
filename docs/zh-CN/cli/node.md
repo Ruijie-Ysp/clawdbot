@@ -3,7 +3,7 @@ read_when:
   - 运行无头节点主机
   - 为 system.run 配对非 macOS 节点
 summary: "`openclaw node` 的 CLI 参考（无头节点主机）"
-title: node
+title: node 命令
 x-i18n:
   generated_at: "2026-02-03T07:45:07Z"
   model: claude-opus-4-5

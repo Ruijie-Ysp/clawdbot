@@ -3,7 +3,7 @@ read_when:
   - 添加或修改消息 CLI 操作
   - 更改出站渠道行为
 summary: "`openclaw message`（发送 + 渠道操作）的 CLI 参考"
-title: message
+title: message 命令
 x-i18n:
   generated_at: "2026-02-01T20:21:30Z"
   model: claude-opus-4-5

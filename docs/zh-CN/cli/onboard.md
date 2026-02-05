@@ -2,7 +2,7 @@
 read_when:
   - 你想要 Gateway 网关、工作区、认证、渠道和 Skills 的引导式设置
 summary: "`openclaw onboard` 的 CLI 参考（交互式新手引导向导）"
-title: onboard
+title: onboard 命令
 x-i18n:
   generated_at: "2026-02-03T07:45:00Z"
   model: claude-opus-4-5

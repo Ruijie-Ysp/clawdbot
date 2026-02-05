@@ -3,7 +3,7 @@ read_when:
   - 你在不使用完整新手引导向导的情况下进行首次设置
   - 你想设置默认工作区路径
 summary: "`openclaw setup` 的 CLI 参考（初始化配置 + 工作区）"
-title: setup
+title: setup 命令
 x-i18n:
   generated_at: "2026-02-01T20:21:26Z"
   model: claude-opus-4-5

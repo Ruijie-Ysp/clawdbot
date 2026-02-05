@@ -3,7 +3,7 @@ read_when:
   - 使用语音通话插件并想了解 CLI 入口
   - 想要 `voicecall call|continue|status|tail|expose` 的快速示例
 summary: 语音通话插件命令的 `openclaw voicecall` CLI 参考
-title: voicecall
+title: voicecall 命令
 x-i18n:
   generated_at: "2026-02-01T20:21:37Z"
   model: claude-opus-4-5

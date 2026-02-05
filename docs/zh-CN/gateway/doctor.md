@@ -3,7 +3,7 @@ read_when:
   - 添加或修改 doctor 迁移
   - 引入破坏性配置更改
 summary: Doctor 命令：健康检查、配置迁移和修复步骤
-title: Doctor
+title: Doctor 诊断
 x-i18n:
   generated_at: "2026-02-03T07:49:03Z"
   model: claude-opus-4-5

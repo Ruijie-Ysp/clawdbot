@@ -3,7 +3,7 @@ read_when:
   - 你想查看哪些 Skills 可用并准备好运行
   - 你想调试 Skills 缺少的二进制文件/环境变量/配置
 summary: "`openclaw skills` 的 CLI 参考（列出/信息/检查）和 skill 资格"
-title: skills
+title: skills 命令
 x-i18n:
   generated_at: "2026-02-03T07:45:14Z"
   model: claude-opus-4-5

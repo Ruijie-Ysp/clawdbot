@@ -1890,11 +1890,13 @@
   display: grid;
   grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
   gap: 16px;
+  align-items: stretch;
 }
 
 .agent-files-list {
   display: grid;
   gap: 8px;
+  align-content: start;
 }
 
 .agent-file-row {
@@ -1936,6 +1938,21 @@
   border-radius: var(--radius-lg);
   padding: 16px;
   background: var(--card);
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.agent-files-editor .field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.agent-files-editor .field textarea {
+  flex: 1;
+  min-height: 300px;
+  resize: vertical;
 }
 
 .agent-file-header {

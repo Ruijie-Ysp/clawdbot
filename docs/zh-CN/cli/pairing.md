@@ -2,7 +2,7 @@
 read_when:
   - 你正在使用配对模式私信并需要批准发送者
 summary: "`openclaw pairing` 的 CLI 参考（批准/列出配对请求）"
-title: pairing
+title: pairing 命令
 x-i18n:
   generated_at: "2026-02-03T07:45:02Z"
   model: claude-opus-4-5

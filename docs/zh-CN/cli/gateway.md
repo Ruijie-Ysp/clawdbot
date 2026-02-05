@@ -4,7 +4,7 @@ read_when:
   - 调试 Gateway 网关认证、绑定模式和连接性
   - 通过 Bonjour 发现 Gateway 网关（局域网 + tailnet）
 summary: OpenClaw Gateway 网关 CLI（`openclaw gateway`）— 运行、查询和发现 Gateway 网关
-title: gateway
+title: gateway 命令
 x-i18n:
   generated_at: "2026-02-03T07:45:15Z"
   model: claude-opus-4-5

@@ -2,7 +2,7 @@
 read_when:
   - 你想快速检查运行中的 Gateway 网关健康状态
 summary: "`openclaw health` 的 CLI 参考（通过 RPC 获取 Gateway 网关健康端点）"
-title: health
+title: health 命令
 x-i18n:
   generated_at: "2026-02-03T07:44:55Z"
   model: claude-opus-4-5

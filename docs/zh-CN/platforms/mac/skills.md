@@ -3,7 +3,7 @@ read_when:
   - 更新 macOS Skills 设置 UI
   - 更改 Skills 门控或安装行为
 summary: macOS Skills 设置 UI 和基于 Gateway 网关的状态
-title: Skills
+title: 技能
 x-i18n:
   generated_at: "2026-02-03T10:08:09Z"
   model: claude-opus-4-5

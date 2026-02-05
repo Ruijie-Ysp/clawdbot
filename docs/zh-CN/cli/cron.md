@@ -3,7 +3,7 @@ read_when:
   - 你需要定时作业和唤醒功能
   - 你正在调试 cron 执行和日志
 summary: "`openclaw cron` 的 CLI 参考（调度和运行后台作业）"
-title: cron
+title: cron 命令
 x-i18n:
   generated_at: "2026-02-03T07:44:47Z"
   model: claude-opus-4-5

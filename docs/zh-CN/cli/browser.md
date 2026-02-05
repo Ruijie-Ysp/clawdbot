@@ -4,7 +4,7 @@ read_when:
   - 你想通过 node host 控制在另一台机器上运行的浏览器
   - 你想使用 Chrome 扩展中继（通过工具栏按钮附加/分离）
 summary: "`openclaw browser` 的 CLI 参考（配置文件、标签页、操作、扩展中继）"
-title: browser
+title: browser 命令
 x-i18n:
   generated_at: "2026-02-03T07:44:49Z"
   model: claude-opus-4-5

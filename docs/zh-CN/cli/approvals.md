@@ -3,7 +3,7 @@ read_when:
   - 你想通过 CLI 编辑执行审批
   - 你需要管理 Gateway 网关或节点主机上的允许列表
 summary: CLI 参考：`openclaw approvals`（Gateway 网关或节点主机的执行审批）
-title: approvals
+title: approvals 命令
 x-i18n:
   generated_at: "2026-02-03T10:04:09Z"
   model: claude-opus-4-5

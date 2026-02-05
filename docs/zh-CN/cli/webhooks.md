@@ -3,7 +3,7 @@ read_when:
   - 你想将 Gmail Pub/Sub 事件接入 OpenClaw
   - 你需要 Webhook 辅助命令
 summary: "`openclaw webhooks`（Webhook 辅助工具 + Gmail Pub/Sub）的 CLI 参考"
-title: webhooks
+title: webhooks 命令
 x-i18n:
   generated_at: "2026-02-01T20:21:38Z"
   model: claude-opus-4-5

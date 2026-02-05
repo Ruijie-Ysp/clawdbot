@@ -3,7 +3,7 @@ read_when:
   - 你想查找某个渠道的联系人/群组/自身 ID
   - 你正在开发渠道目录适配器
 summary: "`openclaw directory` 的 CLI 参考（self、peers、groups）"
-title: directory
+title: directory 命令
 x-i18n:
   generated_at: "2026-02-01T19:58:58Z"
   model: claude-opus-4-5

@@ -3,7 +3,7 @@ read_when:
   - 你想为 /new、/reset、/stop 和智能体生命周期事件实现事件驱动自动化
   - 你想构建、安装或调试 hooks
 summary: Hooks：用于命令和生命周期事件的事件驱动自动化
-title: Hooks
+title: 钩子（Hooks）
 x-i18n:
   generated_at: "2026-02-03T07:50:59Z"
   model: claude-opus-4-5

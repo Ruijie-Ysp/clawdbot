@@ -33,6 +33,7 @@ export interface Translations {
     queued: string;
     message: string;
     docs: string;
+    opensInNewTab: string;
     yes: string;
     no: string;
     na: string;
@@ -80,6 +81,7 @@ export interface Translations {
     navExpand: string;
     navCollapse: string;
     brandSubtitle: string;
+    disconnectedReason: string;
     errors: {
       disconnected: string;
       noReason: string;
@@ -90,6 +92,7 @@ export interface Translations {
   nav: {
     control: string;
     agent: string;
+    agents: string;
     overview: string;
     chat: string;
     channels: string;
@@ -116,6 +119,7 @@ export interface Translations {
   };
   // Page subtitles
   pageSubtitles: {
+    agents: string;
     overview: string;
     channels: string;
     instances: string;
@@ -127,6 +131,232 @@ export interface Translations {
     config: string;
     debug: string;
     logs: string;
+  };
+  // Agents
+  agents: {
+    badge: {
+      default: string;
+    };
+    sidebar: {
+      title: string;
+      configured: string;
+      noAgents: string;
+      selectTitle: string;
+      selectSubtitle: string;
+    };
+    header: {
+      subtitleFallback: string;
+    };
+    tabs: {
+      overview: string;
+      files: string;
+      tools: string;
+      skills: string;
+      channels: string;
+      cron: string;
+    };
+    overview: {
+      title: string;
+      subtitle: string;
+      workspace: string;
+      primaryModel: string;
+      identityName: string;
+      defaultLabel: string;
+      identityEmoji: string;
+      skillsFilter: string;
+      modelSelection: string;
+      primaryModelLabel: string;
+      fallbacksLabel: string;
+      fallbacksPlaceholder: string;
+      inheritDefault: string;
+      inheritDefaultWithValue: string;
+      reloadConfig: string;
+      identityUnavailable: string;
+    };
+    models: {
+      current: string;
+      noneConfigured: string;
+      fallbackSuffix: string;
+    };
+    contextCard: {
+      title: string;
+      workspace: string;
+      primaryModel: string;
+      identityName: string;
+      identityEmoji: string;
+      skillsFilter: string;
+      defaultLabel: string;
+    };
+    contextSubtitles: {
+      channels: string;
+      cron: string;
+    };
+    channels: {
+      title: string;
+      subtitle: string;
+      lastRefresh: string;
+      loadHint: string;
+      none: string;
+      statusConnected: string;
+      statusNoAccounts: string;
+      configured: string;
+      notConfigured: string;
+      enabled: string;
+      disabled: string;
+    };
+    cron: {
+      schedulerTitle: string;
+      schedulerSubtitle: string;
+      enabledLabel: string;
+      jobsLabel: string;
+      nextWakeLabel: string;
+      yes: string;
+      no: string;
+      agentJobsTitle: string;
+      agentJobsSubtitle: string;
+      noJobs: string;
+      chipEnabled: string;
+      chipDisabled: string;
+    };
+    files: {
+      title: string;
+      subtitle: string;
+      workspaceLabel: string;
+      loadHint: string;
+      noFiles: string;
+      selectFile: string;
+      reset: string;
+      missingInfo: string;
+      contentLabel: string;
+      missing: string;
+      missingBadge: string;
+    };
+    tools: {
+      title: string;
+      subtitle: string;
+      enabledCount: string;
+      enableAll: string;
+      disableAll: string;
+      reloadConfig: string;
+      loadHint: string;
+      explicitAllowlistHint: string;
+      globalAllowHint: string;
+      profileLabel: string;
+      sourceLabel: string;
+      statusLabel: string;
+      unsaved: string;
+      quickPresets: string;
+      inherit: string;
+      profileSource: {
+        agent: string;
+        global: string;
+        default: string;
+      };
+      sections: {
+        fs: string;
+        runtime: string;
+        web: string;
+        memory: string;
+        sessions: string;
+        ui: string;
+        messaging: string;
+        automation: string;
+        nodes: string;
+        agents: string;
+        media: string;
+      };
+      toolDescriptions: {
+        read: string;
+        write: string;
+        edit: string;
+        apply_patch: string;
+        exec: string;
+        process: string;
+        web_search: string;
+        web_fetch: string;
+        memory_search: string;
+        memory_get: string;
+        sessions_list: string;
+        sessions_history: string;
+        sessions_send: string;
+        sessions_spawn: string;
+        session_status: string;
+        browser: string;
+        canvas: string;
+        message: string;
+        cron: string;
+        gateway: string;
+        nodes: string;
+        agents_list: string;
+        image: string;
+      };
+      profiles: {
+        minimal: string;
+        coding: string;
+        messaging: string;
+        full: string;
+      };
+    };
+    skills: {
+      title: string;
+      subtitle: string;
+      enabledCount: string;
+      useAll: string;
+      disableAll: string;
+      reloadConfig: string;
+      loadHint: string;
+      allowlistHint: string;
+      allEnabledHint: string;
+      loadSkillsHint: string;
+      filterLabel: string;
+      searchPlaceholder: string;
+      shownCount: string;
+      noSkills: string;
+      allSkills: string;
+      selectedCount: string;
+      groups: {
+        workspace: string;
+        "built-in": string;
+        installed: string;
+        extra: string;
+        other: string;
+      };
+      chips: {
+        eligible: string;
+        blocked: string;
+        disabled: string;
+      };
+      missingPrefix: string;
+      reasonPrefix: string;
+      reasons: {
+        disabled: string;
+        blockedByAllowlist: string;
+      };
+    };
+  };
+  // Config UI
+  config: {
+    sidebarTitle: string;
+    allSettings: string;
+    searchPlaceholder: string;
+    modeForm: string;
+    modeRaw: string;
+    noChanges: string;
+    unsavedChanges: string;
+    unsavedChangeCount: string;
+    unsavedChangesCount: string;
+    pendingChange: string;
+    pendingChanges: string;
+    loadingSchema: string;
+    formUnsafe: string;
+    rawJson5: string;
+    validity: {
+      valid: string;
+      invalid: string;
+      unknown: string;
+    };
+    sections: Record<string, { label: string; description: string }>;
+    subsections?: Record<string, Record<string, string>>;
   };
   // Time formatting
   time: {
@@ -859,6 +1089,7 @@ export interface Translations {
       hashMissing: string;
     };
     sections: Record<string, { label: string; description: string }>;
+    subsections?: Record<string, Record<string, string>>;
   };
   // Config form
   configForm: {

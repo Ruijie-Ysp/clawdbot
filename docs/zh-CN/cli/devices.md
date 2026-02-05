@@ -3,7 +3,7 @@ read_when:
   - 你正在批准设备配对请求
   - 你需要轮换或撤销设备 token
 summary: "`openclaw devices` 的 CLI 参考（设备配对 + token 轮换/撤销）"
-title: devices
+title: devices 命令
 x-i18n:
   generated_at: "2026-02-03T07:44:52Z"
   model: claude-opus-4-5

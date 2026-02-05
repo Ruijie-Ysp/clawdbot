@@ -3,7 +3,7 @@ read_when:
   - 你想要一个连接 Gateway 网关的终端 UI（支持远程）
   - 你想从脚本传递 url/token/session
 summary: "`openclaw tui` 的 CLI 参考（连接到 Gateway 网关的终端 UI）"
-title: tui
+title: tui 命令
 x-i18n:
   generated_at: "2026-02-03T07:45:20Z"
   model: claude-opus-4-5

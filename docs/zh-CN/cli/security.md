@@ -3,7 +3,7 @@ read_when:
   - 你想对配置/状态运行快速安全审计
   - 你想应用安全的"修复"建议（chmod、收紧默认值）
 summary: "`openclaw security` 的 CLI 参考（审计和修复常见安全隐患）"
-title: security
+title: security 命令
 x-i18n:
   generated_at: "2026-02-03T07:45:13Z"
   model: claude-opus-4-5

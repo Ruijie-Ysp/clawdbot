@@ -2,7 +2,7 @@
 read_when:
   - 你想以非交互方式读取或编辑配置
 summary: "`openclaw config` 的 CLI 参考（获取/设置/取消设置配置值）"
-title: config
+title: config 命令
 x-i18n:
   generated_at: "2026-02-03T10:04:13Z"
   model: claude-opus-4-5

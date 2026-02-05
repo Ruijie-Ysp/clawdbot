@@ -3,7 +3,7 @@ read_when:
   - 你想通过 Tailscale 访问 Gateway 网关
   - 你想使用浏览器 Control UI 和配置编辑
 summary: Gateway 网关 Web 界面：Control UI、绑定模式和安全
-title: Web
+title: Web 界面
 x-i18n:
   generated_at: "2026-02-03T10:13:29Z"
   model: claude-opus-4-5

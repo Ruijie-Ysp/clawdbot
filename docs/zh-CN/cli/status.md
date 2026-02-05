@@ -3,7 +3,7 @@ read_when:
   - 你想快速诊断渠道健康状况 + 最近的会话接收者
   - 你想获取可粘贴的"all"状态用于调试
 summary: "`openclaw status` 的 CLI 参考（诊断、探测、使用量快照）"
-title: status
+title: status 命令
 x-i18n:
   generated_at: "2026-02-03T07:45:21Z"
   model: claude-opus-4-5
