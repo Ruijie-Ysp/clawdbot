@@ -168,4 +168,3 @@ export function titleForTab(tab: Tab): string {
 export function subtitleForTab(tab: Tab): string {
   return t(`pageSubtitles.${tab}`);
 }
-}
