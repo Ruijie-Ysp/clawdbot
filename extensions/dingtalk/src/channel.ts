@@ -281,6 +281,7 @@ function extractMessageContent(data: DingTalkInboundMessage): MessageContent {
   if (msgtype === "richText") {
     const richTextParts = data.content?.richText || [];
     let text = "";
+    let downloadCode: string | undefined;
     for (const part of richTextParts) {
       if (part.type === "text" && part.text) {
         text += part.text;
@@ -288,8 +289,16 @@ function extractMessageContent(data: DingTalkInboundMessage): MessageContent {
       if (part.type === "at" && part.atName) {
         text += `@${part.atName} `;
       }
+      if (part.type === "picture" && part.downloadCode && !downloadCode) {
+        downloadCode = part.downloadCode;
+      }
     }
-    return { text: text.trim() || "[富文本消息]", messageType: "richText" };
+    return {
+      text: text.trim() || (downloadCode ? "[图片]" : "[富文本消息]"),
+      mediaPath: downloadCode,
+      mediaType: downloadCode ? "image" : undefined,
+      messageType: "richText",
+    };
   }
 
   if (msgtype === "picture") {

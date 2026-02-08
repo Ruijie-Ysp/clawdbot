@@ -355,10 +355,11 @@ export async function detectAndLoadPromptImages(params: {
   loadedCount: number;
   skippedCount: number;
 }> {
-  // If model doesn't support images, return empty results
+  // If model doesn't support images, skip detection but still pass through existing images
+  // (e.g., from web chat attachments) so the model API can handle them.
   if (!modelSupportsImages(params.model)) {
     return {
-      images: [],
+      images: params.existingImages ?? [],
       historyImagesByIndex: new Map(),
       detectedRefs: [],
       loadedCount: 0,

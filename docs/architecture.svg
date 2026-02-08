@@ -1,0 +1,610 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1600" font-family="'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f1a"/>
+      <stop offset="50%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <linearGradient id="cliGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="gatewayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="routingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#f97316"/>
+    </linearGradient>
+    <linearGradient id="channelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981"/>
+      <stop offset="100%" style="stop-color:#34d399"/>
+    </linearGradient>
+    <linearGradient id="agentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ec4899"/>
+      <stop offset="100%" style="stop-color:#f43f5e"/>
+    </linearGradient>
+    <linearGradient id="infraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6"/>
+      <stop offset="100%" style="stop-color:#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="mediaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#14b8a6"/>
+      <stop offset="100%" style="stop-color:#2dd4bf"/>
+    </linearGradient>
+    <linearGradient id="pluginGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f472b6"/>
+      <stop offset="100%" style="stop-color:#fb923c"/>
+    </linearGradient>
+    <linearGradient id="appGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9"/>
+      <stop offset="100%" style="stop-color:#38bdf8"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="softGlow"><feGaussianBlur stdDeviation="6" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/></filter>
+    <pattern id="gridPattern" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+    </pattern>
+    <style>
+      @keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+      @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+      @keyframes dash { to { stroke-dashoffset: -20; } }
+      @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+      .card { filter: url(#shadow); }
+      .flow-dash { stroke-dasharray: 8 4; animation: dash 1s linear infinite; }
+      .flow-dash-slow { stroke-dasharray: 12 6; animation: dash 2s linear infinite; }
+      .pulse-node { animation: pulse 3s ease-in-out infinite; }
+      .float-anim { animation: float 4s ease-in-out infinite; }
+      .label-text { font-size: 11px; fill: rgba(255,255,255,0.5); font-weight: 500; letter-spacing: 2px; text-transform: uppercase; }
+      .title-text { font-size: 13px; fill: #fff; font-weight: 700; }
+      .sub-text { font-size: 10.5px; fill: rgba(255,255,255,0.65); }
+      .tag-text { font-size: 9px; fill: rgba(255,255,255,0.8); font-weight: 600; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="1600" fill="url(#bgGrad)"/>
+  <rect width="1200" height="1600" fill="url(#gridPattern)"/>
+  <circle cx="100" cy="200" r="150" fill="#6366f1" opacity="0.04" class="pulse-node"/>
+  <circle cx="1100" cy="400" r="200" fill="#06b6d4" opacity="0.03" class="pulse-node"/>
+  <circle cx="600" cy="1400" r="180" fill="#ec4899" opacity="0.03" class="pulse-node"/>
+
+  <!-- Title -->
+  <g transform="translate(600, 55)">
+    <text text-anchor="middle" font-size="28" font-weight="800" fill="#fff" letter-spacing="1">OpenClaw Architecture</text>
+    <text text-anchor="middle" y="28" font-size="13" fill="rgba(255,255,255,0.4)" font-weight="400" letter-spacing="3">MODULAR AI ASSISTANT PLATFORM</text>
+    <line x1="-80" y1="42" x2="80" y2="42" stroke="url(#cliGrad)" stroke-width="2" opacity="0.5"/>
+  </g>
+
+  <!-- LAYER 1: Entry Points -->
+  <text x="60" y="120" class="label-text">ENTRY POINTS</text>
+  <g transform="translate(60, 135)" class="float-anim" style="animation-delay: 0s">
+    <rect width="240" height="80" rx="16" fill="rgba(99,102,241,0.12)" stroke="rgba(99,102,241,0.4)" stroke-width="1.5" class="card"/>
+    <rect x="12" y="14" width="36" height="36" rx="10" fill="url(#cliGrad)" opacity="0.9"/>
+    <text x="60" y="30" class="title-text">CLI Interface</text>
+    <text x="60" y="46" class="sub-text">openclaw.mjs → entry.ts</text>
+    <text x="60" y="60" class="sub-text">Commander program builder</text>
+  </g>
+  <g transform="translate(340, 135)" class="float-anim" style="animation-delay: 0.5s">
+    <rect width="240" height="80" rx="16" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.4)" stroke-width="1.5" class="card"/>
+    <rect x="12" y="14" width="36" height="36" rx="10" fill="url(#gatewayGrad)" opacity="0.9"/>
+    <text x="60" y="30" class="title-text">Gateway Server</text>
+    <text x="60" y="46" class="sub-text">WebSocket RPC · Hono HTTP</text>
+    <text x="60" y="60" class="sub-text">Auth · Sessions · Broadcast</text>
+  </g>
+  <g transform="translate(620, 135)" class="float-anim" style="animation-delay: 1s">
+    <rect width="240" height="80" rx="16" fill="rgba(14,165,233,0.12)" stroke="rgba(14,165,233,0.4)" stroke-width="1.5" class="card"/>
+    <rect x="12" y="14" width="36" height="36" rx="10" fill="url(#appGrad)" opacity="0.9"/>
+    <text x="60" y="30" class="title-text">Web UI</text>
+    <text x="60" y="46" class="sub-text">Control panel · Chat interface</text>
+    <text x="60" y="60" class="sub-text">Canvas · A2UI host</text>
+  </g>
+  <g transform="translate(900, 135)" class="float-anim" style="animation-delay: 1.5s">
+    <rect width="240" height="80" rx="16" fill="rgba(14,165,233,0.12)" stroke="rgba(14,165,233,0.4)" stroke-width="1.5" class="card"/>
+    <rect x="12" y="14" width="36" height="36" rx="10" fill="url(#appGrad)" opacity="0.9"/>
+    <text x="60" y="30" class="title-text">Native Apps</text>
+    <text x="60" y="46" class="sub-text">macOS · iOS · Android</text>
+    <text x="60" y="60" class="sub-text">SwiftUI · Kotlin · Menubar</text>
+  </g>
+
+  <!-- Flow lines -->
+  <line x1="180" y1="215" x2="180" y2="270" stroke="rgba(99,102,241,0.4)" stroke-width="1.5" class="flow-dash"/>
+  <line x1="460" y1="215" x2="460" y2="270" stroke="rgba(59,130,246,0.4)" stroke-width="1.5" class="flow-dash"/>
+  <line x1="740" y1="215" x2="600" y2="270" stroke="rgba(14,165,233,0.3)" stroke-width="1" class="flow-dash"/>
+  <line x1="1020" y1="215" x2="600" y2="270" stroke="rgba(14,165,233,0.2)" stroke-width="1" class="flow-dash"/>
+
+  <!-- LAYER 2: Commands & Services -->
+  <text x="60" y="290" class="label-text">COMMANDS &amp; SERVICES</text>
+  <g transform="translate(60, 305)">
+    <rect width="520" height="100" rx="16" fill="rgba(99,102,241,0.08)" stroke="rgba(99,102,241,0.25)" stroke-width="1" class="card"/>
+    <text x="20" y="24" class="title-text">CLI Commands (src/commands/)</text>
+    <g transform="translate(16, 36)">
+      <rect x="0" y="0" width="68" height="24" rx="8" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="34" y="16" text-anchor="middle" class="tag-text">onboard</text>
+      <rect x="76" y="0" width="56" height="24" rx="8" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="104" y="16" text-anchor="middle" class="tag-text">agent</text>
+      <rect x="140" y="0" width="72" height="24" rx="8" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="176" y="16" text-anchor="middle" class="tag-text">channels</text>
+      <rect x="220" y="0" width="56" height="24" rx="8" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="248" y="16" text-anchor="middle" class="tag-text">config</text>
+      <rect x="284" y="0" width="60" height="24" rx="8" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="314" y="16" text-anchor="middle" class="tag-text">doctor</text>
+      <rect x="352" y="0" width="60" height="24" rx="8" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="382" y="16" text-anchor="middle" class="tag-text">models</text>
+      <rect x="420" y="0" width="56" height="24" rx="8" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="448" y="16" text-anchor="middle" class="tag-text">status</text>
+    </g>
+    <g transform="translate(16, 66)">
+      <rect x="0" y="0" width="56" height="24" rx="8" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="28" y="16" text-anchor="middle" class="tag-text">skills</text>
+      <rect x="64" y="0" width="68" height="24" rx="8" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="98" y="16" text-anchor="middle" class="tag-text">memory</text>
+      <rect x="140" y="0" width="68" height="24" rx="8" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="174" y="16" text-anchor="middle" class="tag-text">message</text>
+      <rect x="216" y="0" width="72" height="24" rx="8" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="252" y="16" text-anchor="middle" class="tag-text">gateway</text>
+    </g>
+  </g>
+  <g transform="translate(620, 305)">
+    <rect width="520" height="100" rx="16" fill="rgba(59,130,246,0.08)" stroke="rgba(59,130,246,0.25)" stroke-width="1" class="card"/>
+    <text x="20" y="24" class="title-text">Gateway Services (src/gateway/)</text>
+    <g transform="translate(16, 36)">
+      <rect x="0" y="0" width="80" height="24" rx="8" fill="rgba(59,130,246,0.2)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="40" y="16" text-anchor="middle" class="tag-text">RPC Server</text>
+      <rect x="88" y="0" width="56" height="24" rx="8" fill="rgba(59,130,246,0.2)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="116" y="16" text-anchor="middle" class="tag-text">Chat</text>
+      <rect x="152" y="0" width="56" height="24" rx="8" fill="rgba(59,130,246,0.2)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="180" y="16" text-anchor="middle" class="tag-text">Auth</text>
+      <rect x="216" y="0" width="72" height="24" rx="8" fill="rgba(59,130,246,0.2)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="252" y="16" text-anchor="middle" class="tag-text">Methods</text>
+      <rect x="296" y="0" width="80" height="24" rx="8" fill="rgba(59,130,246,0.2)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="336" y="16" text-anchor="middle" class="tag-text">Broadcast</text>
+    </g>
+    <g transform="translate(16, 66)">
+      <rect x="0" y="0" width="56" height="24" rx="8" fill="rgba(59,130,246,0.2)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="28" y="16" text-anchor="middle" class="tag-text">Hooks</text>
+      <rect x="64" y="0" width="56" height="24" rx="8" fill="rgba(59,130,246,0.2)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="92" y="16" text-anchor="middle" class="tag-text">Cron</text>
+      <rect x="128" y="0" width="88" height="24" rx="8" fill="rgba(59,130,246,0.2)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="172" y="16" text-anchor="middle" class="tag-text">Node Registry</text>
+      <rect x="224" y="0" width="80" height="24" rx="8" fill="rgba(59,130,246,0.2)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="264" y="16" text-anchor="middle" class="tag-text">Control UI</text>
+    </g>
+  </g>
+
+  <!-- Flow to Routing -->
+  <line x1="320" y1="405" x2="420" y2="450" stroke="rgba(245,158,11,0.3)" stroke-width="1.5" class="flow-dash"/>
+  <line x1="880" y1="405" x2="780" y2="450" stroke="rgba(245,158,11,0.3)" stroke-width="1.5" class="flow-dash"/>
+
+  <!-- LAYER 3: Routing -->
+  <text x="60" y="465" class="label-text">ROUTING &amp; SESSION MANAGEMENT</text>
+  <g transform="translate(200, 475)">
+    <rect width="800" height="90" rx="16" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.3)" stroke-width="1.5" class="card"/>
+    <rect width="800" height="90" rx="16" fill="none" stroke="rgba(245,158,11,0.15)" stroke-width="3" class="pulse-node"/>
+    <rect x="14" y="14" width="36" height="36" rx="10" fill="url(#routingGrad)" opacity="0.9"/>
+    <text x="62" y="30" class="title-text">Routing Layer (src/routing/)</text>
+    <text x="62" y="48" class="sub-text">resolveAgentRoute() · Session key building · Binding resolution</text>
+    <text x="62" y="64" class="sub-text">Channel/peer matching · DM scoping · Identity linking</text>
+    <circle cx="760" cy="45" r="6" fill="rgba(245,158,11,0.6)">
+      <animate attributeName="r" values="4;8;4" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <text x="740" y="49" text-anchor="end" font-size="9" fill="rgba(245,158,11,0.7)" font-weight="600">LIVE</text>
+  </g>
+
+  <!-- Flow to Channels/Agent -->
+  <path d="M 400 565 Q 400 590 300 610" stroke="rgba(16,185,129,0.4)" stroke-width="1.5" fill="none" class="flow-dash"/>
+  <path d="M 600 565 L 600 620" stroke="rgba(236,72,153,0.4)" stroke-width="1.5" fill="none" class="flow-dash"/>
+  <path d="M 800 565 Q 800 590 900 610" stroke="rgba(139,92,246,0.4)" stroke-width="1.5" fill="none" class="flow-dash"/>
+
+  <!-- LAYER 4: Channels -->
+  <text x="60" y="630" class="label-text">CHANNELS</text>
+  <g transform="translate(60, 645)">
+    <rect width="340" height="220" rx="16" fill="rgba(16,185,129,0.06)" stroke="rgba(16,185,129,0.25)" stroke-width="1.5" class="card"/>
+    <text x="20" y="24" class="title-text">Channel Layer (src/channels/)</text>
+    <text x="20" y="42" class="sub-text">Registry · Plugin loading · Allowlist · Typing</text>
+    <text x="20" y="64" font-size="10" fill="rgba(16,185,129,0.7)" font-weight="600" letter-spacing="1">CORE</text>
+    <g transform="translate(16, 72)">
+      <rect x="0" y="0" width="72" height="22" rx="7" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="36" y="15" text-anchor="middle" class="tag-text">Telegram</text>
+      <rect x="80" y="0" width="76" height="22" rx="7" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="118" y="15" text-anchor="middle" class="tag-text">WhatsApp</text>
+      <rect x="164" y="0" width="64" height="22" rx="7" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="196" y="15" text-anchor="middle" class="tag-text">Discord</text>
+      <rect x="236" y="0" width="52" height="22" rx="7" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="262" y="15" text-anchor="middle" class="tag-text">Slack</text>
+    </g>
+    <g transform="translate(16, 100)">
+      <rect x="0" y="0" width="60" height="22" rx="7" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="30" y="15" text-anchor="middle" class="tag-text">Signal</text>
+      <rect x="68" y="0" width="76" height="22" rx="7" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="106" y="15" text-anchor="middle" class="tag-text">iMessage</text>
+      <rect x="152" y="0" width="56" height="22" rx="7" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="180" y="15" text-anchor="middle" class="tag-text">Feishu</text>
+      <rect x="216" y="0" width="48" height="22" rx="7" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="240" y="15" text-anchor="middle" class="tag-text">LINE</text>
+    </g>
+    <text x="20" y="140" font-size="10" fill="rgba(244,114,182,0.7)" font-weight="600" letter-spacing="1">EXTENSIONS (20+)</text>
+    <g transform="translate(16, 148)">
+      <rect x="0" y="0" width="60" height="22" rx="7" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="30" y="15" text-anchor="middle" class="tag-text">Teams</text>
+      <rect x="68" y="0" width="56" height="22" rx="7" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="96" y="15" text-anchor="middle" class="tag-text">Matrix</text>
+      <rect x="132" y="0" width="48" height="22" rx="7" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="156" y="15" text-anchor="middle" class="tag-text">Zalo</text>
+      <rect x="188" y="0" width="64" height="22" rx="7" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="220" y="15" text-anchor="middle" class="tag-text">Twitch</text>
+      <rect x="260" y="0" width="56" height="22" rx="7" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="288" y="15" text-anchor="middle" class="tag-text">Nostr</text>
+    </g>
+    <g transform="translate(16, 176)">
+      <rect x="0" y="0" width="76" height="22" rx="7" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="38" y="15" text-anchor="middle" class="tag-text">DingTalk</text>
+      <rect x="84" y="0" width="88" height="22" rx="7" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="128" y="15" text-anchor="middle" class="tag-text">Mattermost</text>
+      <rect x="180" y="0" width="80" height="22" rx="7" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="220" y="15" text-anchor="middle" class="tag-text">Voice Call</text>
+    </g>
+  </g>
+
+  <!-- LAYER 4: Agent Runtime -->
+  <text x="430" y="630" class="label-text">AGENT RUNTIME</text>
+  <g transform="translate(430, 645)">
+    <rect width="340" height="220" rx="16" fill="rgba(236,72,153,0.06)" stroke="rgba(236,72,153,0.25)" stroke-width="1.5" class="card"/>
+    <circle cx="300" cy="30" r="12" fill="none" stroke="rgba(236,72,153,0.3)" stroke-width="1.5" stroke-dasharray="4 3">
+      <animateTransform attributeName="transform" type="rotate" from="0 300 30" to="360 300 30" dur="8s" repeatCount="indefinite"/>
+    </circle>
+    <text x="20" y="24" class="title-text">Agent System (src/agents/)</text>
+    <text x="20" y="42" class="sub-text">Pi embedded runner · Model selection · Fallback</text>
+    <g transform="translate(16, 56)">
+      <rect x="0" y="0" width="88" height="22" rx="7" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="44" y="15" text-anchor="middle" class="tag-text">Pi Runner</text>
+      <rect x="96" y="0" width="80" height="22" rx="7" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="136" y="15" text-anchor="middle" class="tag-text">Model Auth</text>
+      <rect x="184" y="0" width="72" height="22" rx="7" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="220" y="15" text-anchor="middle" class="tag-text">Sandbox</text>
+    </g>
+    <g transform="translate(16, 84)">
+      <rect x="0" y="0" width="80" height="22" rx="7" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="40" y="15" text-anchor="middle" class="tag-text">Bash Tools</text>
+      <rect x="88" y="0" width="88" height="22" rx="7" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="132" y="15" text-anchor="middle" class="tag-text">Browser Auto</text>
+      <rect x="184" y="0" width="72" height="22" rx="7" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="220" y="15" text-anchor="middle" class="tag-text">Memory</text>
+    </g>
+    <g transform="translate(16, 112)">
+      <rect x="0" y="0" width="56" height="22" rx="7" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="28" y="15" text-anchor="middle" class="tag-text">Skills</text>
+      <rect x="64" y="0" width="80" height="22" rx="7" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="104" y="15" text-anchor="middle" class="tag-text">Sub-agents</text>
+      <rect x="152" y="0" width="80" height="22" rx="7" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="192" y="15" text-anchor="middle" class="tag-text">Auto-reply</text>
+    </g>
+    <text x="20" y="152" font-size="10" fill="rgba(251,146,60,0.7)" font-weight="600" letter-spacing="1">SKILLS &amp; TOOLS</text>
+    <g transform="translate(16, 160)">
+      <rect x="0" y="0" width="72" height="22" rx="7" fill="rgba(251,146,60,0.12)" stroke="rgba(251,146,60,0.25)" stroke-width="1"/>
+      <text x="36" y="15" text-anchor="middle" class="tag-text">File Ops</text>
+      <rect x="80" y="0" width="72" height="22" rx="7" fill="rgba(251,146,60,0.12)" stroke="rgba(251,146,60,0.25)" stroke-width="1"/>
+      <text x="116" y="15" text-anchor="middle" class="tag-text">Browser</text>
+      <rect x="160" y="0" width="72" height="22" rx="7" fill="rgba(251,146,60,0.12)" stroke="rgba(251,146,60,0.25)" stroke-width="1"/>
+      <text x="196" y="15" text-anchor="middle" class="tag-text">Canvas</text>
+      <rect x="240" y="0" width="72" height="22" rx="7" fill="rgba(251,146,60,0.12)" stroke="rgba(251,146,60,0.25)" stroke-width="1"/>
+      <text x="276" y="15" text-anchor="middle" class="tag-text">Search</text>
+    </g>
+    <g transform="translate(16, 188)">
+      <rect x="0" y="0" width="80" height="22" rx="7" fill="rgba(251,146,60,0.12)" stroke="rgba(251,146,60,0.25)" stroke-width="1"/>
+      <text x="40" y="15" text-anchor="middle" class="tag-text">Messaging</text>
+      <rect x="88" y="0" width="72" height="22" rx="7" fill="rgba(251,146,60,0.12)" stroke="rgba(251,146,60,0.25)" stroke-width="1"/>
+      <text x="124" y="15" text-anchor="middle" class="tag-text">Session</text>
+    </g>
+  </g>
+
+  <!-- Bidirectional arrow -->
+  <line x1="400" y1="755" x2="430" y2="755" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+  <polygon points="400,755 408,751 408,759" fill="rgba(255,255,255,0.3)"/>
+  <polygon points="430,755 422,751 422,759" fill="rgba(255,255,255,0.3)"/>
+
+  <!-- LAYER 4: Infrastructure -->
+  <text x="800" y="630" class="label-text">INFRASTRUCTURE</text>
+  <g transform="translate(800, 645)">
+    <rect width="340" height="220" rx="16" fill="rgba(139,92,246,0.06)" stroke="rgba(139,92,246,0.25)" stroke-width="1.5" class="card"/>
+    <text x="20" y="24" class="title-text">Infrastructure (src/infra/)</text>
+    <text x="20" y="42" class="sub-text">Core platform services &amp; utilities</text>
+    <g transform="translate(16, 56)">
+      <rect x="0" y="0" width="72" height="22" rx="7" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="36" y="15" text-anchor="middle" class="tag-text">Bonjour</text>
+      <rect x="80" y="0" width="72" height="22" rx="7" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="116" y="15" text-anchor="middle" class="tag-text">Pairing</text>
+      <rect x="160" y="0" width="80" height="22" rx="7" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="200" y="15" text-anchor="middle" class="tag-text">Heartbeat</text>
+      <rect x="248" y="0" width="72" height="22" rx="7" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="284" y="15" text-anchor="middle" class="tag-text">Updates</text>
+    </g>
+    <g transform="translate(16, 84)">
+      <rect x="0" y="0" width="88" height="22" rx="7" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="44" y="15" text-anchor="middle" class="tag-text">SSH Tunnel</text>
+      <rect x="96" y="0" width="80" height="22" rx="7" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="136" y="15" text-anchor="middle" class="tag-text">Tailscale</text>
+      <rect x="184" y="0" width="72" height="22" rx="7" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="220" y="15" text-anchor="middle" class="tag-text">Outbound</text>
+    </g>
+    <g transform="translate(16, 112)">
+      <rect x="0" y="0" width="96" height="22" rx="7" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="48" y="15" text-anchor="middle" class="tag-text">Exec Approvals</text>
+      <rect x="104" y="0" width="88" height="22" rx="7" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="148" y="15" text-anchor="middle" class="tag-text">Migrations</text>
+      <rect x="200" y="0" width="72" height="22" rx="7" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="236" y="15" text-anchor="middle" class="tag-text">Daemon</text>
+    </g>
+    <text x="20" y="152" font-size="10" fill="rgba(20,184,166,0.7)" font-weight="600" letter-spacing="1">MEDIA PIPELINE</text>
+    <g transform="translate(16, 160)">
+      <rect x="0" y="0" width="56" height="22" rx="7" fill="rgba(20,184,166,0.12)" stroke="rgba(20,184,166,0.25)" stroke-width="1"/>
+      <text x="28" y="15" text-anchor="middle" class="tag-text">Fetch</text>
+      <rect x="64" y="0" width="56" height="22" rx="7" fill="rgba(20,184,166,0.12)" stroke="rgba(20,184,166,0.25)" stroke-width="1"/>
+      <text x="92" y="15" text-anchor="middle" class="tag-text">Store</text>
+      <rect x="128" y="0" width="72" height="22" rx="7" fill="rgba(20,184,166,0.12)" stroke="rgba(20,184,166,0.25)" stroke-width="1"/>
+      <text x="164" y="15" text-anchor="middle" class="tag-text">Image Ops</text>
+      <rect x="208" y="0" width="56" height="22" rx="7" fill="rgba(20,184,166,0.12)" stroke="rgba(20,184,166,0.25)" stroke-width="1"/>
+      <text x="236" y="15" text-anchor="middle" class="tag-text">MIME</text>
+    </g>
+    <g transform="translate(16, 188)">
+      <rect x="0" y="0" width="56" height="22" rx="7" fill="rgba(20,184,166,0.12)" stroke="rgba(20,184,166,0.25)" stroke-width="1"/>
+      <text x="28" y="15" text-anchor="middle" class="tag-text">Parse</text>
+      <rect x="64" y="0" width="64" height="22" rx="7" fill="rgba(20,184,166,0.12)" stroke="rgba(20,184,166,0.25)" stroke-width="1"/>
+      <text x="96" y="15" text-anchor="middle" class="tag-text">Server</text>
+    </g>
+  </g>
+
+  <!-- Flow to bottom layers -->
+  <line x1="230" y1="865" x2="230" y2="920" stroke="rgba(16,185,129,0.3)" stroke-width="1.5" class="flow-dash"/>
+  <line x1="600" y1="865" x2="600" y2="920" stroke="rgba(236,72,153,0.3)" stroke-width="1.5" class="flow-dash"/>
+  <line x1="970" y1="865" x2="970" y2="920" stroke="rgba(139,92,246,0.3)" stroke-width="1.5" class="flow-dash"/>
+
+  <!-- LAYER 5: Plugin System & Config -->
+  <text x="60" y="940" class="label-text">PLUGIN SYSTEM &amp; CONFIGURATION</text>
+  <g transform="translate(60, 955)">
+    <rect width="520" height="110" rx="16" fill="rgba(244,114,182,0.06)" stroke="rgba(244,114,182,0.25)" stroke-width="1.5" class="card"/>
+    <text x="20" y="24" class="title-text">Plugin System (src/plugins/ + extensions/)</text>
+    <text x="20" y="42" class="sub-text">Runtime discovery · Lazy loading · Workspace packages</text>
+    <text x="20" y="62" font-size="10" fill="rgba(244,114,182,0.7)" font-weight="600" letter-spacing="1">PLUGIN TYPES</text>
+    <g transform="translate(16, 70)">
+      <rect x="0" y="0" width="96" height="22" rx="7" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="48" y="15" text-anchor="middle" class="tag-text">Channel Plugins</text>
+      <rect x="104" y="0" width="80" height="22" rx="7" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="144" y="15" text-anchor="middle" class="tag-text">Auth Plugins</text>
+      <rect x="192" y="0" width="96" height="22" rx="7" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="240" y="15" text-anchor="middle" class="tag-text">Memory Plugins</text>
+      <rect x="296" y="0" width="80" height="22" rx="7" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="336" y="15" text-anchor="middle" class="tag-text">Tool Plugins</text>
+    </g>
+  </g>
+
+  <g transform="translate(620, 955)">
+    <rect width="520" height="110" rx="16" fill="rgba(99,102,241,0.06)" stroke="rgba(99,102,241,0.2)" stroke-width="1.5" class="card"/>
+    <text x="20" y="24" class="title-text">Configuration (src/config/)</text>
+    <text x="20" y="42" class="sub-text">Hierarchical config: env → file → CLI flags → defaults</text>
+    <text x="20" y="62" font-size="10" fill="rgba(99,102,241,0.7)" font-weight="600" letter-spacing="1">CONFIG SECTIONS</text>
+    <g transform="translate(16, 70)">
+      <rect x="0" y="0" width="64" height="22" rx="7" fill="rgba(99,102,241,0.12)" stroke="rgba(99,102,241,0.25)" stroke-width="1"/>
+      <text x="32" y="15" text-anchor="middle" class="tag-text">Agents</text>
+      <rect x="72" y="0" width="72" height="22" rx="7" fill="rgba(99,102,241,0.12)" stroke="rgba(99,102,241,0.25)" stroke-width="1"/>
+      <text x="108" y="15" text-anchor="middle" class="tag-text">Channels</text>
+      <rect x="152" y="0" width="64" height="22" rx="7" fill="rgba(99,102,241,0.12)" stroke="rgba(99,102,241,0.25)" stroke-width="1"/>
+      <text x="184" y="15" text-anchor="middle" class="tag-text">Models</text>
+      <rect x="224" y="0" width="72" height="22" rx="7" fill="rgba(99,102,241,0.12)" stroke="rgba(99,102,241,0.25)" stroke-width="1"/>
+      <text x="260" y="15" text-anchor="middle" class="tag-text">Routing</text>
+      <rect x="304" y="0" width="72" height="22" rx="7" fill="rgba(99,102,241,0.12)" stroke="rgba(99,102,241,0.25)" stroke-width="1"/>
+      <text x="340" y="15" text-anchor="middle" class="tag-text">Sandbox</text>
+      <rect x="384" y="0" width="56" height="22" rx="7" fill="rgba(99,102,241,0.12)" stroke="rgba(99,102,241,0.25)" stroke-width="1"/>
+      <text x="412" y="15" text-anchor="middle" class="tag-text">Skills</text>
+    </g>
+  </g>
+
+  <!-- Flow to bottom -->
+  <line x1="320" y1="1065" x2="320" y2="1110" stroke="rgba(244,114,182,0.3)" stroke-width="1" class="flow-dash-slow"/>
+  <line x1="880" y1="1065" x2="880" y2="1110" stroke="rgba(99,102,241,0.3)" stroke-width="1" class="flow-dash-slow"/>
+
+  <!-- LAYER 6: Message Flow Diagram -->
+  <text x="60" y="1130" class="label-text">MESSAGE FLOW</text>
+  <g transform="translate(60, 1145)">
+    <rect width="1080" height="100" rx="16" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+    <!-- Flow steps -->
+    <g transform="translate(20, 20)">
+      <!-- Step 1 -->
+      <rect x="0" y="0" width="120" height="56" rx="12" fill="rgba(16,185,129,0.12)" stroke="rgba(16,185,129,0.35)" stroke-width="1.5"/>
+      <text x="60" y="24" text-anchor="middle" font-size="10" fill="rgba(16,185,129,0.9)" font-weight="700">1. RECEIVE</text>
+      <text x="60" y="42" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.5)">Channel message</text>
+
+      <!-- Arrow -->
+      <line x1="120" y1="28" x2="155" y2="28" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" class="flow-dash"/>
+      <polygon points="155,28 149,24 149,32" fill="rgba(255,255,255,0.3)"/>
+
+      <!-- Step 2 -->
+      <rect x="160" y="0" width="120" height="56" rx="12" fill="rgba(245,158,11,0.12)" stroke="rgba(245,158,11,0.35)" stroke-width="1.5"/>
+      <text x="220" y="24" text-anchor="middle" font-size="10" fill="rgba(245,158,11,0.9)" font-weight="700">2. ROUTE</text>
+      <text x="220" y="42" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.5)">Resolve agent</text>
+
+      <line x1="280" y1="28" x2="315" y2="28" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" class="flow-dash"/>
+      <polygon points="315,28 309,24 309,32" fill="rgba(255,255,255,0.3)"/>
+
+      <!-- Step 3 -->
+      <rect x="320" y="0" width="120" height="56" rx="12" fill="rgba(236,72,153,0.12)" stroke="rgba(236,72,153,0.35)" stroke-width="1.5"/>
+      <text x="380" y="24" text-anchor="middle" font-size="10" fill="rgba(236,72,153,0.9)" font-weight="700">3. PROCESS</text>
+      <text x="380" y="42" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.5)">Pi agent runtime</text>
+
+      <line x1="440" y1="28" x2="475" y2="28" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" class="flow-dash"/>
+      <polygon points="475,28 469,24 469,32" fill="rgba(255,255,255,0.3)"/>
+
+      <!-- Step 4 -->
+      <rect x="480" y="0" width="120" height="56" rx="12" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.35)" stroke-width="1.5"/>
+      <text x="540" y="24" text-anchor="middle" font-size="10" fill="rgba(139,92,246,0.9)" font-weight="700">4. EXECUTE</text>
+      <text x="540" y="42" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.5)">Tools + approvals</text>
+
+      <line x1="600" y1="28" x2="635" y2="28" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" class="flow-dash"/>
+      <polygon points="635,28 629,24 629,32" fill="rgba(255,255,255,0.3)"/>
+
+      <!-- Step 5 -->
+      <rect x="640" y="0" width="120" height="56" rx="12" fill="rgba(251,146,60,0.12)" stroke="rgba(251,146,60,0.35)" stroke-width="1.5"/>
+      <text x="700" y="24" text-anchor="middle" font-size="10" fill="rgba(251,146,60,0.9)" font-weight="700">5. GENERATE</text>
+      <text x="700" y="42" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.5)">AI response</text>
+
+      <line x1="760" y1="28" x2="795" y2="28" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" class="flow-dash"/>
+      <polygon points="795,28 789,24 789,32" fill="rgba(255,255,255,0.3)"/>
+
+      <!-- Step 6 -->
+      <rect x="800" y="0" width="120" height="56" rx="12" fill="rgba(16,185,129,0.12)" stroke="rgba(16,185,129,0.35)" stroke-width="1.5"/>
+      <text x="860" y="24" text-anchor="middle" font-size="10" fill="rgba(16,185,129,0.9)" font-weight="700">6. REPLY</text>
+      <text x="860" y="42" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.5)">Auto-reply send</text>
+    </g>
+
+    <!-- Animated flow particle -->
+    <circle r="3" fill="#8b5cf6" opacity="0.8" filter="url(#glow)">
+      <animateMotion dur="4s" repeatCount="indefinite" path="M 80,48 L 240,48 L 400,48 L 560,48 L 720,48 L 880,48"/>
+      <animate attributeName="opacity" values="0;1;1;1;1;0" dur="4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- LAYER 7: Tech Stack & Monorepo -->
+  <text x="60" y="1290" class="label-text">TECH STACK &amp; MONOREPO</text>
+  <g transform="translate(60, 1305)">
+    <rect width="520" height="130" rx="16" fill="rgba(59,130,246,0.05)" stroke="rgba(59,130,246,0.15)" stroke-width="1"/>
+    <text x="20" y="24" class="title-text">Core Dependencies</text>
+    <g transform="translate(16, 38)">
+      <rect x="0" y="0" width="64" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="32" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Hono</text>
+      <rect x="72" y="0" width="72" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="108" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Commander</text>
+      <rect x="152" y="0" width="48" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="176" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Zod</text>
+      <rect x="208" y="0" width="56" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="236" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Sharp</text>
+      <rect x="272" y="0" width="80" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="312" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Playwright</text>
+      <rect x="360" y="0" width="72" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="396" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">SQLite-vec</text>
+    </g>
+    <g transform="translate(16, 64)">
+      <rect x="0" y="0" width="64" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="32" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Grammy</text>
+      <rect x="72" y="0" width="64" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="104" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Baileys</text>
+      <rect x="144" y="0" width="72" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="180" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Slack Bolt</text>
+      <rect x="224" y="0" width="80" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="264" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Discord.js</text>
+      <rect x="312" y="0" width="56" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="340" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Pi SDK</text>
+    </g>
+    <g transform="translate(16, 90)">
+      <rect x="0" y="0" width="80" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="40" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">TypeScript</text>
+      <rect x="88" y="0" width="48" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="112" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">ESM</text>
+      <rect x="144" y="0" width="64" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="176" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Node 22+</text>
+      <rect x="216" y="0" width="48" height="20" rx="6" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="240" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Bun</text>
+    </g>
+  </g>
+
+  <!-- Monorepo structure -->
+  <g transform="translate(620, 1305)">
+    <rect width="520" height="130" rx="16" fill="rgba(139,92,246,0.05)" stroke="rgba(139,92,246,0.15)" stroke-width="1"/>
+    <text x="20" y="24" class="title-text">Monorepo (pnpm workspaces)</text>
+    <g transform="translate(16, 38)">
+      <rect x="0" y="0" width="56" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="28" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">src/</text>
+      <rect x="64" y="0" width="88" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="108" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">extensions/</text>
+      <rect x="160" y="0" width="64" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="192" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">apps/</text>
+      <rect x="232" y="0" width="40" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="252" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">ui/</text>
+      <rect x="280" y="0" width="72" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="316" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">packages/</text>
+      <rect x="360" y="0" width="56" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="388" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">skills/</text>
+    </g>
+    <text x="20" y="76" font-size="10" fill="rgba(139,92,246,0.7)" font-weight="600" letter-spacing="1">BUILD &amp; TEST</text>
+    <g transform="translate(16, 84)">
+      <rect x="0" y="0" width="80" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="40" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">pnpm build</text>
+      <rect x="88" y="0" width="80" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="128" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">pnpm check</text>
+      <rect x="176" y="0" width="72" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="212" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">pnpm test</text>
+      <rect x="256" y="0" width="56" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="284" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Vitest</text>
+      <rect x="320" y="0" width="56" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="348" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Oxlint</text>
+    </g>
+    <g transform="translate(16, 110)">
+      <rect x="0" y="0" width="64" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="32" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">tsdown</text>
+      <rect x="72" y="0" width="56" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="100" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">V8 cov</text>
+      <rect x="136" y="0" width="56" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="164" y="14" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="600">Docker</text>
+    </g>
+  </g>
+
+  <!-- LAYER 8: Distribution -->
+  <text x="60" y="1475" class="label-text">DISTRIBUTION</text>
+  <g transform="translate(60, 1490)">
+    <rect width="1080" height="70" rx="16" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    <g transform="translate(30, 14)">
+      <rect x="0" y="0" width="140" height="40" rx="10" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.2)" stroke-width="1"/>
+      <text x="70" y="18" text-anchor="middle" font-size="11" fill="rgba(16,185,129,0.9)" font-weight="700">npm</text>
+      <text x="70" y="32" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.4)">stable · beta · dev</text>
+
+      <rect x="170" y="0" width="140" height="40" rx="10" fill="rgba(59,130,246,0.08)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+      <text x="240" y="18" text-anchor="middle" font-size="11" fill="rgba(59,130,246,0.9)" font-weight="700">macOS App</text>
+      <text x="240" y="32" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.4)">Signed + Notarized</text>
+
+      <rect x="340" y="0" width="140" height="40" rx="10" fill="rgba(236,72,153,0.08)" stroke="rgba(236,72,153,0.2)" stroke-width="1"/>
+      <text x="410" y="18" text-anchor="middle" font-size="11" fill="rgba(236,72,153,0.9)" font-weight="700">iOS / Android</text>
+      <text x="410" y="32" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.4)">Swift · Kotlin</text>
+
+      <rect x="510" y="0" width="140" height="40" rx="10" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="580" y="18" text-anchor="middle" font-size="11" fill="rgba(139,92,246,0.9)" font-weight="700">Docker</text>
+      <text x="580" y="32" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.4)">Multi-stage builds</text>
+
+      <rect x="680" y="0" width="140" height="40" rx="10" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.2)" stroke-width="1"/>
+      <text x="750" y="18" text-anchor="middle" font-size="11" fill="rgba(245,158,11,0.9)" font-weight="700">Shell Scripts</text>
+      <text x="750" y="32" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.4)">install.sh · .ps1</text>
+
+      <rect x="850" y="0" width="140" height="40" rx="10" fill="rgba(20,184,166,0.08)" stroke="rgba(20,184,166,0.2)" stroke-width="1"/>
+      <text x="920" y="18" text-anchor="middle" font-size="11" fill="rgba(20,184,166,0.9)" font-weight="700">Fly.io</text>
+      <text x="920" y="32" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.4)">Cloud deployment</text>
+    </g>
+  </g>
+
+  <!-- Footer -->
+  <text x="600" y="1585" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.2)" font-weight="400" letter-spacing="2">
+    OpenClaw v2026.2 · Modular AI Assistant Platform · 34 Extensions · 20+ Channels
+  </text>
+
+  <!-- Decorative animated particles -->
+  <circle cx="50" cy="800" r="2" fill="#6366f1" opacity="0.4">
+    <animate attributeName="cy" values="800;780;800" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1150" cy="700" r="2" fill="#06b6d4" opacity="0.4">
+    <animate attributeName="cy" values="700;720;700" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="600" cy="1100" r="2" fill="#ec4899" opacity="0.4">
+    <animate attributeName="cx" values="595;605;595" dur="5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.5;0.2" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="200" cy="1300" r="1.5" fill="#f59e0b" opacity="0.3">
+    <animate attributeName="cy" values="1300;1290;1300" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1000" cy="1200" r="1.5" fill="#10b981" opacity="0.3">
+    <animate attributeName="cy" values="1200;1210;1200" dur="4.5s" repeatCount="indefinite"/>
+  </circle>
+
+</svg>

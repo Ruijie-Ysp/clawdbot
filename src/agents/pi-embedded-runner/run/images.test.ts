@@ -197,7 +197,7 @@ describe("modelSupportsImages", () => {
 });
 
 describe("detectAndLoadPromptImages", () => {
-  it("returns no images for non-vision models even when existing images are provided", async () => {
+  it("passes through existing images for non-vision models without detecting new refs", async () => {
     const result = await detectAndLoadPromptImages({
       prompt: "ignore",
       workspaceDir: "/tmp",
@@ -205,7 +205,7 @@ describe("detectAndLoadPromptImages", () => {
       existingImages: [{ type: "image", data: "abc", mimeType: "image/png" }],
     });
 
-    expect(result.images).toHaveLength(0);
+    expect(result.images).toHaveLength(1);
     expect(result.detectedRefs).toHaveLength(0);
   });
 

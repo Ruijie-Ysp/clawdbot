@@ -1,0 +1,181 @@
+openapi: 3.0.0
+info:
+  title: OpenClaw Gateway HTTP API
+  version: 1.0.0
+  description: OpenClaw Gateway HTTP API 文档
+
+servers:
+  - url: http://127.0.0.1:18789
+    description: 本地网关
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+security:
+  - BearerAuth: []
+
+paths:
+  /v1/chat/completions:
+    post:
+      summary: OpenAI 兼容 Chat Completions
+      tags:
+        - OpenAI API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                  example: "openclaw:main"
+                messages:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+                        enum: [user, assistant, system]
+                      content:
+                        type: string
+                stream:
+                  type: boolean
+                  default: false
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  choices:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        message:
+                          type: object
+                          properties:
+                            role:
+                              type: string
+                            content:
+                              type: string
+
+  /v1/responses:
+    post:
+      summary: OpenResponses API
+      tags:
+        - OpenResponses API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                input:
+                  type: string
+                stream:
+                  type: boolean
+      responses:
+        "200":
+          description: 成功
+
+  /tools/invoke:
+    post:
+      summary: 直接调用工具
+      tags:
+        - Tools API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tool
+              properties:
+                tool:
+                  type: string
+                  example: "sessions_list"
+                args:
+                  type: object
+                sessionKey:
+                  type: string
+                  default: "main"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  result:
+                    type: object
+
+  /hooks/wake:
+    post:
+      summary: 发送 wake 事件
+      tags:
+        - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                mode:
+                  type: string
+                  enum: [now, next-heartbeat]
+                  default: "now"
+      responses:
+        "200":
+          description: 成功
+
+  /hooks/agent:
+    post:
+      summary: 发送 agent 事件
+      tags:
+        - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message
+                - name
+              properties:
+                message:
+                  type: string
+                name:
+                  type: string
+                sessionKey:
+                  type: string
+                wakeMode:
+                  type: string
+                  enum: [now, next-heartbeat]
+                deliver:
+                  type: boolean
+                channel:
+                  type: string
+      responses:
+        "202":
+          description: 异步运行已启动

@@ -74,6 +74,7 @@ export interface DingTalkInboundMessage {
       type: string;
       text?: string;
       atName?: string;
+      downloadCode?: string;
     }>;
   };
   conversationType: string;

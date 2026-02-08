@@ -51,6 +51,35 @@ function jsonValue(value: unknown): string {
   }
 }
 
+function pathCandidates(path: Array<string | number>): string[] {
+  const keys = path.filter((segment): segment is string => typeof segment === "string");
+  if (keys.length === 0) {
+    return [];
+  }
+  const direct = keys.join(".");
+  const leaf = keys.at(-1) ?? "";
+  const nested = keys.length > 1 ? keys.slice(-2).join(".") : "";
+  const first = keys[0] ?? "";
+  return [direct, nested, leaf, first].filter(
+    (item, index, list) => item && list.indexOf(item) === index,
+  );
+}
+
+function translateEnumValue(path: Array<string | number>, value: unknown): string {
+  const valueText = String(value);
+  for (const candidate of pathCandidates(path)) {
+    const pathValueKey = `configForm.values.${candidate}.${valueText}`;
+    if (hasTranslation(pathValueKey)) {
+      return t(pathValueKey);
+    }
+  }
+  const globalKey = `configForm.values.${valueText}`;
+  if (hasTranslation(globalKey)) {
+    return t(globalKey);
+  }
+  return valueText;
+}
+
 // SVG Icons as template literals
 const icons = {
   chevronDown: html`
@@ -186,10 +215,7 @@ export function renderNode(params: {
                 ?disabled=${disabled}
                 @click=${() => onPatch(path, lit)}
               >
-                ${
-                  // oxlint-disable typescript/no-base-to-string
-                  String(lit)
-                }
+                ${translateEnumValue(path, lit)}
               </button>
             `,
             )}
@@ -248,7 +274,7 @@ export function renderNode(params: {
                 ?disabled=${disabled}
                 @click=${() => onPatch(path, opt)}
               >
-                ${String(opt)}
+                ${translateEnumValue(path, opt)}
               </button>
             `,
             )}
@@ -478,7 +504,7 @@ function renderSelect(params: {
         <option value=${unset}>${t("configForm.selectPlaceholder")}</option>
         ${options.map(
           (opt, idx) => html`
-          <option value=${String(idx)}>${String(opt)}</option>
+          <option value=${String(idx)}>${translateEnumValue(path, opt)}</option>
         `,
         )}
       </select>
