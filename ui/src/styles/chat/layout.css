@@ -267,6 +267,10 @@
   flex: 1;
 }
 
+.chat-compose__file-input {
+  display: none;
+}
+
 :root[data-theme="light"] .chat-compose {
   background: linear-gradient(to bottom, transparent, var(--bg-content) 20%);
 }
@@ -320,6 +324,12 @@
   line-height: 1;
   white-space: nowrap;
   box-sizing: border-box;
+}
+
+.chat-compose .chat-compose__actions .chat-compose__attach {
+  min-width: 40px;
+  width: 40px;
+  padding: 0 !important;
 }
 
 /* Chat controls - moved to content-header area, left aligned */

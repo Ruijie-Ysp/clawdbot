@@ -154,4 +154,18 @@ describe("chat view", () => {
     expect(onNewSession).toHaveBeenCalledTimes(1);
     expect(container.textContent).not.toContain("Stop");
   });
+
+  it("renders image attachment button and hidden file input", () => {
+    const container = document.createElement("div");
+    render(renderChat(createProps()), container);
+
+    const fileInput = container.querySelector<HTMLInputElement>("input.chat-compose__file-input");
+    expect(fileInput).not.toBeNull();
+    expect(fileInput?.type).toBe("file");
+    expect(fileInput?.multiple).toBe(true);
+
+    const attachButton = container.querySelector<HTMLButtonElement>("button.chat-compose__attach");
+    expect(attachButton).not.toBeNull();
+    expect(attachButton?.getAttribute("aria-label")?.toLowerCase()).toBe("attach");
+  });
 });

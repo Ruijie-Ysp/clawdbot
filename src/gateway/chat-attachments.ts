@@ -81,6 +81,7 @@ export async function parseMessageWithAttachments(
     const label = att.fileName || att.type || `attachment-${idx + 1}`;
 
     if (typeof content !== "string") {
+      log?.warn(`attachment ${label}: content missing or not base64 string`);
       throw new Error(`attachment ${label}: content must be base64 string`);
     }
 
@@ -93,14 +94,19 @@ export async function parseMessageWithAttachments(
     }
     // Basic base64 sanity: length multiple of 4 and charset check.
     if (b64.length % 4 !== 0 || /[^A-Za-z0-9+/=]/.test(b64)) {
+      log?.warn(`attachment ${label}: invalid base64 payload`);
       throw new Error(`attachment ${label}: invalid base64 content`);
     }
     try {
       sizeBytes = Buffer.from(b64, "base64").byteLength;
     } catch {
+      log?.warn(`attachment ${label}: invalid base64 payload`);
       throw new Error(`attachment ${label}: invalid base64 content`);
     }
     if (sizeBytes <= 0 || sizeBytes > maxBytes) {
+      log?.warn(
+        `attachment ${label}: image bytes ${sizeBytes} exceed limit ${maxBytes}, rejecting request`,
+      );
       throw new Error(`attachment ${label}: exceeds size limit (${sizeBytes} > ${maxBytes} bytes)`);
     }
 
@@ -125,6 +131,10 @@ export async function parseMessageWithAttachments(
       data: b64,
       mimeType: sniffedMime ?? providedMime ?? mime,
     });
+  }
+
+  if (images.length === 0 && attachments.length > 0) {
+    log?.warn("chat.send attachments received but no valid image payload remained after filtering");
   }
 
   return { message, images };
