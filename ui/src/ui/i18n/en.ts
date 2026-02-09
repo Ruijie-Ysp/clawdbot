@@ -570,6 +570,8 @@ export const en: Translations = {
     attachmentTooLarge:
       "This image is too large to send (limit: 5MB). Please remove it or use a smaller image.",
     attachmentProcessingFailed: "Failed to process the image. Please try again.",
+    attachmentModelNotSupported:
+      "The current model does not support image input. Please switch to a vision-capable model or remove the image attachment.",
     loadTimeout: "Loading chat history timed out. The session may not exist or the server is busy.",
     fallbackToMain: "Switch to main session",
     youLabel: "You",

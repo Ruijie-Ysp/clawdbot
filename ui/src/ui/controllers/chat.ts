@@ -176,6 +176,8 @@ export async function sendChatMessage(
       } else {
         state.lastError = t("chat.attachmentProcessingFailed");
       }
+    } else if (error.includes("MODEL_NO_VISION")) {
+      state.lastError = t("chat.attachmentModelNotSupported");
     } else {
       state.lastError = error;
     }

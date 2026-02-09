@@ -563,6 +563,7 @@ export const zh_CN: Translations = {
     attachmentFormatUnsupported: "图片格式暂不支持，请转为 JPG/PNG 后再发送。",
     attachmentTooLarge: "图片过大无法压缩到可发送大小（上限 5MB），请删除或换小图后再发送。",
     attachmentProcessingFailed: "图片处理失败，请重试。",
+    attachmentModelNotSupported: "当前模型不支持图片输入，请切换到支持视觉的模型，或移除图片附件。",
     loadTimeout: "加载聊天记录超时。该会话可能不存在或服务器繁忙。",
     fallbackToMain: "切换到主会话",
     youLabel: "你",

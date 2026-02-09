@@ -4,6 +4,7 @@ import path from "node:path";
 import type { MsgContext } from "../../auto-reply/templating.js";
 import type { GatewayRequestContext, GatewayRequestHandlers } from "./types.js";
 import { resolveSessionAgentId } from "../../agents/agent-scope.js";
+import { findModelInCatalog, modelSupportsVision } from "../../agents/model-catalog.js";
 import { resolveThinkingDefault } from "../../agents/model-selection.js";
 import { resolveAgentTimeoutMs } from "../../agents/timeout.js";
 import { dispatchInboundMessage } from "../../auto-reply/dispatch.js";
@@ -386,6 +387,27 @@ export const chatHandlers: GatewayRequestHandlers = {
     }
     const rawSessionKey = p.sessionKey;
     const { cfg, entry, canonicalKey: sessionKey } = loadSessionEntry(rawSessionKey);
+
+    // Early check: reject image attachments when the model does not support vision.
+    if (parsedImages.length > 0) {
+      try {
+        const agentId = resolveSessionAgentId({ sessionKey: p.sessionKey, config: cfg });
+        const { provider, model } = resolveSessionModelRef(cfg, entry, agentId);
+        const catalog = await context.loadGatewayModelCatalog();
+        const modelEntry = findModelInCatalog(catalog, provider, model);
+        // Only reject if the model is KNOWN in the catalog and explicitly does
+        // not support vision.  When the model is not in the catalog (undefined),
+        // let the request proceed — the agent runner has fallback logic that may
+        // correctly enable vision (e.g. gpt-5.3-codex).
+        if (modelEntry && !modelSupportsVision(modelEntry)) {
+          respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "MODEL_NO_VISION"));
+          return;
+        }
+      } catch {
+        // If catalog lookup fails, let the request proceed — the downstream
+        // provider will handle unsupported images gracefully.
+      }
+    }
     const timeoutMs = resolveAgentTimeoutMs({
       cfg,
       overrideMs: p.timeoutMs,
