@@ -5,7 +5,6 @@ import {
   defaultValue,
   hintForPath,
   humanize,
-  isSensitivePath,
   pathKey,
   schemaType,
   type JsonSchema,
@@ -356,7 +355,8 @@ function renderTextInput(params: {
   const hint = hintForPath(path, hints);
   const label = hint?.label ?? schema.title ?? translateFieldLabel(String(path.at(-1)));
   const help = hint?.help ?? schema.description;
-  const isSensitive = hint?.sensitive ?? isSensitivePath(path);
+  const isSensitive =
+    (hint?.sensitive ?? false) && !/^\$\{[^}]*\}$/.test(String(value ?? "").trim());
   const placeholder =
     hint?.placeholder ??
     // oxlint-disable typescript/no-base-to-string
@@ -549,35 +549,39 @@ function renderObject(params: {
   const additional = schema.additionalProperties;
   const allowExtra = Boolean(additional) && typeof additional === "object";
 
+  const fields = html`
+    ${sorted.map(([propKey, node]) =>
+      renderNode({
+        schema: node,
+        value: obj[propKey],
+        path: [...path, propKey],
+        hints,
+        unsupported,
+        disabled,
+        onPatch,
+      }),
+    )}
+    ${
+      allowExtra
+        ? renderMapField({
+            schema: additional,
+            value: obj,
+            path,
+            hints,
+            unsupported,
+            disabled,
+            reservedKeys: reserved,
+            onPatch,
+          })
+        : nothing
+    }
+  `;
+
   // For top-level, don't wrap in collapsible
   if (path.length === 1) {
     return html`
       <div class="cfg-fields">
-        ${sorted.map(([propKey, node]) =>
-          renderNode({
-            schema: node,
-            value: obj[propKey],
-            path: [...path, propKey],
-            hints,
-            unsupported,
-            disabled,
-            onPatch,
-          }),
-        )}
-        ${
-          allowExtra
-            ? renderMapField({
-                schema: additional,
-                value: obj,
-                path,
-                hints,
-                unsupported,
-                disabled,
-                reservedKeys: reserved,
-                onPatch,
-              })
-            : nothing
-        }
+        ${fields}
       </div>
     `;
   }
@@ -591,31 +595,7 @@ function renderObject(params: {
       </summary>
       ${help ? html`<div class="cfg-object__help">${help}</div>` : nothing}
       <div class="cfg-object__content">
-        ${sorted.map(([propKey, node]) =>
-          renderNode({
-            schema: node,
-            value: obj[propKey],
-            path: [...path, propKey],
-            hints,
-            unsupported,
-            disabled,
-            onPatch,
-          }),
-        )}
-        ${
-          allowExtra
-            ? renderMapField({
-                schema: additional,
-                value: obj,
-                path,
-                hints,
-                unsupported,
-                disabled,
-                reservedKeys: reserved,
-                onPatch,
-              })
-            : nothing
-        }
+        ${fields}
       </div>
     </details>
   `;

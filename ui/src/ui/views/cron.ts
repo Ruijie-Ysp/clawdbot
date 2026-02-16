@@ -257,7 +257,12 @@ export function renderCron(props: CronProps) {
                                   </option>`,
                               )}
                             </select>
-                          </label>
+                          `
+                    }
+                  </label>
+                  ${
+                    selectedDeliveryMode === "announce"
+                      ? html`
                           <label class="field">
                             <span>${t("cron.fields.to")}</span>
                             <input
@@ -272,10 +277,10 @@ export function renderCron(props: CronProps) {
                         `
                       : nothing
                   }
-                </div>
-              `
-            : nothing
-        }
+                `
+              : nothing
+          }
+        </div>
         <div class="row" style="margin-top: 14px;">
           <button class="btn primary" ?disabled=${props.busy} @click=${props.onAdd}>
             ${props.busy ? t("common.saving") : t("cron.addJob")}

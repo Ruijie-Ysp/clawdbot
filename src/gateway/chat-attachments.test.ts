@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildMessageWithAttachments,
   type ChatAttachment,
@@ -44,16 +44,20 @@ describe("buildMessageWithAttachments", () => {
   });
 
   it("rejects images over limit", () => {
-    const big = Buffer.alloc(6_000_000, 0).toString("base64");
+    const big = "A".repeat(10_000);
     const att: ChatAttachment = {
       type: "image",
       mimeType: "image/png",
       fileName: "big.png",
       content: big,
     };
-    expect(() => buildMessageWithAttachments("x", [att], { maxBytes: 5_000_000 })).toThrow(
+    const fromSpy = vi.spyOn(Buffer, "from");
+    expect(() => buildMessageWithAttachments("x", [att], { maxBytes: 16 })).toThrow(
       /exceeds size limit/i,
     );
+    const base64Calls = fromSpy.mock.calls.filter((args) => args[1] === "base64");
+    expect(base64Calls).toHaveLength(0);
+    fromSpy.mockRestore();
   });
 });
 

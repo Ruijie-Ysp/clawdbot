@@ -17,6 +17,7 @@ import {
 import {
   resolveGroupSessionKey,
   resolveSessionFilePath,
+  resolveSessionFilePathOptions,
   type SessionEntry,
   updateSessionStore,
 } from "../../config/sessions.js";
@@ -38,10 +39,11 @@ import {
 import { SILENT_REPLY_TOKEN } from "../tokens.js";
 import { runReplyAgent } from "./agent-runner.js";
 import { applySessionHints } from "./body.js";
-import { buildGroupIntro } from "./groups.js";
+import { buildGroupChatContext, buildGroupIntro } from "./groups.js";
 import { buildInboundMetaSystemPrompt, buildInboundUserContextPrefix } from "./inbound-meta.js";
 import { resolveQueueSettings } from "./queue.js";
 import { routeReply } from "./route-reply.js";
+import { BARE_SESSION_RESET_PROMPT } from "./session-reset-prompt.js";
 import { ensureSkillSnapshot, prependSystemEvents } from "./session-updates.js";
 import { resolveTypingMode } from "./typing-mode.js";
 import { appendUntrustedContext } from "./untrusted-context.js";
@@ -177,6 +179,9 @@ export async function runPreparedReply(
   const shouldInjectGroupIntro = Boolean(
     isGroupChat && (isFirstTurnInSession || sessionEntry?.groupActivationNeedsSystemIntro),
   );
+  // Always include persistent group chat context (name, participants, reply guidance)
+  const groupChatContext = isGroupChat ? buildGroupChatContext({ sessionCtx }) : "";
+  // Behavioral intro (activation mode, lurking, etc.) only on first turn / activation needed
   const groupIntro = shouldInjectGroupIntro
     ? buildGroupIntro({
         cfg,
@@ -190,7 +195,7 @@ export async function runPreparedReply(
   const inboundMetaPrompt = buildInboundMetaSystemPrompt(
     isNewSession ? sessionCtx : { ...sessionCtx, ThreadStarterBody: undefined },
   );
-  const extraSystemPrompt = [inboundMetaPrompt, groupIntro, groupSystemPrompt]
+  const extraSystemPrompt = [inboundMetaPrompt, groupChatContext, groupIntro, groupSystemPrompt]
     .filter(Boolean)
     .join("\n\n");
   const baseBody = sessionCtx.BodyStripped ?? sessionCtx.Body ?? "";
@@ -228,7 +233,14 @@ export async function runPreparedReply(
     baseBodyTrimmed = baseBodyFinal.trim();
   }
   const inboundUserContext = buildInboundUserContextPrefix(
-    isNewSession ? sessionCtx : { ...sessionCtx, ThreadStarterBody: undefined },
+    isNewSession
+      ? {
+          ...sessionCtx,
+          ...(sessionCtx.ThreadHistoryBody?.trim()
+            ? { InboundHistory: undefined, ThreadStarterBody: undefined }
+            : {}),
+        }
+      : { ...sessionCtx, ThreadStarterBody: undefined },
   );
   const baseBodyForPrompt = isBareSessionReset
     ? baseBodyFinal
@@ -242,8 +254,13 @@ export async function runPreparedReply(
       text: "I didn't receive any text in your message. Please resend or add a caption.",
     };
   }
+  // When the user sends media without text, provide a minimal body so the agent
+  // run proceeds and the image/document is injected by the embedded runner.
+  const effectiveBaseBody = baseBodyTrimmed
+    ? baseBodyForPrompt
+    : "[User sent media without caption]";
   let prefixedBodyBase = await applySessionHints({
-    baseBody: baseBodyForPrompt,
+    baseBody: effectiveBaseBody,
     abortedLastRun,
     sessionEntry,
     sessionStore,
@@ -261,6 +278,14 @@ export async function runPreparedReply(
     prefixedBodyBase,
   });
   prefixedBodyBase = appendUntrustedContext(prefixedBodyBase, sessionCtx.UntrustedContext);
+  const threadStarterBody = ctx.ThreadStarterBody?.trim();
+  const threadHistoryBody = ctx.ThreadHistoryBody?.trim();
+  const threadContextNote =
+    isNewSession && threadHistoryBody
+      ? `[Thread history - for context]\n${threadHistoryBody}`
+      : isNewSession && threadStarterBody
+        ? `[Thread starter - for context]\n${threadStarterBody}`
+        : undefined;
   const skillResult = await ensureSkillSnapshot({
     sessionEntry,
     sessionStore,
@@ -275,7 +300,7 @@ export async function runPreparedReply(
   sessionEntry = skillResult.sessionEntry ?? sessionEntry;
   currentSystemSent = skillResult.systemSent;
   const skillsSnapshot = skillResult.skillsSnapshot;
-  const prefixedBody = prefixedBodyBase;
+  const prefixedBody = [threadContextNote, prefixedBodyBase].filter(Boolean).join("\n\n");
   const mediaNote = buildInboundMediaNote(ctx);
   const mediaReplyHint = mediaNote
     ? "To send an image back, prefer the message tool (media/path/filePath). If you must inline, use MEDIA:https://example.com/image.jpg (spaces ok, quote if needed) or a safe relative path like MEDIA:./image.jpg. Avoid absolute paths (MEDIA:/...) and ~ paths — they are blocked for security. Keep caption in the text body."
@@ -337,8 +362,12 @@ export async function runPreparedReply(
     }
   }
   const sessionIdFinal = sessionId ?? crypto.randomUUID();
-  const sessionFile = resolveSessionFilePath(sessionIdFinal, sessionEntry);
-  const queueBodyBase = baseBodyForPrompt;
+  const sessionFile = resolveSessionFilePath(
+    sessionIdFinal,
+    sessionEntry,
+    resolveSessionFilePathOptions({ agentId, storePath }),
+  );
+  const queueBodyBase = [threadContextNote, effectiveBaseBody].filter(Boolean).join("\n\n");
   const queuedBody = mediaNote
     ? [mediaNote, mediaReplyHint, queueBodyBase].filter(Boolean).join("\n").trim()
     : queueBodyBase;

@@ -25,7 +25,11 @@ export type OverviewProps = {
 
 export function renderOverview(props: OverviewProps) {
   const snapshot = props.hello?.snapshot as
-    | { uptimeMs?: number; policy?: { tickIntervalMs?: number } }
+    | {
+        uptimeMs?: number;
+        policy?: { tickIntervalMs?: number };
+        authMode?: "none" | "token" | "password" | "trusted-proxy";
+      }
     | undefined;
   const uptime = snapshot?.uptimeMs ? formatDurationMs(snapshot.uptimeMs) : t("common.na");
   const tick = snapshot?.policy?.tickIntervalMs
