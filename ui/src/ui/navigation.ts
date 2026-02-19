@@ -1,5 +1,5 @@
+import { t } from "../i18n/index.ts";
 import type { IconName } from "./icons.js";
-import { t } from "./i18n/index.ts";
 
 export const TAB_GROUPS = [
   { label: "chat", tabs: ["chat"] },
@@ -10,10 +10,6 @@ export const TAB_GROUPS = [
   { label: "agent", tabs: ["agents", "skills", "nodes"] },
   { label: "settings", tabs: ["config", "debug", "logs"] },
 ] as const;
-
-export function labelForGroup(label: string): string {
-  return t(`navGroups.${label}`);
-}
 
 export type Tab =
   | "agents"
@@ -160,11 +156,10 @@ export function iconForTab(tab: Tab): IconName {
   }
 }
 
-export function titleForTab(tab: Tab): string {
-  const key = tab === "cron" ? "cron" : tab;
-  return t(`nav.${key}`);
+export function titleForTab(tab: Tab) {
+  return t(`tabs.${tab}`);
 }
 
-export function subtitleForTab(tab: Tab): string {
-  return t(`pageSubtitles.${tab}`);
+export function subtitleForTab(tab: Tab) {
+  return t(`subtitles.${tab}`);
 }

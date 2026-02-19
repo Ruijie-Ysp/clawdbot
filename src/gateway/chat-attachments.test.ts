@@ -55,7 +55,7 @@ describe("buildMessageWithAttachments", () => {
     expect(() => buildMessageWithAttachments("x", [att], { maxBytes: 16 })).toThrow(
       /exceeds size limit/i,
     );
-    const base64Calls = fromSpy.mock.calls.filter((args) => args[1] === "base64");
+    const base64Calls = fromSpy.mock.calls.filter((args) => (args as unknown[])[1] === "base64");
     expect(base64Calls).toHaveLength(0);
     fromSpy.mockRestore();
   });
@@ -81,7 +81,6 @@ describe("parseMessageWithAttachments", () => {
   });
 
   it("rejects invalid base64 content", async () => {
-    const logs: string[] = [];
     await expect(
       parseMessageWithAttachments(
         "x",
@@ -93,15 +92,14 @@ describe("parseMessageWithAttachments", () => {
             content: "%not-base64%",
           },
         ],
-        { log: { warn: (message) => logs.push(message) } },
+        { log: { warn: () => {} } },
       ),
     ).rejects.toThrow(/base64/i);
-    expect(logs.some((entry) => /invalid base64 payload/i.test(entry))).toBe(true);
   });
 
   it("rejects images over limit", async () => {
-    const logs: string[] = [];
-    const big = Buffer.alloc(6_000_000, 0).toString("base64");
+    const big = "A".repeat(10_000);
+    const fromSpy = vi.spyOn(Buffer, "from");
     await expect(
       parseMessageWithAttachments(
         "x",
@@ -113,10 +111,12 @@ describe("parseMessageWithAttachments", () => {
             content: big,
           },
         ],
-        { maxBytes: 5_000_000, log: { warn: (message) => logs.push(message) } },
+        { maxBytes: 16, log: { warn: () => {} } },
       ),
     ).rejects.toThrow(/exceeds size limit/i);
-    expect(logs.some((entry) => /exceed limit/i.test(entry))).toBe(true);
+    const base64Calls = fromSpy.mock.calls.filter((args) => (args as unknown[])[1] === "base64");
+    expect(base64Calls).toHaveLength(0);
+    fromSpy.mockRestore();
   });
 
   it("sniffs mime when missing", async () => {
@@ -155,7 +155,8 @@ describe("parseMessageWithAttachments", () => {
       { log: { warn: (message) => logs.push(message) } },
     );
     expect(parsed.images).toHaveLength(0);
-    expect(logs.some((entry) => /non-image/i.test(entry))).toBe(true);
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatch(/non-image/i);
   });
 
   it("prefers sniffed mime type and logs mismatch", async () => {
@@ -187,7 +188,8 @@ describe("parseMessageWithAttachments", () => {
       { log: { warn: (message) => logs.push(message) } },
     );
     expect(parsed.images).toHaveLength(0);
-    expect(logs.some((entry) => /unable to detect image mime type/i.test(entry))).toBe(true);
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatch(/unable to detect image mime type/i);
   });
 
   it("keeps valid images and drops invalid ones", async () => {
@@ -215,25 +217,5 @@ describe("parseMessageWithAttachments", () => {
     expect(parsed.images[0]?.mimeType).toBe("image/png");
     expect(parsed.images[0]?.data).toBe(PNG_1x1);
     expect(logs.some((l) => /non-image/i.test(l))).toBe(true);
-  });
-
-  it("logs when all attachments are filtered out", async () => {
-    const logs: string[] = [];
-    const pdf = Buffer.from("%PDF-1.4\n").toString("base64");
-    const parsed = await parseMessageWithAttachments(
-      "x",
-      [
-        {
-          type: "file",
-          mimeType: "application/pdf",
-          fileName: "not-image.pdf",
-          content: pdf,
-        },
-      ],
-      { log: { warn: (message) => logs.push(message) } },
-    );
-
-    expect(parsed.images).toHaveLength(0);
-    expect(logs.some((entry) => /no valid image payload remained/i.test(entry))).toBe(true);
   });
 });

@@ -1,10 +1,9 @@
 import { html, nothing } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import type { AssistantIdentity } from "../assistant-identity.ts";
-import type { MessageGroup } from "../types/chat-types.ts";
-import { t } from "../i18n/index.ts";
 import { toSanitizedMarkdownHtml } from "../markdown.ts";
 import { detectTextDirection } from "../text-direction.ts";
+import type { MessageGroup } from "../types/chat-types.ts";
 import { renderCopyAsMarkdownButton } from "./copy-as-markdown.ts";
 import {
   extractTextCached,
@@ -81,7 +80,7 @@ export function renderStreamingGroup(
     hour: "numeric",
     minute: "2-digit",
   });
-  const name = assistant?.name ?? t("chat.defaultAssistantName");
+  const name = assistant?.name ?? "Assistant";
 
   return html`
     <div class="chat-group assistant">
@@ -115,15 +114,13 @@ export function renderMessageGroup(
   },
 ) {
   const normalizedRole = normalizeRoleForGrouping(group.role);
-  const assistantName = opts.assistantName ?? t("chat.defaultAssistantName");
+  const assistantName = opts.assistantName ?? "Assistant";
   const who =
     normalizedRole === "user"
-      ? t("chat.youLabel")
+      ? "You"
       : normalizedRole === "assistant"
         ? assistantName
-        : normalizedRole === "tool"
-          ? t("chat.toolLabel")
-          : t("chat.unknownLabel");
+        : normalizedRole;
   const roleClass =
     normalizedRole === "user" ? "user" : normalizedRole === "assistant" ? "assistant" : "other";
   const timestamp = new Date(group.timestamp).toLocaleTimeString([], {
@@ -159,13 +156,13 @@ export function renderMessageGroup(
 
 function renderAvatar(role: string, assistant?: Pick<AssistantIdentity, "name" | "avatar">) {
   const normalized = normalizeRoleForGrouping(role);
-  const assistantName = assistant?.name?.trim() || t("chat.defaultAssistantName");
+  const assistantName = assistant?.name?.trim() || "Assistant";
   const assistantAvatar = assistant?.avatar?.trim() || "";
   const initial =
     normalized === "user"
-      ? t("chat.youInitial")
+      ? "U"
       : normalized === "assistant"
-        ? assistantName.charAt(0).toUpperCase() || t("chat.defaultAssistantName").charAt(0)
+        ? assistantName.charAt(0).toUpperCase() || "A"
         : normalized === "tool"
           ? "⚙"
           : "?";
@@ -209,7 +206,7 @@ function renderMessageImages(images: ImageBlock[]) {
         (img) => html`
           <img
             src=${img.url}
-            alt=${img.alt ?? t("chat.attachedImageAlt")}
+            alt=${img.alt ?? "Attached image"}
             class="chat-message-image"
             @click=${() => window.open(img.url, "_blank")}
           />

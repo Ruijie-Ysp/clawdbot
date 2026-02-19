@@ -1,17 +1,8 @@
+import { formatRelativeTimestamp, formatDurationHuman, formatMs } from "./format.ts";
 import type { CronJob, GatewaySessionRow, PresenceEntry } from "./types.ts";
-import { formatAgo, formatDurationMs, formatMs } from "./format.ts";
-import { hasTranslation, t, tp } from "./i18n/index.ts";
-
-function resolveDeliveryModeLabel(mode?: string | null): string {
-  if (!mode) {
-    return "";
-  }
-  const key = `cron.deliveryModes.${mode}`;
-  return hasTranslation(key) ? t(key) : mode;
-}
 
 export function formatPresenceSummary(entry: PresenceEntry): string {
-  const host = entry.host ?? t("instances.unknownHost");
+  const host = entry.host ?? "unknown";
   const ip = entry.ip ? `(${entry.ip})` : "";
   const mode = entry.mode ?? "";
   const version = entry.version ?? "";
@@ -20,19 +11,19 @@ export function formatPresenceSummary(entry: PresenceEntry): string {
 
 export function formatPresenceAge(entry: PresenceEntry): string {
   const ts = entry.ts ?? null;
-  return ts ? formatAgo(ts) : t("common.na");
+  return ts ? formatRelativeTimestamp(ts) : "n/a";
 }
 
 export function formatNextRun(ms?: number | null) {
   if (!ms) {
-    return t("common.na");
+    return "n/a";
   }
-  return `${formatMs(ms)} (${formatAgo(ms)})`;
+  return `${formatMs(ms)} (${formatRelativeTimestamp(ms)})`;
 }
 
 export function formatSessionTokens(row: GatewaySessionRow) {
   if (row.totalTokens == null) {
-    return t("common.na");
+    return "n/a";
   }
   const total = row.totalTokens ?? 0;
   const ctx = row.contextTokens ?? 0;
@@ -53,41 +44,41 @@ export function formatEventPayload(payload: unknown): string {
 
 export function formatCronState(job: CronJob) {
   const state = job.state ?? {};
-  const next = state.nextRunAtMs ? formatMs(state.nextRunAtMs) : t("common.na");
-  const last = state.lastRunAtMs ? formatMs(state.lastRunAtMs) : t("common.na");
-  const status = state.lastStatus ?? t("common.na");
-  return tp("cron.stateSummary", { status, next, last });
+  const next = state.nextRunAtMs ? formatMs(state.nextRunAtMs) : "n/a";
+  const last = state.lastRunAtMs ? formatMs(state.lastRunAtMs) : "n/a";
+  const status = state.lastStatus ?? "n/a";
+  return `${status} · next ${next} · last ${last}`;
 }
 
 export function formatCronSchedule(job: CronJob) {
   const s = job.schedule;
   if (s.kind === "at") {
     const atMs = Date.parse(s.at);
-    const time = Number.isFinite(atMs) ? formatMs(atMs) : s.at;
-    return tp("cron.scheduleAt", { time });
+    return Number.isFinite(atMs) ? `At ${formatMs(atMs)}` : `At ${s.at}`;
   }
   if (s.kind === "every") {
-    return tp("cron.scheduleEvery", { interval: formatDurationMs(s.everyMs) });
+    return `Every ${formatDurationHuman(s.everyMs)}`;
   }
-  return tp("cron.scheduleCron", { expr: s.expr, tz: s.tz ? ` (${s.tz})` : "" });
+  return `Cron ${s.expr}${s.tz ? ` (${s.tz})` : ""}`;
 }
 
 export function formatCronPayload(job: CronJob) {
   const p = job.payload;
   if (p.kind === "systemEvent") {
-    return tp("cron.payloadSystem", { text: p.text });
+    return `System: ${p.text}`;
   }
-  const base = tp("cron.payloadAgent", { message: p.message });
+  const base = `Agent: ${p.message}`;
   const delivery = job.delivery;
   if (delivery && delivery.mode !== "none") {
-    const mode = resolveDeliveryModeLabel(delivery.mode);
-    const channelValue = delivery.channel ?? "last";
-    const channelLabel = channelValue === "last" ? t("cron.channelLast") : channelValue;
     const target =
-      delivery.channel || delivery.to
-        ? ` (${channelLabel}${delivery.to ? ` -> ${delivery.to}` : ""})`
-        : "";
-    return `${base} · ${mode}${target}`;
+      delivery.mode === "webhook"
+        ? delivery.to
+          ? ` (${delivery.to})`
+          : ""
+        : delivery.channel || delivery.to
+          ? ` (${delivery.channel ?? "last"}${delivery.to ? ` -> ${delivery.to}` : ""})`
+          : "";
+    return `${base} · ${delivery.mode}${target}`;
   }
   return base;
 }

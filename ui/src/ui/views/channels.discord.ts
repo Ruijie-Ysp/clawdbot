@@ -1,9 +1,8 @@
 import { html, nothing } from "lit";
+import { formatRelativeTimestamp } from "../format.ts";
 import type { DiscordStatus } from "../types.ts";
-import type { ChannelsProps } from "./channels.types.ts";
-import { formatAgo } from "../format.ts";
-import { t } from "../i18n/index.ts";
 import { renderChannelConfigSection } from "./channels.config.ts";
+import type { ChannelsProps } from "./channels.types.ts";
 
 export function renderDiscordCard(params: {
   props: ChannelsProps;
@@ -14,26 +13,26 @@ export function renderDiscordCard(params: {
 
   return html`
     <div class="card">
-      <div class="card-title">${t("channels.discord")}</div>
-      <div class="card-sub">${t("channels.discordCard.subtitle")}</div>
+      <div class="card-title">Discord</div>
+      <div class="card-sub">Bot status and channel configuration.</div>
       ${accountCountLabel}
 
       <div class="status-list" style="margin-top: 16px;">
         <div>
-          <span class="label">${t("channels.labels.configured")}</span>
-          <span>${discord?.configured ? t("common.yes") : t("common.no")}</span>
+          <span class="label">Configured</span>
+          <span>${discord?.configured ? "Yes" : "No"}</span>
         </div>
         <div>
-          <span class="label">${t("channels.labels.running")}</span>
-          <span>${discord?.running ? t("common.yes") : t("common.no")}</span>
+          <span class="label">Running</span>
+          <span>${discord?.running ? "Yes" : "No"}</span>
         </div>
         <div>
-          <span class="label">${t("channels.labels.lastStart")}</span>
-          <span>${formatAgo(discord?.lastStartAt ?? null)}</span>
+          <span class="label">Last start</span>
+          <span>${discord?.lastStartAt ? formatRelativeTimestamp(discord.lastStartAt) : "n/a"}</span>
         </div>
         <div>
-          <span class="label">${t("channels.labels.lastProbe")}</span>
-          <span>${formatAgo(discord?.lastProbeAt ?? null)}</span>
+          <span class="label">Last probe</span>
+          <span>${discord?.lastProbeAt ? formatRelativeTimestamp(discord.lastProbeAt) : "n/a"}</span>
         </div>
       </div>
 
@@ -48,7 +47,7 @@ export function renderDiscordCard(params: {
       ${
         discord?.probe
           ? html`<div class="callout" style="margin-top: 12px;">
-            ${t("channels.probe.action")} ${discord.probe.ok ? t("channels.probe.ok") : t("channels.probe.failed")} ·
+            Probe ${discord.probe.ok ? "ok" : "failed"} ·
             ${discord.probe.status ?? ""} ${discord.probe.error ?? ""}
           </div>`
           : nothing
@@ -58,7 +57,7 @@ export function renderDiscordCard(params: {
 
       <div class="row" style="margin-top: 12px;">
         <button class="btn" @click=${() => props.onRefresh(true)}>
-          ${t("channels.probe.action")}
+          Probe
         </button>
       </div>
     </div>

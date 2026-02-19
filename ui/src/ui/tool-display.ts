@@ -1,5 +1,17 @@
+import {
+  defaultTitle,
+  normalizeToolName,
+  normalizeVerb,
+  resolveActionSpec,
+  resolveDetailFromKeys,
+  resolveExecDetail,
+  resolveReadDetail,
+  resolveWebFetchDetail,
+  resolveWebSearchDetail,
+  resolveWriteDetail,
+  type ToolDisplaySpec as ToolDisplaySpecBase,
+} from "../../../src/agents/tool-display-common.js";
 import type { IconName } from "./icons.ts";
-import { hasTranslation, t } from "./i18n/index.ts";
 import rawConfig from "./tool-display.json" with { type: "json" };
 
 type ToolDisplaySpec = ToolDisplaySpecBase & {
@@ -30,20 +42,12 @@ function shortenHomeInString(input: string): string {
     return input;
   }
 
-function defaultTitle(name: string): string {
-  const cleaned = name.replace(/_/g, " ").trim();
-  if (!cleaned) {
-    return t("toolDisplay.tools.tool");
-  }
-  return cleaned
-    .split(/\s+/)
-    .map((part) =>
-      part.length <= 2 && part.toUpperCase() === part
-        ? part
-        : `${part.at(0)?.toUpperCase() ?? ""}${part.slice(1)}`,
-    )
-    .join(" ");
-}
+  // Browser-safe home shortening: avoid importing Node-only helpers (keeps Vite builds working in Docker/CI).
+  const patterns = [
+    { re: /^\/Users\/[^/]+(\/|$)/, replacement: "~$1" }, // macOS
+    { re: /^\/home\/[^/]+(\/|$)/, replacement: "~$1" }, // Linux
+    { re: /^C:\\Users\\[^\\]+(\\|$)/i, replacement: "~$1" }, // Windows
+  ] as const;
 
   for (const pattern of patterns) {
     if (pattern.re.test(input)) {
@@ -63,30 +67,39 @@ export function resolveToolDisplay(params: {
   const key = name.toLowerCase();
   const spec = TOOL_MAP[key];
   const icon = (spec?.icon ?? FALLBACK.icon ?? "puzzle") as IconName;
-  const translationKey = `toolDisplay.tools.${key}`;
-  const translated = hasTranslation(translationKey) ? t(translationKey) : undefined;
-  const title = translated ?? spec?.title ?? defaultTitle(name);
-  const label = translated ?? spec?.label ?? name;
+  const title = spec?.title ?? defaultTitle(name);
+  const label = spec?.label ?? title;
   const actionRaw =
     params.args && typeof params.args === "object"
       ? ((params.args as Record<string, unknown>).action as string | undefined)
       : undefined;
   const action = typeof actionRaw === "string" ? actionRaw.trim() : undefined;
   const actionSpec = resolveActionSpec(spec, action);
-  const actionKey = action ? action.toLowerCase() : "";
-  const actionTranslationKey = actionKey ? `toolDisplay.actions.${actionKey}` : "";
-  const actionLabel =
-    actionTranslationKey && hasTranslation(actionTranslationKey)
-      ? t(actionTranslationKey)
-      : (actionSpec?.label ?? action);
-  const verb = normalizeVerb(actionLabel);
+  const fallbackVerb =
+    key === "web_search"
+      ? "search"
+      : key === "web_fetch"
+        ? "fetch"
+        : key.replace(/_/g, " ").replace(/\./g, " ");
+  const verb = normalizeVerb(actionSpec?.label ?? action ?? fallbackVerb);
 
   let detail: string | undefined;
-  if (key === "read") {
+  if (key === "exec") {
+    detail = resolveExecDetail(params.args);
+  }
+  if (!detail && key === "read") {
     detail = resolveReadDetail(params.args);
   }
   if (!detail && (key === "write" || key === "edit" || key === "attach")) {
-    detail = resolveWriteDetail(params.args);
+    detail = resolveWriteDetail(key, params.args);
+  }
+
+  if (!detail && key === "web_search") {
+    detail = resolveWebSearchDetail(params.args);
+  }
+
+  if (!detail && key === "web_fetch") {
+    detail = resolveWebFetchDetail(params.args);
   }
 
   const detailKeys = actionSpec?.detailKeys ?? spec?.detailKeys ?? FALLBACK.detailKeys ?? [];
@@ -116,17 +129,18 @@ export function resolveToolDisplay(params: {
 }
 
 export function formatToolDetail(display: ToolDisplay): string | undefined {
-  const parts: string[] = [];
-  if (display.verb) {
-    parts.push(display.verb);
-  }
-  if (display.detail) {
-    parts.push(display.detail);
-  }
-  if (parts.length === 0) {
+  if (!display.detail) {
     return undefined;
   }
-  return parts.join(" · ");
+  if (display.detail.includes(" · ")) {
+    const compact = display.detail
+      .split(" · ")
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0)
+      .join(", ");
+    return compact ? `with ${compact}` : undefined;
+  }
+  return display.detail;
 }
 
 export function formatToolSummary(display: ToolDisplay): string {

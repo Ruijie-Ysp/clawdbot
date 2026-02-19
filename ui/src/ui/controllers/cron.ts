@@ -1,8 +1,7 @@
+import { toNumber } from "../format.ts";
 import type { GatewayBrowserClient } from "../gateway.ts";
 import type { CronJob, CronRunLogEntry, CronStatus } from "../types.ts";
 import type { CronFormState } from "../ui-types.ts";
-import { toNumber } from "../format.ts";
-import { t } from "../i18n/index.ts";
 
 export type CronState = {
   client: GatewayBrowserClient | null;
@@ -73,14 +72,14 @@ export function buildCronSchedule(form: CronFormState) {
   if (form.scheduleKind === "at") {
     const ms = Date.parse(form.scheduleAt);
     if (!Number.isFinite(ms)) {
-      throw t("cron.errors.invalidRunTime");
+      throw new Error("Invalid run time.");
     }
     return { kind: "at" as const, at: new Date(ms).toISOString() };
   }
   if (form.scheduleKind === "every") {
     const amount = toNumber(form.everyAmount, 0);
     if (amount <= 0) {
-      throw t("cron.errors.invalidIntervalAmount");
+      throw new Error("Invalid interval amount.");
     }
     const unit = form.everyUnit;
     const mult = unit === "minutes" ? 60_000 : unit === "hours" ? 3_600_000 : 86_400_000;
@@ -88,7 +87,7 @@ export function buildCronSchedule(form: CronFormState) {
   }
   const expr = form.cronExpr.trim();
   if (!expr) {
-    throw t("cron.errors.cronExprRequired");
+    throw new Error("Cron expression required.");
   }
   return { kind: "cron" as const, expr, tz: form.cronTz.trim() || undefined };
 }
@@ -97,13 +96,13 @@ export function buildCronPayload(form: CronFormState) {
   if (form.payloadKind === "systemEvent") {
     const text = form.payloadText.trim();
     if (!text) {
-      throw t("cron.errors.systemTextRequired");
+      throw new Error("System event text required.");
     }
     return { kind: "systemEvent" as const, text };
   }
   const message = form.payloadText.trim();
   if (!message) {
-    throw t("cron.errors.agentMessageRequired");
+    throw new Error("Agent message required.");
   }
   const payload: {
     kind: "agentTurn";
@@ -156,7 +155,7 @@ export async function addCronJob(state: CronState) {
       delivery,
     };
     if (!job.name) {
-      throw t("cron.errors.nameRequired");
+      throw new Error("Name required.");
     }
     await state.client.request("cron.add", job);
     state.cronForm = {

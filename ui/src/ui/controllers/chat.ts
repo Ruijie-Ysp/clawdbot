@@ -1,12 +1,6 @@
+import { extractText } from "../chat/message-extract.ts";
 import type { GatewayBrowserClient } from "../gateway.ts";
 import type { ChatAttachment } from "../ui-types.ts";
-import { extractText } from "../chat/message-extract.ts";
-import { t, tp } from "../i18n/index.js";
-import {
-  compressImageDataUrlForGateway,
-  ImageCompressionError,
-  estimateDecodedBytesFromDataUrl,
-} from "../media/image-compress.ts";
 import { generateUUID } from "../uuid.ts";
 
 export type ChatState = {
@@ -94,9 +88,6 @@ export async function sendChatMessage(
 
   const now = Date.now();
 
-  // Gateway hard limit: 5MB decoded bytes per image.
-  const GATEWAY_ATTACHMENT_MAX_BYTES = 5_000_000;
-
   // Build user message content blocks
   const contentBlocks: Array<{ type: string; text?: string; source?: unknown }> = [];
   if (msg) {
@@ -123,50 +114,29 @@ export async function sendChatMessage(
 
   state.chatSending = true;
   state.lastError = null;
+  const runId = generateUUID();
+  state.chatRunId = runId;
+  state.chatStream = "";
+  state.chatStreamStartedAt = now;
 
-  // Track the runId created by *this* send attempt so we don't accidentally clear
-  // an unrelated in-flight run if something fails before runId is created.
-  let runId: string | null = null;
+  // Convert attachments to API format
+  const apiAttachments = hasAttachments
+    ? attachments
+        .map((att) => {
+          const parsed = dataUrlToBase64(att.dataUrl);
+          if (!parsed) {
+            return null;
+          }
+          return {
+            type: "image",
+            mimeType: parsed.mimeType,
+            content: parsed.content,
+          };
+        })
+        .filter((a): a is NonNullable<typeof a> => a !== null)
+    : undefined;
 
   try {
-    // Convert attachments to API format, with best-effort client-side compression
-    // to stay within the Gateway's 5MB per-image limit.
-    let apiAttachments: Array<{ type: "image"; mimeType: string; content: string }> | undefined;
-    if (hasAttachments) {
-      apiAttachments = [];
-      for (const att of attachments) {
-        const approx = estimateDecodedBytesFromDataUrl(att.dataUrl);
-        const needsCompress = typeof approx === "number" && approx > GATEWAY_ATTACHMENT_MAX_BYTES;
-        const prepared = needsCompress
-          ? await compressImageDataUrlForGateway(att.dataUrl, {
-              maxBytes: GATEWAY_ATTACHMENT_MAX_BYTES,
-              maxEdge: 2048,
-              outputMimeType: "image/jpeg",
-            })
-          : {
-              dataUrl: att.dataUrl,
-              mimeType: att.mimeType,
-              sizeBytes: approx ?? 0,
-              changed: false,
-            };
-
-        const parsed = dataUrlToBase64(prepared.dataUrl);
-        if (!parsed) {
-          throw new ImageCompressionError("decode_failed", "Invalid image data URL");
-        }
-        apiAttachments.push({
-          type: "image",
-          mimeType: parsed.mimeType,
-          content: parsed.content,
-        });
-      }
-    }
-
-    runId = generateUUID();
-    state.chatRunId = runId;
-    state.chatStream = "";
-    state.chatStreamStartedAt = now;
-
     await state.client.request("chat.send", {
       sessionKey: state.sessionKey,
       message: msg,
@@ -177,36 +147,15 @@ export async function sendChatMessage(
     return runId;
   } catch (err) {
     const error = String(err);
-    if (runId && state.chatRunId === runId) {
-      state.chatRunId = null;
-      state.chatStream = null;
-      state.chatStreamStartedAt = null;
-    }
-    if (err instanceof ImageCompressionError) {
-      if (err.code === "unsupported_format") {
-        state.lastError = t("chat.attachmentFormatUnsupported");
-      } else if (err.code === "too_large") {
-        state.lastError = t("chat.attachmentTooLarge");
-      } else {
-        state.lastError = t("chat.attachmentProcessingFailed");
-      }
-    } else if (error.includes("MODEL_NO_VISION")) {
-      state.lastError = t("chat.attachmentModelNotSupported");
-    } else {
-      state.lastError = error;
-    }
+    state.chatRunId = null;
+    state.chatStream = null;
+    state.chatStreamStartedAt = null;
+    state.lastError = error;
     state.chatMessages = [
       ...state.chatMessages,
       {
         role: "assistant",
-        content: [
-          {
-            type: "text",
-            text: tp("chat.errorMessage", {
-              error: state.lastError ?? error,
-            }),
-          },
-        ],
+        content: [{ type: "text", text: "Error: " + error }],
         timestamp: Date.now(),
       },
     ];

@@ -1,9 +1,9 @@
 import { html } from "lit";
+import { t, i18n, type Locale } from "../../i18n/index.ts";
+import { formatRelativeTimestamp, formatDurationHuman } from "../format.ts";
 import type { GatewayHelloOk } from "../gateway.ts";
-import type { UiSettings } from "../storage.ts";
-import { formatAgo, formatDurationMs } from "../format.ts";
-import { t } from "../i18n/index.ts";
 import { formatNextRun } from "../presenter.ts";
+import type { UiSettings } from "../storage.ts";
 
 export type OverviewProps = {
   connected: boolean;
@@ -31,10 +31,13 @@ export function renderOverview(props: OverviewProps) {
         authMode?: "none" | "token" | "password" | "trusted-proxy";
       }
     | undefined;
-  const uptime = snapshot?.uptimeMs ? formatDurationMs(snapshot.uptimeMs) : t("common.na");
+  const uptime = snapshot?.uptimeMs ? formatDurationHuman(snapshot.uptimeMs) : t("common.na");
   const tick = snapshot?.policy?.tickIntervalMs
     ? `${snapshot.policy.tickIntervalMs}ms`
     : t("common.na");
+  const authMode = snapshot?.authMode;
+  const isTrustedProxy = authMode === "trusted-proxy";
+
   const authHint = (() => {
     if (props.connected || !props.lastError) {
       return null;
@@ -49,10 +52,10 @@ export function renderOverview(props: OverviewProps) {
     if (!hasToken && !hasPassword) {
       return html`
         <div class="muted" style="margin-top: 8px">
-          ${t("overview.authHint.missingCredentials")}
+          ${t("overview.auth.required")}
           <div style="margin-top: 6px">
-            <span class="mono">openclaw dashboard --no-open</span> → ${t("overview.authHint.tokenizedUrl")}<br />
-            <span class="mono">openclaw doctor --generate-gateway-token</span> → ${t("overview.authHint.setToken")}
+            <span class="mono">openclaw dashboard --no-open</span> → tokenized URL<br />
+            <span class="mono">openclaw doctor --generate-gateway-token</span> → set token
           </div>
           <div style="margin-top: 6px">
             <a
@@ -60,8 +63,8 @@ export function renderOverview(props: OverviewProps) {
               href="https://docs.openclaw.ai/web/dashboard"
               target="_blank"
               rel="noreferrer"
-              title="${t("overview.authHint.docsTitle")}"
-              >${t("overview.authHint.docsLabel")}</a
+              title="Control UI auth docs (opens in new tab)"
+              >Docs: Control UI auth</a
             >
           </div>
         </div>
@@ -69,21 +72,21 @@ export function renderOverview(props: OverviewProps) {
     }
     return html`
       <div class="muted" style="margin-top: 8px">
-        ${t("overview.authHint.failedIntro")}
-        <span class="mono">openclaw dashboard --no-open</span>${t("overview.authHint.failedOutro")}
+        ${t("overview.auth.failed", { command: "openclaw dashboard --no-open" })}
         <div style="margin-top: 6px">
           <a
             class="session-link"
             href="https://docs.openclaw.ai/web/dashboard"
             target="_blank"
             rel="noreferrer"
-            title="${t("overview.authHint.docsTitle")}"
-            >${t("overview.authHint.docsLabel")}</a
+            title="Control UI auth docs (opens in new tab)"
+            >Docs: Control UI auth</a
           >
         </div>
       </div>
     `;
   })();
+
   const insecureContextHint = (() => {
     if (props.connected || !props.lastError) {
       return null;
@@ -98,19 +101,9 @@ export function renderOverview(props: OverviewProps) {
     }
     return html`
       <div class="muted" style="margin-top: 8px">
-        ${t("overview.insecureHint.httpBlocked")} ${t("overview.insecureHint.useHttps").replace(
-          "{url}",
-          html`
-            <span class="mono">http://127.0.0.1:18789</span>
-          ` as unknown as string,
-        )}
+        ${t("overview.insecure.hint", { url: "http://127.0.0.1:18789" })}
         <div style="margin-top: 6px">
-          ${t("overview.insecureHint.allowInsecure").replace(
-            "{configKey}",
-            html`
-              <span class="mono">gateway.controlUi.allowInsecureAuth: true</span>
-            ` as unknown as string,
-          )}
+          ${t("overview.insecure.stayHttp", { config: "gateway.controlUi.allowInsecureAuth: true" })}
         </div>
         <div style="margin-top: 6px">
           <a
@@ -118,8 +111,8 @@ export function renderOverview(props: OverviewProps) {
             href="https://docs.openclaw.ai/gateway/tailscale"
             target="_blank"
             rel="noreferrer"
-            title="${t("overview.insecureHint.docsServeTitle")}"
-            >${t("overview.insecureHint.docsServeLabel")}</a
+            title="Tailscale Serve docs (opens in new tab)"
+            >Docs: Tailscale Serve</a
           >
           <span class="muted"> · </span>
           <a
@@ -127,13 +120,15 @@ export function renderOverview(props: OverviewProps) {
             href="https://docs.openclaw.ai/web/control-ui#insecure-http"
             target="_blank"
             rel="noreferrer"
-            title="${t("overview.insecureHint.docsInsecureTitle")}"
-            >${t("overview.insecureHint.docsInsecureLabel")}</a
+            title="Insecure HTTP docs (opens in new tab)"
+            >Docs: Insecure HTTP</a
           >
         </div>
       </div>
     `;
   })();
+
+  const currentLocale = i18n.getLocale();
 
   return html`
     <section class="grid grid-cols-2">
@@ -142,39 +137,45 @@ export function renderOverview(props: OverviewProps) {
         <div class="card-sub">${t("overview.access.subtitle")}</div>
         <div class="form-grid" style="margin-top: 16px;">
           <label class="field">
-            <span>${t("overview.access.websocketUrl")}</span>
+            <span>${t("overview.access.wsUrl")}</span>
             <input
               .value=${props.settings.gatewayUrl}
               @input=${(e: Event) => {
                 const v = (e.target as HTMLInputElement).value;
                 props.onSettingsChange({ ...props.settings, gatewayUrl: v });
               }}
-              placeholder="${t("overview.access.wsPlaceholder")}"
+              placeholder="ws://100.x.y.z:18789"
             />
           </label>
-          <label class="field">
-            <span>${t("overview.access.token")}</span>
-            <input
-              .value=${props.settings.token}
-              @input=${(e: Event) => {
-                const v = (e.target as HTMLInputElement).value;
-                props.onSettingsChange({ ...props.settings, token: v });
-              }}
-              placeholder="${t("overview.access.tokenPlaceholder")}"
-            />
-          </label>
-          <label class="field">
-            <span>${t("overview.access.password")}</span>
-            <input
-              type="password"
-              .value=${props.password}
-              @input=${(e: Event) => {
-                const v = (e.target as HTMLInputElement).value;
-                props.onPasswordChange(v);
-              }}
-              placeholder="${t("overview.access.passwordPlaceholder")}"
-            />
-          </label>
+          ${
+            isTrustedProxy
+              ? ""
+              : html`
+                <label class="field">
+                  <span>${t("overview.access.token")}</span>
+                  <input
+                    .value=${props.settings.token}
+                    @input=${(e: Event) => {
+                      const v = (e.target as HTMLInputElement).value;
+                      props.onSettingsChange({ ...props.settings, token: v });
+                    }}
+                    placeholder="OPENCLAW_GATEWAY_TOKEN"
+                  />
+                </label>
+                <label class="field">
+                  <span>${t("overview.access.password")}</span>
+                  <input
+                    type="password"
+                    .value=${props.password}
+                    @input=${(e: Event) => {
+                      const v = (e.target as HTMLInputElement).value;
+                      props.onPasswordChange(v);
+                    }}
+                    placeholder="system or shared password"
+                  />
+                </label>
+              `
+          }
           <label class="field">
             <span>${t("overview.access.sessionKey")}</span>
             <input
@@ -185,11 +186,29 @@ export function renderOverview(props: OverviewProps) {
               }}
             />
           </label>
+          <label class="field">
+            <span>${t("overview.access.language")}</span>
+            <select
+              .value=${currentLocale}
+              @change=${(e: Event) => {
+                const v = (e.target as HTMLSelectElement).value as Locale;
+                void i18n.setLocale(v);
+                props.onSettingsChange({ ...props.settings, locale: v });
+              }}
+            >
+              <option value="en">${t("languages.en")}</option>
+              <option value="zh-CN">${t("languages.zhCN")}</option>
+              <option value="zh-TW">${t("languages.zhTW")}</option>
+              <option value="pt-BR">${t("languages.ptBR")}</option>
+            </select>
+          </label>
         </div>
         <div class="row" style="margin-top: 14px;">
           <button class="btn" @click=${() => props.onConnect()}>${t("common.connect")}</button>
           <button class="btn" @click=${() => props.onRefresh()}>${t("common.refresh")}</button>
-          <span class="muted">${t("overview.access.connectHint")}</span>
+          <span class="muted">${
+            isTrustedProxy ? t("overview.access.trustedProxy") : t("overview.access.connectHint")
+          }</span>
         </div>
       </div>
 
@@ -198,23 +217,23 @@ export function renderOverview(props: OverviewProps) {
         <div class="card-sub">${t("overview.snapshot.subtitle")}</div>
         <div class="stat-grid" style="margin-top: 16px;">
           <div class="stat">
-            <div class="stat-label">${t("overview.snapshot.statusLabel")}</div>
+            <div class="stat-label">${t("overview.snapshot.status")}</div>
             <div class="stat-value ${props.connected ? "ok" : "warn"}">
-              ${props.connected ? t("overview.connected") : t("overview.disconnected")}
+              ${props.connected ? t("common.ok") : t("common.offline")}
             </div>
           </div>
           <div class="stat">
-            <div class="stat-label">${t("overview.uptime")}</div>
+            <div class="stat-label">${t("overview.snapshot.uptime")}</div>
             <div class="stat-value">${uptime}</div>
           </div>
           <div class="stat">
-            <div class="stat-label">${t("overview.snapshot.tickIntervalLabel")}</div>
+            <div class="stat-label">${t("overview.snapshot.tickInterval")}</div>
             <div class="stat-value">${tick}</div>
           </div>
           <div class="stat">
-            <div class="stat-label">${t("overview.snapshot.lastChannelsRefreshLabel")}</div>
+            <div class="stat-label">${t("overview.snapshot.lastChannelsRefresh")}</div>
             <div class="stat-value">
-              ${props.lastChannelsRefresh ? formatAgo(props.lastChannelsRefresh) : t("common.na")}
+              ${props.lastChannelsRefresh ? formatRelativeTimestamp(props.lastChannelsRefresh) : t("common.na")}
             </div>
           </div>
         </div>
@@ -227,7 +246,7 @@ export function renderOverview(props: OverviewProps) {
             </div>`
             : html`
                 <div class="callout" style="margin-top: 14px">
-                  ${t("overview.snapshot.noChannelsHint")}
+                  ${t("overview.snapshot.channelsHint")}
                 </div>
               `
         }
@@ -236,21 +255,21 @@ export function renderOverview(props: OverviewProps) {
 
     <section class="grid grid-cols-3" style="margin-top: 18px;">
       <div class="card stat-card">
-        <div class="stat-label">${t("overview.stats.instancesLabel")}</div>
+        <div class="stat-label">${t("overview.stats.instances")}</div>
         <div class="stat-value">${props.presenceCount}</div>
-        <div class="muted">${t("overview.stats.instancesHelp")}</div>
+        <div class="muted">${t("overview.stats.instancesHint")}</div>
       </div>
       <div class="card stat-card">
-        <div class="stat-label">${t("overview.stats.sessionsLabel")}</div>
+        <div class="stat-label">${t("overview.stats.sessions")}</div>
         <div class="stat-value">${props.sessionsCount ?? t("common.na")}</div>
-        <div class="muted">${t("overview.stats.sessionsHelp")}</div>
+        <div class="muted">${t("overview.stats.sessionsHint")}</div>
       </div>
       <div class="card stat-card">
-        <div class="stat-label">${t("overview.stats.cronLabel")}</div>
+        <div class="stat-label">${t("overview.stats.cron")}</div>
         <div class="stat-value">
-          ${props.cronEnabled == null ? t("common.na") : props.cronEnabled ? t("overview.stats.cronEnabled") : t("overview.stats.cronDisabled")}
+          ${props.cronEnabled == null ? t("common.na") : props.cronEnabled ? t("common.enabled") : t("common.disabled")}
         </div>
-        <div class="muted">${t("overview.stats.nextWake").replace("{value}", formatNextRun(props.cronNext))}</div>
+        <div class="muted">${t("overview.stats.cronNext", { time: formatNextRun(props.cronNext) })}</div>
       </div>
     </section>
 
@@ -261,16 +280,16 @@ export function renderOverview(props: OverviewProps) {
         <div>
           <div class="note-title">${t("overview.notes.tailscaleTitle")}</div>
           <div class="muted">
-            ${t("overview.notes.tailscaleBody")}
+            ${t("overview.notes.tailscaleText")}
           </div>
         </div>
         <div>
           <div class="note-title">${t("overview.notes.sessionTitle")}</div>
-          <div class="muted">${t("overview.notes.sessionBody")}</div>
+          <div class="muted">${t("overview.notes.sessionText")}</div>
         </div>
         <div>
           <div class="note-title">${t("overview.notes.cronTitle")}</div>
-          <div class="muted">${t("overview.notes.cronBody")}</div>
+          <div class="muted">${t("overview.notes.cronText")}</div>
         </div>
       </div>
     </section>

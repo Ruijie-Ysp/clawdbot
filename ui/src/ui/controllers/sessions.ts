@@ -1,7 +1,6 @@
+import { toNumber } from "../format.ts";
 import type { GatewayBrowserClient } from "../gateway.ts";
 import type { SessionsListResult } from "../types.ts";
-import { toNumber } from "../format.ts";
-import { tp } from "../i18n/index.js";
 
 export type SessionsState = {
   client: GatewayBrowserClient | null;
@@ -13,7 +12,6 @@ export type SessionsState = {
   sessionsFilterLimit: string;
   sessionsIncludeGlobal: boolean;
   sessionsIncludeUnknown: boolean;
-  sessionsSelected: Set<string>;
 };
 
 export async function loadSessions(
@@ -93,77 +91,37 @@ export async function patchSession(
   }
 }
 
-export async function deleteSession(state: SessionsState, key: string) {
+export async function deleteSession(state: SessionsState, key: string): Promise<boolean> {
   if (!state.client || !state.connected) {
-    return;
+    return false;
   }
   if (state.sessionsLoading) {
-    return;
+    return false;
   }
   const confirmed = window.confirm(
     `Delete session "${key}"?\n\nDeletes the session entry and archives its transcript.`,
   );
   if (!confirmed) {
-    return;
+    return false;
   }
   state.sessionsLoading = true;
   state.sessionsError = null;
   try {
     await state.client.request("sessions.delete", { key, deleteTranscript: true });
-    state.sessionsSelected.delete(key);
-    await loadSessions(state);
+    return true;
   } catch (err) {
     state.sessionsError = String(err);
+    return false;
   } finally {
     state.sessionsLoading = false;
   }
 }
 
-export function toggleSessionSelection(state: SessionsState, key: string) {
-  if (state.sessionsSelected.has(key)) {
-    state.sessionsSelected.delete(key);
-  } else {
-    state.sessionsSelected.add(key);
+export async function deleteSessionAndRefresh(state: SessionsState, key: string): Promise<boolean> {
+  const deleted = await deleteSession(state, key);
+  if (!deleted) {
+    return false;
   }
-}
-
-export function toggleAllSessions(state: SessionsState, selectAll: boolean) {
-  if (selectAll && state.sessionsResult?.sessions) {
-    for (const session of state.sessionsResult.sessions) {
-      state.sessionsSelected.add(session.key);
-    }
-  } else {
-    state.sessionsSelected.clear();
-  }
-}
-
-export async function deleteSelectedSessions(state: SessionsState) {
-  if (!state.client || !state.connected) {
-    return;
-  }
-  if (state.sessionsLoading) {
-    return;
-  }
-  const count = state.sessionsSelected.size;
-  if (count === 0) {
-    return;
-  }
-  const confirmed = window.confirm(tp("sessions.confirmDeleteMultiple", { count }));
-  if (!confirmed) {
-    return;
-  }
-  state.sessionsLoading = true;
-  state.sessionsError = null;
-  try {
-    const keys = Array.from(state.sessionsSelected);
-    for (const key of keys) {
-      await state.client.request("sessions.delete", { key, deleteTranscript: true });
-    }
-    state.sessionsSelected.clear();
-    await loadSessions(state);
-  } catch (err) {
-    state.sessionsError = String(err);
-  } finally {
-    state.sessionsLoading = false;
-  }
+  await loadSessions(state);
+  return true;
 }

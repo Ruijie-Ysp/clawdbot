@@ -1,13 +1,7 @@
 const KEY = "openclaw.control.settings.v1";
 
+import { isSupportedLocale } from "../i18n/index.ts";
 import type { ThemeMode } from "./theme.ts";
-
-export type ChatLayoutMode = 1 | 2 | 4; // 1, 2, or 4 panels
-
-export type ChatPanelState = {
-  agentId: string;
-  sessionKey: string;
-};
 
 export type UiSettings = {
   gatewayUrl: string;
@@ -20,26 +14,14 @@ export type UiSettings = {
   splitRatio: number; // Sidebar split ratio (0.4 to 0.7, default 0.6)
   navCollapsed: boolean; // Collapsible sidebar state
   navGroupsCollapsed: Record<string, boolean>; // Which nav groups are collapsed
-  sessionsSidebarOpen: boolean; // Sessions sidebar visibility in chat
-  chatLayoutMode: ChatLayoutMode; // Multi-panel layout: 1, 2, or 4 panels
-  chatPanels: ChatPanelState[]; // State for each panel (agent + session)
+  locale?: string;
 };
 
 export function loadSettings(): UiSettings {
   const defaultUrl = (() => {
     const proto = location.protocol === "https:" ? "wss" : "ws";
-    // In dev mode (port 5173), connect to gateway on port 18789 (normal mode)
-    // Use localhost instead of 127.0.0.1 to preserve secure context for device auth
-    const host = location.port === "5173" ? "localhost:18789" : location.host;
-    return `${proto}://${host}`;
+    return `${proto}://${location.host}`;
   })();
-
-  const defaultPanels: ChatPanelState[] = [
-    { agentId: "main", sessionKey: "main" },
-    { agentId: "main", sessionKey: "main" },
-    { agentId: "main", sessionKey: "main" },
-    { agentId: "main", sessionKey: "main" },
-  ];
 
   const defaults: UiSettings = {
     gatewayUrl: defaultUrl,
@@ -52,9 +34,6 @@ export function loadSettings(): UiSettings {
     splitRatio: 0.6,
     navCollapsed: false,
     navGroupsCollapsed: {},
-    sessionsSidebarOpen: true,
-    chatLayoutMode: 1,
-    chatPanels: defaultPanels,
   };
 
   try {
@@ -100,27 +79,7 @@ export function loadSettings(): UiSettings {
         typeof parsed.navGroupsCollapsed === "object" && parsed.navGroupsCollapsed !== null
           ? parsed.navGroupsCollapsed
           : defaults.navGroupsCollapsed,
-      sessionsSidebarOpen:
-        typeof parsed.sessionsSidebarOpen === "boolean"
-          ? parsed.sessionsSidebarOpen
-          : defaults.sessionsSidebarOpen,
-      chatLayoutMode:
-        typeof parsed.chatLayoutMode === "number" &&
-        (parsed.chatLayoutMode === 1 || parsed.chatLayoutMode === 2 || parsed.chatLayoutMode === 4)
-          ? parsed.chatLayoutMode
-          : defaults.chatLayoutMode,
-      chatPanels:
-        Array.isArray(parsed.chatPanels) &&
-        parsed.chatPanels.length === 4 &&
-        parsed.chatPanels.every(
-          (p): p is ChatPanelState =>
-            typeof p === "object" &&
-            p !== null &&
-            typeof p.agentId === "string" &&
-            typeof p.sessionKey === "string",
-        )
-          ? parsed.chatPanels
-          : defaults.chatPanels,
+      locale: isSupportedLocale(parsed.locale) ? parsed.locale : undefined,
     };
   } catch {
     return defaults;
