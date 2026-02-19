@@ -108,6 +108,7 @@ export interface Translations {
     settings: string;
     resources: string;
     instances: string;
+    usage: string;
   };
   // Navigation groups
   navGroups: {
@@ -128,6 +129,7 @@ export interface Translations {
     skills: string;
     nodes: string;
     chat: string;
+    usage: string;
     config: string;
     debug: string;
     logs: string;
@@ -333,33 +335,6 @@ export interface Translations {
         blockedByAllowlist: string;
       };
     };
-  };
-  // Config UI
-  config: {
-    sidebarTitle: string;
-    allSettings: string;
-    searchPlaceholder: string;
-    modeForm: string;
-    modeRaw: string;
-    noChanges: string;
-    unsavedChanges: string;
-    unsavedChangeCount: string;
-    unsavedChangesCount: string;
-    pendingChange: string;
-    pendingChanges: string;
-    loadingSchema: string;
-    formUnsafe: string;
-    rawJson5: string;
-    validity: {
-      valid: string;
-      invalid: string;
-      unknown: string;
-    };
-    errors: {
-      hashMissing: string;
-    };
-    sections: Record<string, { label: string; description: string }>;
-    subsections?: Record<string, Record<string, string>>;
   };
   // Time formatting
   time: {
