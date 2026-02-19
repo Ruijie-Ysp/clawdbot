@@ -1,5 +1,5 @@
-import { t } from "../i18n/index.ts";
 import type { IconName } from "./icons.js";
+import { t } from "../i18n/index.ts";
 
 export const TAB_GROUPS = [
   { label: "chat", tabs: ["chat"] },
@@ -162,4 +162,10 @@ export function titleForTab(tab: Tab) {
 
 export function subtitleForTab(tab: Tab) {
   return t(`subtitles.${tab}`);
+}
+
+export type TabGroupLabel = (typeof TAB_GROUPS)[number]["label"];
+
+export function labelForGroup(group: TabGroupLabel): string {
+  return t(`navGroups.${group}`);
 }

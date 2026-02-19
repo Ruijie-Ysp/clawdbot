@@ -9,12 +9,11 @@ import type {
   SkillStatusReport,
 } from "../types.ts";
 import {
-  expandToolGroups,
-  normalizeToolName,
-  resolveToolProfilePolicy,
-} from "../../../../src/agents/tool-policy.js";
-import { formatAgo } from "../format.ts";
-import { hasTranslation, t, tp } from "../i18n/index.ts";
+  renderAgentFiles,
+  renderAgentChannels,
+  renderAgentCron,
+} from "./agents-panels-status-files.ts";
+import { renderAgentTools, renderAgentSkills } from "./agents-panels-tools-skills.ts";
 import {
   agentBadgeText,
   buildAgentContext,
@@ -87,148 +86,7 @@ export type AgentsProps = {
   onAgentSkillsDisableAll: (agentId: string) => void;
 };
 
-const TOOL_SECTIONS = [
-  { id: "fs", tools: ["read", "write", "edit", "apply_patch"] },
-  { id: "runtime", tools: ["exec", "process"] },
-  { id: "web", tools: ["web_search", "web_fetch"] },
-  { id: "memory", tools: ["memory_search", "memory_get"] },
-  {
-    id: "sessions",
-    tools: [
-      "sessions_list",
-      "sessions_history",
-      "sessions_send",
-      "sessions_spawn",
-      "session_status",
-    ],
-  },
-  { id: "ui", tools: ["browser", "canvas"] },
-  { id: "messaging", tools: ["message"] },
-  { id: "automation", tools: ["cron", "gateway"] },
-  { id: "nodes", tools: ["nodes"] },
-  { id: "agents", tools: ["agents_list"] },
-  { id: "media", tools: ["image"] },
-] as const;
-
-const PROFILE_OPTIONS = ["minimal", "coding", "messaging", "full"] as const;
-
-type ToolPolicy = {
-  allow?: string[];
-  deny?: string[];
-};
-
-type AgentConfigEntry = {
-  id: string;
-  name?: string;
-  workspace?: string;
-  agentDir?: string;
-  model?: unknown;
-  skills?: string[];
-  tools?: {
-    profile?: string;
-    allow?: string[];
-    alsoAllow?: string[];
-    deny?: string[];
-  };
-};
-
-type ConfigSnapshot = {
-  agents?: {
-    defaults?: { workspace?: string; model?: unknown; models?: Record<string, { alias?: string }> };
-    list?: AgentConfigEntry[];
-  };
-  tools?: {
-    profile?: string;
-    allow?: string[];
-    alsoAllow?: string[];
-    deny?: string[];
-  };
-};
-
-function normalizeAgentLabel(agent: { id: string; name?: string; identity?: { name?: string } }) {
-  return agent.name?.trim() || agent.identity?.name?.trim() || agent.id;
-}
-
-function isLikelyEmoji(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return false;
-  }
-  if (trimmed.length > 16) {
-    return false;
-  }
-  let hasNonAscii = false;
-  for (let i = 0; i < trimmed.length; i += 1) {
-    if (trimmed.charCodeAt(i) > 127) {
-      hasNonAscii = true;
-      break;
-    }
-  }
-  if (!hasNonAscii) {
-    return false;
-  }
-  if (trimmed.includes("://") || trimmed.includes("/") || trimmed.includes(".")) {
-    return false;
-  }
-  return true;
-}
-
-function resolveAgentEmoji(
-  agent: { identity?: { emoji?: string; avatar?: string } },
-  agentIdentity?: AgentIdentityResult | null,
-) {
-  const identityEmoji = agentIdentity?.emoji?.trim();
-  if (identityEmoji && isLikelyEmoji(identityEmoji)) {
-    return identityEmoji;
-  }
-  const agentEmoji = agent.identity?.emoji?.trim();
-  if (agentEmoji && isLikelyEmoji(agentEmoji)) {
-    return agentEmoji;
-  }
-  const identityAvatar = agentIdentity?.avatar?.trim();
-  if (identityAvatar && isLikelyEmoji(identityAvatar)) {
-    return identityAvatar;
-  }
-  const avatar = agent.identity?.avatar?.trim();
-  if (avatar && isLikelyEmoji(avatar)) {
-    return avatar;
-  }
-  return "";
-}
-
-function agentBadgeText(agentId: string, defaultId: string | null) {
-  return defaultId && agentId === defaultId ? t("agents.badge.default") : null;
-}
-
-function formatBytes(bytes?: number) {
-  if (bytes == null || !Number.isFinite(bytes)) {
-    return "-";
-  }
-  if (bytes < 1024) {
-    return `${bytes} B`;
-  }
-  const units = ["KB", "MB", "GB", "TB"];
-  let size = bytes / 1024;
-  let unitIndex = 0;
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex += 1;
-  }
-  return `${size.toFixed(size < 10 ? 1 : 0)} ${units[unitIndex]}`;
-}
-
-function resolveAgentConfig(config: Record<string, unknown> | null, agentId: string) {
-  const cfg = config as ConfigSnapshot | null;
-  const list = cfg?.agents?.list ?? [];
-  const entry = list.find((agent) => agent?.id === agentId);
-  return {
-    entry,
-    defaults: cfg?.agents?.defaults,
-    globalTools: cfg?.tools,
-  };
-}
-
-type AgentContext = {
+export type AgentContext = {
   workspace: string;
   model: string;
   identityName: string;
@@ -236,256 +94,6 @@ type AgentContext = {
   skillsLabel: string;
   isDefault: boolean;
 };
-
-function buildAgentContext(
-  agent: AgentsListResult["agents"][number],
-  configForm: Record<string, unknown> | null,
-  agentFilesList: AgentsFilesListResult | null,
-  defaultId: string | null,
-  agentIdentity?: AgentIdentityResult | null,
-): AgentContext {
-  const config = resolveAgentConfig(configForm, agent.id);
-  const workspaceFromFiles =
-    agentFilesList && agentFilesList.agentId === agent.id ? agentFilesList.workspace : null;
-  const workspace =
-    workspaceFromFiles ||
-    config.entry?.workspace ||
-    config.defaults?.workspace ||
-    t("common.default");
-  const modelLabel = config.entry?.model
-    ? resolveModelLabel(config.entry?.model)
-    : resolveModelLabel(config.defaults?.model);
-  const identityName =
-    agentIdentity?.name?.trim() ||
-    agent.identity?.name?.trim() ||
-    agent.name?.trim() ||
-    config.entry?.name ||
-    agent.id;
-  const identityEmoji = resolveAgentEmoji(agent, agentIdentity) || t("common.na");
-  const skillFilter = Array.isArray(config.entry?.skills) ? config.entry?.skills : null;
-  const skillCount = skillFilter?.length ?? null;
-  return {
-    workspace,
-    model: modelLabel,
-    identityName,
-    identityEmoji,
-    skillsLabel: skillFilter
-      ? tp("agents.skills.selectedCount", { count: skillCount ?? 0 })
-      : t("agents.skills.allSkills"),
-    isDefault: Boolean(defaultId && agent.id === defaultId),
-  };
-}
-
-function resolveModelLabel(model?: unknown): string {
-  if (!model) {
-    return "-";
-  }
-  if (typeof model === "string") {
-    return model.trim() || "-";
-  }
-  if (typeof model === "object" && model) {
-    const record = model as { primary?: string; fallbacks?: string[] };
-    const primary = record.primary?.trim();
-    if (primary) {
-      const fallbackCount = Array.isArray(record.fallbacks) ? record.fallbacks.length : 0;
-      return fallbackCount > 0
-        ? `${primary}${tp("agents.models.fallbackSuffix", { count: fallbackCount })}`
-        : primary;
-    }
-  }
-  return "-";
-}
-
-function normalizeModelValue(label: string): string {
-  const enMatch = label.match(/^(.+) \(\+\d+ fallback\)$/);
-  if (enMatch) {
-    return enMatch[1];
-  }
-  const zhMatch = label.match(/^(.+)（\+\d+ 备用）$/);
-  if (zhMatch) {
-    return zhMatch[1];
-  }
-  return label;
-}
-
-function resolveModelPrimary(model?: unknown): string | null {
-  if (!model) {
-    return null;
-  }
-  if (typeof model === "string") {
-    const trimmed = model.trim();
-    return trimmed || null;
-  }
-  if (typeof model === "object" && model) {
-    const record = model as Record<string, unknown>;
-    const candidate =
-      typeof record.primary === "string"
-        ? record.primary
-        : typeof record.model === "string"
-          ? record.model
-          : typeof record.id === "string"
-            ? record.id
-            : typeof record.value === "string"
-              ? record.value
-              : null;
-    const primary = candidate?.trim();
-    return primary || null;
-  }
-  return null;
-}
-
-function resolveModelFallbacks(model?: unknown): string[] | null {
-  if (!model || typeof model === "string") {
-    return null;
-  }
-  if (typeof model === "object" && model) {
-    const record = model as Record<string, unknown>;
-    const fallbacks = Array.isArray(record.fallbacks)
-      ? record.fallbacks
-      : Array.isArray(record.fallback)
-        ? record.fallback
-        : null;
-    return fallbacks
-      ? fallbacks.filter((entry): entry is string => typeof entry === "string")
-      : null;
-  }
-  return null;
-}
-
-function parseFallbackList(value: string): string[] {
-  return value
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-}
-
-type ConfiguredModelOption = {
-  value: string;
-  label: string;
-};
-
-function resolveConfiguredModels(
-  configForm: Record<string, unknown> | null,
-): ConfiguredModelOption[] {
-  const cfg = configForm as ConfigSnapshot | null;
-  const models = cfg?.agents?.defaults?.models;
-  if (!models || typeof models !== "object") {
-    return [];
-  }
-  const options: ConfiguredModelOption[] = [];
-  for (const [modelId, modelRaw] of Object.entries(models)) {
-    const trimmed = modelId.trim();
-    if (!trimmed) {
-      continue;
-    }
-    const alias =
-      modelRaw && typeof modelRaw === "object" && "alias" in modelRaw
-        ? typeof (modelRaw as { alias?: unknown }).alias === "string"
-          ? (modelRaw as { alias?: string }).alias?.trim()
-          : undefined
-        : undefined;
-    const label = alias && alias !== trimmed ? `${alias} (${trimmed})` : trimmed;
-    options.push({ value: trimmed, label });
-  }
-  return options;
-}
-
-function buildModelOptions(configForm: Record<string, unknown> | null, current?: string | null) {
-  const options = resolveConfiguredModels(configForm);
-  const hasCurrent = current ? options.some((option) => option.value === current) : false;
-  if (current && !hasCurrent) {
-    options.unshift({ value: current, label: tp("agents.models.current", { model: current }) });
-  }
-  if (options.length === 0) {
-    return html`
-      <option value="" disabled>${t("agents.models.noneConfigured")}</option>
-    `;
-  }
-  return options.map((option) => html`<option value=${option.value}>${option.label}</option>`);
-}
-
-type CompiledPattern =
-  | { kind: "all" }
-  | { kind: "exact"; value: string }
-  | { kind: "regex"; value: RegExp };
-
-function compilePattern(pattern: string): CompiledPattern {
-  const normalized = normalizeToolName(pattern);
-  if (!normalized) {
-    return { kind: "exact", value: "" };
-  }
-  if (normalized === "*") {
-    return { kind: "all" };
-  }
-  if (!normalized.includes("*")) {
-    return { kind: "exact", value: normalized };
-  }
-  const escaped = normalized.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
-  return { kind: "regex", value: new RegExp(`^${escaped.replaceAll("\\*", ".*")}$`) };
-}
-
-function compilePatterns(patterns?: string[]): CompiledPattern[] {
-  if (!Array.isArray(patterns)) {
-    return [];
-  }
-  return expandToolGroups(patterns)
-    .map(compilePattern)
-    .filter((pattern) => {
-      return pattern.kind !== "exact" || pattern.value.length > 0;
-    });
-}
-
-function matchesAny(name: string, patterns: CompiledPattern[]) {
-  for (const pattern of patterns) {
-    if (pattern.kind === "all") {
-      return true;
-    }
-    if (pattern.kind === "exact" && name === pattern.value) {
-      return true;
-    }
-    if (pattern.kind === "regex" && pattern.value.test(name)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function isAllowedByPolicy(name: string, policy?: ToolPolicy) {
-  if (!policy) {
-    return true;
-  }
-  const normalized = normalizeToolName(name);
-  const deny = compilePatterns(policy.deny);
-  if (matchesAny(normalized, deny)) {
-    return false;
-  }
-  const allow = compilePatterns(policy.allow);
-  if (allow.length === 0) {
-    return true;
-  }
-  if (matchesAny(normalized, allow)) {
-    return true;
-  }
-  if (normalized === "apply_patch" && matchesAny("exec", allow)) {
-    return true;
-  }
-  return false;
-}
-
-function matchesList(name: string, list?: string[]) {
-  if (!Array.isArray(list) || list.length === 0) {
-    return false;
-  }
-  const normalized = normalizeToolName(name);
-  const patterns = compilePatterns(list);
-  if (matchesAny(normalized, patterns)) {
-    return true;
-  }
-  if (normalized === "apply_patch" && matchesAny("exec", patterns)) {
-    return true;
-  }
-  return false;
-}
 
 export function renderAgents(props: AgentsProps) {
   const agents = props.agentsList?.agents ?? [];
@@ -500,11 +108,11 @@ export function renderAgents(props: AgentsProps) {
       <section class="card agents-sidebar">
         <div class="row" style="justify-content: space-between;">
           <div>
-            <div class="card-title">${t("agents.sidebar.title")}</div>
-            <div class="card-sub">${tp("agents.sidebar.configured", { count: agents.length })}</div>
+            <div class="card-title">Agents</div>
+            <div class="card-sub">${agents.length} configured.</div>
           </div>
           <button class="btn btn--sm" ?disabled=${props.loading} @click=${props.onRefresh}>
-            ${props.loading ? t("common.loading") : t("common.refresh")}
+            ${props.loading ? "Loading…" : "Refresh"}
           </button>
         </div>
         ${
@@ -516,7 +124,7 @@ export function renderAgents(props: AgentsProps) {
           ${
             agents.length === 0
               ? html`
-                  <div class="muted">${t("agents.sidebar.noAgents")}</div>
+                  <div class="muted">No agents found.</div>
                 `
               : agents.map((agent) => {
                   const badge = agentBadgeText(agent.id, defaultId);
@@ -544,8 +152,8 @@ export function renderAgents(props: AgentsProps) {
           !selectedAgent
             ? html`
                 <div class="card">
-                  <div class="card-title">${t("agents.sidebar.selectTitle")}</div>
-                  <div class="card-sub">${t("agents.sidebar.selectSubtitle")}</div>
+                  <div class="card-title">Select an agent</div>
+                  <div class="card-sub">Pick an agent to inspect its workspace and tools.</div>
                 </div>
               `
             : html`
@@ -684,7 +292,7 @@ function renderAgentHeader(
 ) {
   const badge = agentBadgeText(agent.id, defaultId);
   const displayName = normalizeAgentLabel(agent);
-  const subtitle = agent.identity?.theme?.trim() || t("agents.header.subtitleFallback");
+  const subtitle = agent.identity?.theme?.trim() || "Agent workspace and routing.";
   const emoji = resolveAgentEmoji(agent, agentIdentity);
   return html`
     <section class="card agent-header">
@@ -705,12 +313,12 @@ function renderAgentHeader(
 
 function renderAgentTabs(active: AgentsPanel, onSelect: (panel: AgentsPanel) => void) {
   const tabs: Array<{ id: AgentsPanel; label: string }> = [
-    { id: "overview", label: t("agents.tabs.overview") },
-    { id: "files", label: t("agents.tabs.files") },
-    { id: "tools", label: t("agents.tabs.tools") },
-    { id: "skills", label: t("agents.tabs.skills") },
-    { id: "channels", label: t("agents.tabs.channels") },
-    { id: "cron", label: t("agents.tabs.cron") },
+    { id: "overview", label: "Overview" },
+    { id: "files", label: "Files" },
+    { id: "tools", label: "Tools" },
+    { id: "skills", label: "Skills" },
+    { id: "channels", label: "Channels" },
+    { id: "cron", label: "Cron Jobs" },
   ];
   return html`
     <div class="agent-tabs">
@@ -764,10 +372,7 @@ function renderAgentOverview(params: {
   const workspaceFromFiles =
     agentFilesList && agentFilesList.agentId === agent.id ? agentFilesList.workspace : null;
   const workspace =
-    workspaceFromFiles ||
-    config.entry?.workspace ||
-    config.defaults?.workspace ||
-    t("common.default");
+    workspaceFromFiles || config.entry?.workspace || config.defaults?.workspace || "default";
   const model = config.entry?.model
     ? resolveModelLabel(config.entry?.model)
     : resolveModelLabel(config.defaults?.model);
@@ -785,83 +390,79 @@ function renderAgentOverview(params: {
     agent.identity?.name?.trim() ||
     agent.name?.trim() ||
     config.entry?.name ||
-    t("common.na");
+    "-";
   const resolvedEmoji = resolveAgentEmoji(agent, agentIdentity);
-  const identityEmoji = resolvedEmoji || t("common.na");
+  const identityEmoji = resolvedEmoji || "-";
   const skillFilter = Array.isArray(config.entry?.skills) ? config.entry?.skills : null;
   const skillCount = skillFilter?.length ?? null;
   const identityStatus = agentIdentityLoading
-    ? t("common.loading")
+    ? "Loading…"
     : agentIdentityError
-      ? t("agents.overview.identityUnavailable")
+      ? "Unavailable"
       : "";
   const isDefault = Boolean(params.defaultId && agent.id === params.defaultId);
 
   return html`
     <section class="card">
-      <div class="card-title">${t("agents.overview.title")}</div>
-      <div class="card-sub">${t("agents.overview.subtitle")}</div>
+      <div class="card-title">Overview</div>
+      <div class="card-sub">Workspace paths and identity metadata.</div>
       <div class="agents-overview-grid" style="margin-top: 16px;">
         <div class="agent-kv">
-          <div class="label">${t("agents.overview.workspace")}</div>
+          <div class="label">Workspace</div>
           <div class="mono">${workspace}</div>
         </div>
         <div class="agent-kv">
-          <div class="label">${t("agents.overview.primaryModel")}</div>
+          <div class="label">Primary Model</div>
           <div class="mono">${model}</div>
         </div>
         <div class="agent-kv">
-          <div class="label">${t("agents.overview.identityName")}</div>
+          <div class="label">Identity Name</div>
           <div>${identityName}</div>
           ${identityStatus ? html`<div class="agent-kv-sub muted">${identityStatus}</div>` : nothing}
         </div>
         <div class="agent-kv">
-          <div class="label">${t("agents.overview.defaultLabel")}</div>
-          <div>${isDefault ? t("common.yes") : t("common.no")}</div>
+          <div class="label">Default</div>
+          <div>${isDefault ? "yes" : "no"}</div>
         </div>
         <div class="agent-kv">
-          <div class="label">${t("agents.overview.identityEmoji")}</div>
+          <div class="label">Identity Emoji</div>
           <div>${identityEmoji}</div>
         </div>
         <div class="agent-kv">
-          <div class="label">${t("agents.overview.skillsFilter")}</div>
-          <div>
-            ${
-              skillFilter
-                ? tp("agents.skills.selectedCount", { count: skillCount ?? 0 })
-                : t("agents.skills.allSkills")
-            }
-          </div>
+          <div class="label">Skills Filter</div>
+          <div>${skillFilter ? `${skillCount} selected` : "all skills"}</div>
         </div>
       </div>
 
       <div class="agent-model-select" style="margin-top: 20px;">
-        <div class="label">${t("agents.overview.modelSelection")}</div>
+        <div class="label">Model Selection</div>
         <div class="row" style="gap: 12px; flex-wrap: wrap;">
           <label class="field" style="min-width: 260px; flex: 1;">
-            <span>${t("agents.overview.primaryModelLabel")}</span>
+            <span>Primary model${isDefault ? " (default)" : ""}</span>
             <select
               .value=${effectivePrimary ?? ""}
               ?disabled=${!configForm || configLoading || configSaving}
               @change=${(e: Event) =>
                 onModelChange(agent.id, (e.target as HTMLSelectElement).value || null)}
             >
-              <option value="">
-                ${
-                  defaultPrimary
-                    ? tp("agents.overview.inheritDefaultWithValue", { model: defaultPrimary })
-                    : t("agents.overview.inheritDefault")
-                }
-              </option>
+              ${
+                isDefault
+                  ? nothing
+                  : html`
+                      <option value="">
+                        ${defaultPrimary ? `Inherit default (${defaultPrimary})` : "Inherit default"}
+                      </option>
+                    `
+              }
               ${buildModelOptions(configForm, effectivePrimary ?? undefined)}
             </select>
           </label>
           <label class="field" style="min-width: 260px; flex: 1;">
-            <span>${t("agents.overview.fallbacksLabel")}</span>
+            <span>Fallbacks (comma-separated)</span>
             <input
               .value=${fallbackText}
               ?disabled=${!configForm || configLoading || configSaving}
-              placeholder=${t("agents.overview.fallbacksPlaceholder")}
+              placeholder="provider/model, provider/model"
               @input=${(e: Event) =>
                 onModelFallbacksChange(
                   agent.id,
@@ -871,1077 +472,18 @@ function renderAgentOverview(params: {
           </label>
         </div>
         <div class="row" style="justify-content: flex-end; gap: 8px;">
-          <button
-            class="btn btn--sm"
-            ?disabled=${configLoading}
-            @click=${onConfigReload}
-          >
-            ${t("agents.overview.reloadConfig")}
+          <button class="btn btn--sm" ?disabled=${configLoading} @click=${onConfigReload}>
+            Reload Config
           </button>
           <button
             class="btn btn--sm primary"
             ?disabled=${configSaving || !configDirty}
             @click=${onConfigSave}
           >
-            ${configSaving ? t("common.saving") : t("common.save")}
+            ${configSaving ? "Saving…" : "Save"}
           </button>
         </div>
       </div>
     </section>
-  `;
-}
-
-function renderAgentContextCard(context: AgentContext, subtitle: string) {
-  return html`
-    <section class="card">
-      <div class="card-title">${t("agents.contextCard.title")}</div>
-      <div class="card-sub">${subtitle}</div>
-      <div class="agents-overview-grid" style="margin-top: 16px;">
-        <div class="agent-kv">
-          <div class="label">${t("agents.contextCard.workspace")}</div>
-          <div class="mono">${context.workspace}</div>
-        </div>
-        <div class="agent-kv">
-          <div class="label">${t("agents.contextCard.primaryModel")}</div>
-          <div class="mono">${context.model}</div>
-        </div>
-        <div class="agent-kv">
-          <div class="label">${t("agents.contextCard.identityName")}</div>
-          <div>${context.identityName}</div>
-        </div>
-        <div class="agent-kv">
-          <div class="label">${t("agents.contextCard.identityEmoji")}</div>
-          <div>${context.identityEmoji}</div>
-        </div>
-        <div class="agent-kv">
-          <div class="label">${t("agents.contextCard.skillsFilter")}</div>
-          <div>${context.skillsLabel}</div>
-        </div>
-        <div class="agent-kv">
-          <div class="label">${t("agents.contextCard.defaultLabel")}</div>
-          <div>${context.isDefault ? t("common.yes") : t("common.no")}</div>
-        </div>
-      </div>
-    </section>
-  `;
-}
-
-type ChannelSummaryEntry = {
-  id: string;
-  label: string;
-  accounts: ChannelAccountSnapshot[];
-};
-
-function resolveChannelLabel(snapshot: ChannelsStatusSnapshot, id: string) {
-  const meta = snapshot.channelMeta?.find((entry) => entry.id === id);
-  if (meta?.label) {
-    return meta.label;
-  }
-  return snapshot.channelLabels?.[id] ?? id;
-}
-
-function resolveChannelEntries(snapshot: ChannelsStatusSnapshot | null): ChannelSummaryEntry[] {
-  if (!snapshot) {
-    return [];
-  }
-  const ids = new Set<string>();
-  for (const id of snapshot.channelOrder ?? []) {
-    ids.add(id);
-  }
-  for (const entry of snapshot.channelMeta ?? []) {
-    ids.add(entry.id);
-  }
-  for (const id of Object.keys(snapshot.channelAccounts ?? {})) {
-    ids.add(id);
-  }
-  const ordered: string[] = [];
-  const seed = snapshot.channelOrder?.length ? snapshot.channelOrder : Array.from(ids);
-  for (const id of seed) {
-    if (!ids.has(id)) {
-      continue;
-    }
-    ordered.push(id);
-    ids.delete(id);
-  }
-  for (const id of ids) {
-    ordered.push(id);
-  }
-  return ordered.map((id) => ({
-    id,
-    label: resolveChannelLabel(snapshot, id),
-    accounts: snapshot.channelAccounts?.[id] ?? [],
-  }));
-}
-
-const CHANNEL_EXTRA_FIELDS = ["groupPolicy", "streamMode", "dmPolicy"] as const;
-
-function resolveChannelConfigValue(
-  configForm: Record<string, unknown> | null,
-  channelId: string,
-): Record<string, unknown> | null {
-  if (!configForm) {
-    return null;
-  }
-  const channels = (configForm.channels ?? {}) as Record<string, unknown>;
-  const fromChannels = channels[channelId];
-  if (fromChannels && typeof fromChannels === "object") {
-    return fromChannels as Record<string, unknown>;
-  }
-  const fallback = configForm[channelId];
-  if (fallback && typeof fallback === "object") {
-    return fallback as Record<string, unknown>;
-  }
-  return null;
-}
-
-function formatChannelExtraValue(raw: unknown): string {
-  if (raw == null) {
-    return t("common.na");
-  }
-  if (typeof raw === "string" || typeof raw === "number" || typeof raw === "boolean") {
-    return String(raw);
-  }
-  try {
-    return JSON.stringify(raw);
-  } catch {
-    return t("common.na");
-  }
-}
-
-function resolveChannelExtras(
-  configForm: Record<string, unknown> | null,
-  channelId: string,
-): Array<{ label: string; value: string }> {
-  const value = resolveChannelConfigValue(configForm, channelId);
-  if (!value) {
-    return [];
-  }
-  return CHANNEL_EXTRA_FIELDS.flatMap((field) => {
-    if (!(field in value)) {
-      return [];
-    }
-    return [{ label: field, value: formatChannelExtraValue(value[field]) }];
-  });
-}
-
-function summarizeChannelAccounts(accounts: ChannelAccountSnapshot[]) {
-  let connected = 0;
-  let configured = 0;
-  let enabled = 0;
-  for (const account of accounts) {
-    const probeOk =
-      account.probe && typeof account.probe === "object" && "ok" in account.probe
-        ? Boolean((account.probe as { ok?: unknown }).ok)
-        : false;
-    const isConnected = account.connected === true || account.running === true || probeOk;
-    if (isConnected) {
-      connected += 1;
-    }
-    if (account.configured) {
-      configured += 1;
-    }
-    if (account.enabled) {
-      enabled += 1;
-    }
-  }
-  return {
-    total: accounts.length,
-    connected,
-    configured,
-    enabled,
-  };
-}
-
-function renderAgentChannels(params: {
-  agent: AgentsListResult["agents"][number];
-  defaultId: string | null;
-  configForm: Record<string, unknown> | null;
-  agentFilesList: AgentsFilesListResult | null;
-  agentIdentity: AgentIdentityResult | null;
-  snapshot: ChannelsStatusSnapshot | null;
-  loading: boolean;
-  error: string | null;
-  lastSuccess: number | null;
-  onRefresh: () => void;
-}) {
-  const context = buildAgentContext(
-    params.agent,
-    params.configForm,
-    params.agentFilesList,
-    params.defaultId,
-    params.agentIdentity,
-  );
-  const entries = resolveChannelEntries(params.snapshot);
-  const lastSuccessLabel = params.lastSuccess ? formatAgo(params.lastSuccess) : t("common.never");
-  return html`
-    <section class="grid grid-cols-2">
-      ${renderAgentContextCard(context, t("agents.contextSubtitles.channels"))}
-      <section class="card">
-        <div class="row" style="justify-content: space-between;">
-          <div>
-            <div class="card-title">${t("agents.channels.title")}</div>
-            <div class="card-sub">${t("agents.channels.subtitle")}</div>
-          </div>
-          <button class="btn btn--sm" ?disabled=${params.loading} @click=${params.onRefresh}>
-            ${params.loading ? t("common.refreshing") : t("common.refresh")}
-          </button>
-        </div>
-        <div class="muted" style="margin-top: 8px;">
-          ${tp("agents.channels.lastRefresh", { time: lastSuccessLabel })}
-        </div>
-        ${
-          params.error
-            ? html`<div class="callout danger" style="margin-top: 12px;">${params.error}</div>`
-            : nothing
-        }
-        ${
-          !params.snapshot
-            ? html`
-                <div class="callout info" style="margin-top: 12px">${t("agents.channels.loadHint")}</div>
-              `
-            : nothing
-        }
-        ${
-          entries.length === 0
-            ? html`
-                <div class="muted" style="margin-top: 16px">${t("agents.channels.none")}</div>
-              `
-            : html`
-              <div class="list" style="margin-top: 16px;">
-                ${entries.map((entry) => {
-                  const summary = summarizeChannelAccounts(entry.accounts);
-                  const status = summary.total
-                    ? tp("agents.channels.statusConnected", {
-                        connected: summary.connected,
-                        total: summary.total,
-                      })
-                    : t("agents.channels.statusNoAccounts");
-                  const config = summary.configured
-                    ? tp("agents.channels.configured", { count: summary.configured })
-                    : t("agents.channels.notConfigured");
-                  const enabled = summary.total
-                    ? tp("agents.channels.enabled", { count: summary.enabled })
-                    : t("agents.channels.disabled");
-                  const extras = resolveChannelExtras(params.configForm, entry.id);
-                  return html`
-                    <div class="list-item">
-                      <div class="list-main">
-                        <div class="list-title">${entry.label}</div>
-                        <div class="list-sub mono">${entry.id}</div>
-                      </div>
-                      <div class="list-meta">
-                        <div>${status}</div>
-                        <div>${config}</div>
-                        <div>${enabled}</div>
-                        ${
-                          extras.length > 0
-                            ? extras.map((extra) => html`<div>${extra.label}: ${extra.value}</div>`)
-                            : nothing
-                        }
-                      </div>
-                    </div>
-                  `;
-                })}
-              </div>
-            `
-        }
-      </section>
-    </section>
-  `;
-}
-
-function renderAgentCron(params: {
-  agent: AgentsListResult["agents"][number];
-  defaultId: string | null;
-  configForm: Record<string, unknown> | null;
-  agentFilesList: AgentsFilesListResult | null;
-  agentIdentity: AgentIdentityResult | null;
-  jobs: CronJob[];
-  status: CronStatus | null;
-  loading: boolean;
-  error: string | null;
-  onRefresh: () => void;
-}) {
-  const context = buildAgentContext(
-    params.agent,
-    params.configForm,
-    params.agentFilesList,
-    params.defaultId,
-    params.agentIdentity,
-  );
-  const jobs = params.jobs.filter((job) => job.agentId === params.agent.id);
-  return html`
-    <section class="grid grid-cols-2">
-      ${renderAgentContextCard(context, t("agents.contextSubtitles.cron"))}
-      <section class="card">
-        <div class="row" style="justify-content: space-between;">
-          <div>
-            <div class="card-title">${t("agents.cron.schedulerTitle")}</div>
-            <div class="card-sub">${t("agents.cron.schedulerSubtitle")}</div>
-          </div>
-          <button class="btn btn--sm" ?disabled=${params.loading} @click=${params.onRefresh}>
-            ${params.loading ? t("common.refreshing") : t("common.refresh")}
-          </button>
-        </div>
-        <div class="stat-grid" style="margin-top: 16px;">
-          <div class="stat">
-            <div class="stat-label">${t("agents.cron.enabledLabel")}</div>
-            <div class="stat-value">
-              ${
-                params.status
-                  ? params.status.enabled
-                    ? t("agents.cron.yes")
-                    : t("agents.cron.no")
-                  : t("common.na")
-              }
-            </div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">${t("agents.cron.jobsLabel")}</div>
-            <div class="stat-value">${params.status?.jobs ?? t("common.na")}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">${t("agents.cron.nextWakeLabel")}</div>
-            <div class="stat-value">${formatNextRun(params.status?.nextWakeAtMs ?? null)}</div>
-          </div>
-        </div>
-        ${
-          params.error
-            ? html`<div class="callout danger" style="margin-top: 12px;">${params.error}</div>`
-            : nothing
-        }
-      </section>
-    </section>
-    <section class="card">
-      <div class="card-title">${t("agents.cron.agentJobsTitle")}</div>
-      <div class="card-sub">${t("agents.cron.agentJobsSubtitle")}</div>
-      ${
-        jobs.length === 0
-          ? html`
-              <div class="muted" style="margin-top: 16px">${t("agents.cron.noJobs")}</div>
-            `
-          : html`
-              <div class="list" style="margin-top: 16px;">
-                ${jobs.map(
-                  (job) => html`
-                  <div class="list-item">
-                    <div class="list-main">
-                      <div class="list-title">${job.name}</div>
-                      ${job.description ? html`<div class="list-sub">${job.description}</div>` : nothing}
-                      <div class="chip-row" style="margin-top: 6px;">
-                        <span class="chip">${formatCronSchedule(job)}</span>
-                        <span class="chip ${job.enabled ? "chip-ok" : "chip-warn"}">
-                          ${job.enabled ? t("agents.cron.chipEnabled") : t("agents.cron.chipDisabled")}
-                        </span>
-                        <span class="chip">${job.sessionTarget}</span>
-                      </div>
-                    </div>
-                    <div class="list-meta">
-                      <div class="mono">${formatCronState(job)}</div>
-                      <div class="muted">${formatCronPayload(job)}</div>
-                    </div>
-                  </div>
-                `,
-                )}
-              </div>
-            `
-      }
-    </section>
-  `;
-}
-
-function renderAgentFiles(params: {
-  agentId: string;
-  agentFilesList: AgentsFilesListResult | null;
-  agentFilesLoading: boolean;
-  agentFilesError: string | null;
-  agentFileActive: string | null;
-  agentFileContents: Record<string, string>;
-  agentFileDrafts: Record<string, string>;
-  agentFileSaving: boolean;
-  onLoadFiles: (agentId: string) => void;
-  onSelectFile: (name: string) => void;
-  onFileDraftChange: (name: string, content: string) => void;
-  onFileReset: (name: string) => void;
-  onFileSave: (name: string) => void;
-}) {
-  const list = params.agentFilesList?.agentId === params.agentId ? params.agentFilesList : null;
-  const files = list?.files ?? [];
-  const active = params.agentFileActive ?? null;
-  const activeEntry = active ? (files.find((file) => file.name === active) ?? null) : null;
-  const baseContent = active ? (params.agentFileContents[active] ?? "") : "";
-  const draft = active ? (params.agentFileDrafts[active] ?? baseContent) : "";
-  const isDirty = active ? draft !== baseContent : false;
-
-  return html`
-    <section class="card">
-      <div class="row" style="justify-content: space-between;">
-        <div>
-          <div class="card-title">${t("agents.files.title")}</div>
-          <div class="card-sub">${t("agents.files.subtitle")}</div>
-        </div>
-        <button
-          class="btn btn--sm"
-          ?disabled=${params.agentFilesLoading}
-          @click=${() => params.onLoadFiles(params.agentId)}
-        >
-          ${params.agentFilesLoading ? t("common.loading") : t("common.refresh")}
-        </button>
-      </div>
-      ${
-        list
-          ? html`<div class="muted mono" style="margin-top: 8px;">${t("agents.files.workspaceLabel")}: ${list.workspace}</div>`
-          : nothing
-      }
-      ${
-        params.agentFilesError
-          ? html`<div class="callout danger" style="margin-top: 12px;">${
-              params.agentFilesError
-            }</div>`
-          : nothing
-      }
-      ${
-        !list
-          ? html`
-              <div class="callout info" style="margin-top: 12px">
-                ${t("agents.files.loadHint")}
-              </div>
-            `
-          : html`
-              <div class="agent-files-grid" style="margin-top: 16px;">
-                <div class="agent-files-list">
-                  ${
-                    files.length === 0
-                      ? html`
-                          <div class="muted">${t("agents.files.noFiles")}</div>
-                        `
-                      : files.map((file) =>
-                          renderAgentFileRow(file, active, () => params.onSelectFile(file.name)),
-                        )
-                  }
-                </div>
-                <div class="agent-files-editor">
-                  ${
-                    !activeEntry
-                      ? html`
-                          <div class="muted">${t("agents.files.selectFile")}</div>
-                        `
-                      : html`
-                          <div class="agent-file-header">
-                            <div>
-                              <div class="agent-file-title mono">${activeEntry.name}</div>
-                              <div class="agent-file-sub mono">${activeEntry.path}</div>
-                            </div>
-                            <div class="agent-file-actions">
-                              <button
-                                class="btn btn--sm"
-                                ?disabled=${!isDirty}
-                                @click=${() => params.onFileReset(activeEntry.name)}
-                              >
-                                ${t("agents.files.reset")}
-                              </button>
-                              <button
-                                class="btn btn--sm primary"
-                                ?disabled=${params.agentFileSaving || !isDirty}
-                                @click=${() => params.onFileSave(activeEntry.name)}
-                              >
-                                ${params.agentFileSaving ? t("common.saving") : t("common.save")}
-                              </button>
-                            </div>
-                          </div>
-                          ${
-                            activeEntry.missing
-                              ? html`
-                                  <div class="callout info" style="margin-top: 10px">
-                                    ${t("agents.files.missingInfo")}
-                                  </div>
-                                `
-                              : nothing
-                          }
-                          <label class="field" style="margin-top: 12px;">
-                            <span>${t("agents.files.contentLabel")}</span>
-                            <textarea
-                              .value=${draft}
-                              @input=${(e: Event) =>
-                                params.onFileDraftChange(
-                                  activeEntry.name,
-                                  (e.target as HTMLTextAreaElement).value,
-                                )}
-                            ></textarea>
-                          </label>
-                        `
-                  }
-                </div>
-              </div>
-            `
-      }
-    </section>
-  `;
-}
-
-function renderAgentFileRow(file: AgentFileEntry, active: string | null, onSelect: () => void) {
-  const status = file.missing
-    ? t("agents.files.missing")
-    : `${formatBytes(file.size)} · ${formatAgo(file.updatedAtMs ?? null)}`;
-  return html`
-    <button
-      type="button"
-      class="agent-file-row ${active === file.name ? "active" : ""}"
-      @click=${onSelect}
-    >
-      <div>
-        <div class="agent-file-name mono">${file.name}</div>
-        <div class="agent-file-meta">${status}</div>
-      </div>
-      ${
-        file.missing
-          ? html`
-              <span class="agent-pill warn">${t("agents.files.missingBadge")}</span>
-            `
-          : nothing
-      }
-    </button>
-  `;
-}
-
-function renderAgentTools(params: {
-  agentId: string;
-  configForm: Record<string, unknown> | null;
-  configLoading: boolean;
-  configSaving: boolean;
-  configDirty: boolean;
-  onProfileChange: (agentId: string, profile: string | null, clearAllow: boolean) => void;
-  onOverridesChange: (agentId: string, alsoAllow: string[], deny: string[]) => void;
-  onConfigReload: () => void;
-  onConfigSave: () => void;
-}) {
-  const config = resolveAgentConfig(params.configForm, params.agentId);
-  const agentTools = config.entry?.tools ?? {};
-  const globalTools = config.globalTools ?? {};
-  const profile = agentTools.profile ?? globalTools.profile ?? "full";
-  const profileSource = agentTools.profile
-    ? t("agents.tools.profileSource.agent")
-    : globalTools.profile
-      ? t("agents.tools.profileSource.global")
-      : t("agents.tools.profileSource.default");
-  const profileLabel = hasTranslation(`agents.tools.profiles.${profile}`)
-    ? t(`agents.tools.profiles.${profile}`)
-    : profile;
-  const hasAgentAllow = Array.isArray(agentTools.allow) && agentTools.allow.length > 0;
-  const hasGlobalAllow = Array.isArray(globalTools.allow) && globalTools.allow.length > 0;
-  const editable =
-    Boolean(params.configForm) && !params.configLoading && !params.configSaving && !hasAgentAllow;
-  const alsoAllow = hasAgentAllow
-    ? []
-    : Array.isArray(agentTools.alsoAllow)
-      ? agentTools.alsoAllow
-      : [];
-  const deny = hasAgentAllow ? [] : Array.isArray(agentTools.deny) ? agentTools.deny : [];
-  const basePolicy = hasAgentAllow
-    ? { allow: agentTools.allow ?? [], deny: agentTools.deny ?? [] }
-    : (resolveToolProfilePolicy(profile) ?? undefined);
-  const toolIds = TOOL_SECTIONS.flatMap((section) => section.tools);
-
-  const resolveAllowed = (toolId: string) => {
-    const baseAllowed = isAllowedByPolicy(toolId, basePolicy);
-    const extraAllowed = matchesList(toolId, alsoAllow);
-    const denied = matchesList(toolId, deny);
-    const allowed = (baseAllowed || extraAllowed) && !denied;
-    return {
-      allowed,
-      baseAllowed,
-      denied,
-    };
-  };
-  const enabledCount = toolIds.filter((toolId) => resolveAllowed(toolId).allowed).length;
-
-  const updateTool = (toolId: string, nextEnabled: boolean) => {
-    const nextAllow = new Set(
-      alsoAllow.map((entry) => normalizeToolName(entry)).filter((entry) => entry.length > 0),
-    );
-    const nextDeny = new Set(
-      deny.map((entry) => normalizeToolName(entry)).filter((entry) => entry.length > 0),
-    );
-    const baseAllowed = resolveAllowed(toolId).baseAllowed;
-    const normalized = normalizeToolName(toolId);
-    if (nextEnabled) {
-      nextDeny.delete(normalized);
-      if (!baseAllowed) {
-        nextAllow.add(normalized);
-      }
-    } else {
-      nextAllow.delete(normalized);
-      nextDeny.add(normalized);
-    }
-    params.onOverridesChange(params.agentId, [...nextAllow], [...nextDeny]);
-  };
-
-  const updateAll = (nextEnabled: boolean) => {
-    const nextAllow = new Set(
-      alsoAllow.map((entry) => normalizeToolName(entry)).filter((entry) => entry.length > 0),
-    );
-    const nextDeny = new Set(
-      deny.map((entry) => normalizeToolName(entry)).filter((entry) => entry.length > 0),
-    );
-    for (const toolId of toolIds) {
-      const baseAllowed = resolveAllowed(toolId).baseAllowed;
-      const normalized = normalizeToolName(toolId);
-      if (nextEnabled) {
-        nextDeny.delete(normalized);
-        if (!baseAllowed) {
-          nextAllow.add(normalized);
-        }
-      } else {
-        nextAllow.delete(normalized);
-        nextDeny.add(normalized);
-      }
-    }
-    params.onOverridesChange(params.agentId, [...nextAllow], [...nextDeny]);
-  };
-
-  return html`
-    <section class="card">
-      <div class="row" style="justify-content: space-between;">
-        <div>
-          <div class="card-title">${t("agents.tools.title")}</div>
-          <div class="card-sub">
-            ${t("agents.tools.subtitle")}
-            <span class="mono">${tp("agents.tools.enabledCount", { enabled: enabledCount, total: toolIds.length })}</span>
-          </div>
-        </div>
-        <div class="row" style="gap: 8px;">
-          <button
-            class="btn btn--sm"
-            ?disabled=${!editable}
-            @click=${() => updateAll(true)}
-          >
-            ${t("agents.tools.enableAll")}
-          </button>
-          <button
-            class="btn btn--sm"
-            ?disabled=${!editable}
-            @click=${() => updateAll(false)}
-          >
-            ${t("agents.tools.disableAll")}
-          </button>
-          <button
-            class="btn btn--sm"
-            ?disabled=${params.configLoading}
-            @click=${params.onConfigReload}
-          >
-            ${t("agents.tools.reloadConfig")}
-          </button>
-          <button
-            class="btn btn--sm primary"
-            ?disabled=${params.configSaving || !params.configDirty}
-            @click=${params.onConfigSave}
-          >
-            ${params.configSaving ? t("common.saving") : t("common.save")}
-          </button>
-        </div>
-      </div>
-
-      ${
-        !params.configForm
-          ? html`
-              <div class="callout info" style="margin-top: 12px">
-                ${t("agents.tools.loadHint")}
-              </div>
-            `
-          : nothing
-      }
-      ${
-        hasAgentAllow
-          ? html`
-              <div class="callout info" style="margin-top: 12px">
-                ${t("agents.tools.explicitAllowlistHint")}
-              </div>
-            `
-          : nothing
-      }
-      ${
-        hasGlobalAllow
-          ? html`
-              <div class="callout info" style="margin-top: 12px">
-                ${t("agents.tools.globalAllowHint")}
-              </div>
-            `
-          : nothing
-      }
-
-      <div class="agent-tools-meta" style="margin-top: 16px;">
-        <div class="agent-kv">
-          <div class="label">${t("agents.tools.profileLabel")}</div>
-          <div class="mono">${profileLabel}</div>
-        </div>
-        <div class="agent-kv">
-          <div class="label">${t("agents.tools.sourceLabel")}</div>
-          <div>${profileSource}</div>
-        </div>
-        ${
-          params.configDirty
-            ? html`
-                <div class="agent-kv">
-                  <div class="label">${t("agents.tools.statusLabel")}</div>
-                  <div class="mono">${t("agents.tools.unsaved")}</div>
-                </div>
-              `
-            : nothing
-        }
-      </div>
-
-      <div class="agent-tools-presets" style="margin-top: 16px;">
-        <div class="label">${t("agents.tools.quickPresets")}</div>
-        <div class="agent-tools-buttons">
-          ${PROFILE_OPTIONS.map(
-            (option) => html`
-              <button
-                class="btn btn--sm ${profile === option.id ? "active" : ""}"
-                ?disabled=${!editable}
-                @click=${() => params.onProfileChange(params.agentId, option.id, true)}
-              >
-                ${t(`agents.tools.profiles.${option.id}`)}
-              </button>
-            `,
-          )}
-          <button
-            class="btn btn--sm"
-            ?disabled=${!editable}
-            @click=${() => params.onProfileChange(params.agentId, null, false)}
-          >
-            ${t("agents.tools.inherit")}
-          </button>
-        </div>
-      </div>
-
-      <div class="agent-tools-grid" style="margin-top: 20px;">
-        ${TOOL_SECTIONS.map(
-          (section) =>
-            html`
-            <div class="agent-tools-section">
-              <div class="agent-tools-header">${t(`agents.tools.sections.${section.id}`)}</div>
-              <div class="agent-tools-list">
-                ${section.tools.map((toolId) => {
-                  const { allowed } = resolveAllowed(toolId);
-                  return html`
-                    <div class="agent-tool-row">
-                      <div>
-                        <div class="agent-tool-title mono">${toolId}</div>
-                        <div class="agent-tool-sub">${t(`agents.tools.toolDescriptions.${toolId}`)}</div>
-                      </div>
-                      <label class="cfg-toggle">
-                        <input
-                          type="checkbox"
-                          .checked=${allowed}
-                          ?disabled=${!editable}
-                          @change=${(e: Event) =>
-                            updateTool(toolId, (e.target as HTMLInputElement).checked)}
-                        />
-                        <span class="cfg-toggle__track"></span>
-                      </label>
-                    </div>
-                  `;
-                })}
-              </div>
-            </div>
-          `,
-        )}
-      </div>
-    </section>
-  `;
-}
-
-type SkillGroup = {
-  id: string;
-  label: string;
-  skills: SkillStatusEntry[];
-};
-
-const SKILL_SOURCE_GROUPS: Array<{ id: string; sources: string[] }> = [
-  { id: "workspace", sources: ["openclaw-workspace"] },
-  { id: "built-in", sources: ["openclaw-bundled"] },
-  { id: "installed", sources: ["openclaw-managed"] },
-  { id: "extra", sources: ["openclaw-extra"] },
-];
-
-function groupSkills(skills: SkillStatusEntry[]): SkillGroup[] {
-  const groups = new Map<string, SkillGroup>();
-  for (const def of SKILL_SOURCE_GROUPS) {
-    groups.set(def.id, {
-      id: def.id,
-      label: t(`agents.skills.groups.${def.id}`),
-      skills: [],
-    });
-  }
-  const builtInGroup = SKILL_SOURCE_GROUPS.find((group) => group.id === "built-in");
-  const other: SkillGroup = { id: "other", label: t("agents.skills.groups.other"), skills: [] };
-  for (const skill of skills) {
-    const match = skill.bundled
-      ? builtInGroup
-      : SKILL_SOURCE_GROUPS.find((group) => group.sources.includes(skill.source));
-    if (match) {
-      groups.get(match.id)?.skills.push(skill);
-    } else {
-      other.skills.push(skill);
-    }
-  }
-  const ordered = SKILL_SOURCE_GROUPS.map((group) => groups.get(group.id)).filter(
-    (group): group is SkillGroup => Boolean(group && group.skills.length > 0),
-  );
-  if (other.skills.length > 0) {
-    ordered.push(other);
-  }
-  return ordered;
-}
-
-function renderAgentSkills(params: {
-  agentId: string;
-  report: SkillStatusReport | null;
-  loading: boolean;
-  error: string | null;
-  activeAgentId: string | null;
-  configForm: Record<string, unknown> | null;
-  configLoading: boolean;
-  configSaving: boolean;
-  configDirty: boolean;
-  filter: string;
-  onFilterChange: (next: string) => void;
-  onRefresh: () => void;
-  onToggle: (agentId: string, skillName: string, enabled: boolean) => void;
-  onClear: (agentId: string) => void;
-  onDisableAll: (agentId: string) => void;
-  onConfigReload: () => void;
-  onConfigSave: () => void;
-}) {
-  const editable = Boolean(params.configForm) && !params.configLoading && !params.configSaving;
-  const config = resolveAgentConfig(params.configForm, params.agentId);
-  const allowlist = Array.isArray(config.entry?.skills) ? config.entry?.skills : undefined;
-  const allowSet = new Set((allowlist ?? []).map((name) => name.trim()).filter(Boolean));
-  const usingAllowlist = allowlist !== undefined;
-  const reportReady = Boolean(params.report && params.activeAgentId === params.agentId);
-  const rawSkills = reportReady ? (params.report?.skills ?? []) : [];
-  const filter = params.filter.trim().toLowerCase();
-  const filtered = filter
-    ? rawSkills.filter((skill) =>
-        [skill.name, skill.description, skill.source].join(" ").toLowerCase().includes(filter),
-      )
-    : rawSkills;
-  const groups = groupSkills(filtered);
-  const enabledCount = usingAllowlist
-    ? rawSkills.filter((skill) => allowSet.has(skill.name)).length
-    : rawSkills.length;
-  const totalCount = rawSkills.length;
-
-  return html`
-    <section class="card">
-      <div class="row" style="justify-content: space-between;">
-        <div>
-          <div class="card-title">${t("agents.skills.title")}</div>
-          <div class="card-sub">
-            ${t("agents.skills.subtitle")}
-            ${
-              totalCount > 0
-                ? html`<span class="mono">${tp("agents.skills.enabledCount", { enabled: enabledCount, total: totalCount })}</span>`
-                : nothing
-            }
-          </div>
-        </div>
-        <div class="row" style="gap: 8px;">
-          <button class="btn btn--sm" ?disabled=${!editable} @click=${() => params.onClear(params.agentId)}>
-            ${t("agents.skills.useAll")}
-          </button>
-          <button class="btn btn--sm" ?disabled=${!editable} @click=${() => params.onDisableAll(params.agentId)}>
-            ${t("agents.skills.disableAll")}
-          </button>
-          <button
-            class="btn btn--sm"
-            ?disabled=${params.configLoading}
-            @click=${params.onConfigReload}
-          >
-            ${t("agents.skills.reloadConfig")}
-          </button>
-          <button class="btn btn--sm" ?disabled=${params.loading} @click=${params.onRefresh}>
-            ${params.loading ? t("common.loading") : t("common.refresh")}
-          </button>
-          <button
-            class="btn btn--sm primary"
-            ?disabled=${params.configSaving || !params.configDirty}
-            @click=${params.onConfigSave}
-          >
-            ${params.configSaving ? t("common.saving") : t("common.save")}
-          </button>
-        </div>
-      </div>
-
-      ${
-        !params.configForm
-          ? html`
-              <div class="callout info" style="margin-top: 12px">
-                ${t("agents.skills.loadHint")}
-              </div>
-            `
-          : nothing
-      }
-      ${
-        usingAllowlist
-          ? html`
-              <div class="callout info" style="margin-top: 12px">${t("agents.skills.allowlistHint")}</div>
-            `
-          : html`
-              <div class="callout info" style="margin-top: 12px">
-                ${t("agents.skills.allEnabledHint")}
-              </div>
-            `
-      }
-      ${
-        !reportReady && !params.loading
-          ? html`
-              <div class="callout info" style="margin-top: 12px">
-                ${t("agents.skills.loadSkillsHint")}
-              </div>
-            `
-          : nothing
-      }
-      ${
-        params.error
-          ? html`<div class="callout danger" style="margin-top: 12px;">${params.error}</div>`
-          : nothing
-      }
-
-      <div class="filters" style="margin-top: 14px;">
-        <label class="field" style="flex: 1;">
-          <span>${t("agents.skills.filterLabel")}</span>
-          <input
-            .value=${params.filter}
-            @input=${(e: Event) => params.onFilterChange((e.target as HTMLInputElement).value)}
-            placeholder=${t("agents.skills.searchPlaceholder")}
-          />
-        </label>
-        <div class="muted">${tp("agents.skills.shownCount", { count: filtered.length })}</div>
-      </div>
-
-      ${
-        filtered.length === 0
-          ? html`
-              <div class="muted" style="margin-top: 16px">${t("agents.skills.noSkills")}</div>
-            `
-          : html`
-              <div class="agent-skills-groups" style="margin-top: 16px;">
-                ${groups.map((group) =>
-                  renderAgentSkillGroup(group, {
-                    agentId: params.agentId,
-                    allowSet,
-                    usingAllowlist,
-                    editable,
-                    onToggle: params.onToggle,
-                  }),
-                )}
-              </div>
-            `
-      }
-    </section>
-  `;
-}
-
-function renderAgentSkillGroup(
-  group: SkillGroup,
-  params: {
-    agentId: string;
-    allowSet: Set<string>;
-    usingAllowlist: boolean;
-    editable: boolean;
-    onToggle: (agentId: string, skillName: string, enabled: boolean) => void;
-  },
-) {
-  const collapsedByDefault = group.id === "workspace" || group.id === "built-in";
-  return html`
-    <details class="agent-skills-group" ?open=${!collapsedByDefault}>
-      <summary class="agent-skills-header">
-        <span>${group.label}</span>
-        <span class="muted">${group.skills.length}</span>
-      </summary>
-      <div class="list skills-grid">
-        ${group.skills.map((skill) =>
-          renderAgentSkillRow(skill, {
-            agentId: params.agentId,
-            allowSet: params.allowSet,
-            usingAllowlist: params.usingAllowlist,
-            editable: params.editable,
-            onToggle: params.onToggle,
-          }),
-        )}
-      </div>
-    </details>
-  `;
-}
-
-function renderAgentSkillRow(
-  skill: SkillStatusEntry,
-  params: {
-    agentId: string;
-    allowSet: Set<string>;
-    usingAllowlist: boolean;
-    editable: boolean;
-    onToggle: (agentId: string, skillName: string, enabled: boolean) => void;
-  },
-) {
-  const enabled = params.usingAllowlist ? params.allowSet.has(skill.name) : true;
-  const missing = [
-    ...skill.missing.bins.map((b) => `bin:${b}`),
-    ...skill.missing.env.map((e) => `env:${e}`),
-    ...skill.missing.config.map((c) => `config:${c}`),
-    ...skill.missing.os.map((o) => `os:${o}`),
-  ];
-  const reasons: string[] = [];
-  if (skill.disabled) {
-    reasons.push(t("agents.skills.reasons.disabled"));
-  }
-  if (skill.blockedByAllowlist) {
-    reasons.push(t("agents.skills.reasons.blockedByAllowlist"));
-  }
-  return html`
-    <div class="list-item agent-skill-row">
-      <div class="list-main">
-        <div class="list-title">
-          ${skill.emoji ? `${skill.emoji} ` : ""}${skill.name}
-        </div>
-        <div class="list-sub">${skill.description}</div>
-        <div class="chip-row" style="margin-top: 6px;">
-          <span class="chip">${skill.source}</span>
-          <span class="chip ${skill.eligible ? "chip-ok" : "chip-warn"}">
-            ${skill.eligible ? t("agents.skills.chips.eligible") : t("agents.skills.chips.blocked")}
-          </span>
-          ${
-            skill.disabled
-              ? html`
-                  <span class="chip chip-warn">${t("agents.skills.chips.disabled")}</span>
-                `
-              : nothing
-          }
-        </div>
-        ${
-          missing.length > 0
-            ? html`<div class="muted" style="margin-top: 6px;">${t("agents.skills.missingPrefix")}: ${missing.join(", ")}</div>`
-            : nothing
-        }
-        ${
-          reasons.length > 0
-            ? html`<div class="muted" style="margin-top: 6px;">${t("agents.skills.reasonPrefix")}: ${reasons.join(", ")}</div>`
-            : nothing
-        }
-      </div>
-      <div class="list-meta">
-        <label class="cfg-toggle">
-          <input
-            type="checkbox"
-            .checked=${enabled}
-            ?disabled=${!params.editable}
-            @change=${(e: Event) =>
-              params.onToggle(params.agentId, skill.name, (e.target as HTMLInputElement).checked)}
-          />
-          <span class="cfg-toggle__track"></span>
-        </label>
-      </div>
-    </div>
   `;
 }
