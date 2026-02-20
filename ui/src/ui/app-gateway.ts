@@ -54,6 +54,7 @@ type GatewayHost = {
   refreshSessionsAfterChat: Set<string>;
   execApprovalQueue: ExecApprovalRequest[];
   execApprovalError: string | null;
+  updateAvailable: UpdateAvailable | null;
 };
 
 type SessionDefaultsSnapshot = {
@@ -269,6 +270,12 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
     if (resolved) {
       host.execApprovalQueue = removeExecApproval(host.execApprovalQueue, resolved.id);
     }
+    return;
+  }
+
+  if (evt.event === GATEWAY_EVENT_UPDATE_AVAILABLE) {
+    const payload = evt.payload as GatewayUpdateAvailableEventPayload | undefined;
+    host.updateAvailable = payload?.updateAvailable ?? null;
   }
 }
 
@@ -278,6 +285,7 @@ export function applySnapshot(host: GatewayHost, hello: GatewayHelloOk) {
         presence?: PresenceEntry[];
         health?: HealthSnapshot;
         sessionDefaults?: SessionDefaultsSnapshot;
+        updateAvailable?: UpdateAvailable;
       }
     | undefined;
   if (snapshot?.presence && Array.isArray(snapshot.presence)) {
@@ -289,4 +297,5 @@ export function applySnapshot(host: GatewayHost, hello: GatewayHelloOk) {
   if (snapshot?.sessionDefaults) {
     applySessionDefaults(host, snapshot.sessionDefaults);
   }
+  host.updateAvailable = snapshot?.updateAvailable ?? null;
 }

@@ -99,13 +99,19 @@ async function runSuccessfulTelegramProbe(
   return { calls, telegram };
 }
 
+let createPluginRuntime: typeof import("../plugins/runtime/index.js").createPluginRuntime;
+let setTelegramRuntime: typeof import("../../extensions/telegram/src/runtime.js").setTelegramRuntime;
+
 describe("getHealthSnapshot", () => {
-  beforeEach(async () => {
+  beforeAll(async () => {
+    ({ createPluginRuntime } = await import("../plugins/runtime/index.js"));
+    ({ setTelegramRuntime } = await import("../../extensions/telegram/src/runtime.js"));
+  });
+
+  beforeEach(() => {
     setActivePluginRegistry(
       createTestRegistry([{ pluginId: "telegram", plugin: telegramPlugin, source: "test" }]),
     );
-    const { createPluginRuntime } = await import("../plugins/runtime/index.js");
-    const { setTelegramRuntime } = await import("../../extensions/telegram/src/runtime.js");
     setTelegramRuntime(createPluginRuntime());
   });
 

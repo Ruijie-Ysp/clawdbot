@@ -201,8 +201,9 @@ export async function handleInlineActions(params: {
         workspaceDir,
         config: cfg,
       });
+      const authorizedTools = applyOwnerOnlyToolPolicy(tools, command.senderIsOwner);
 
-      const tool = tools.find((candidate) => candidate.name === dispatch.toolName);
+      const tool = authorizedTools.find((candidate) => candidate.name === dispatch.toolName);
       if (!tool) {
         typing.cleanup();
         return { kind: "reply", reply: { text: `❌ Tool not available: ${dispatch.toolName}` } };

@@ -167,6 +167,16 @@ function formatDiscordDeployErrorDetails(err: unknown): string {
   return details.length > 0 ? ` (${details.join(", ")})` : "";
 }
 
+const DISCORD_DISALLOWED_INTENTS_CODE = GatewayCloseCodes.DisallowedIntents;
+
+function isDiscordDisallowedIntentsError(err: unknown): boolean {
+  if (!err) {
+    return false;
+  }
+  const message = formatErrorMessage(err);
+  return message.includes(String(DISCORD_DISALLOWED_INTENTS_CODE));
+}
+
 export async function monitorDiscordProvider(opts: MonitorDiscordOpts = {}) {
   const cfg = opts.config ?? loadConfig();
   const account = resolveDiscordAccount({
@@ -643,6 +653,8 @@ export async function monitorDiscordProvider(opts: MonitorDiscordOpts = {}) {
     }, HELLO_TIMEOUT_MS);
   };
   gatewayEmitter?.on("debug", onGatewayDebug);
+  // Disallowed intents (4014) should stop the provider without crashing the gateway.
+  let sawDisallowedIntents = false;
   try {
     await waitForDiscordGatewayStop({
       gateway: gateway
@@ -653,15 +665,30 @@ export async function monitorDiscordProvider(opts: MonitorDiscordOpts = {}) {
         : undefined,
       abortSignal,
       onGatewayError: (err) => {
+        if (isDiscordDisallowedIntentsError(err)) {
+          sawDisallowedIntents = true;
+          runtime.error?.(
+            danger(
+              "discord: gateway closed with code 4014 (missing privileged gateway intents). Enable the required intents in the Discord Developer Portal or disable them in config.",
+            ),
+          );
+          return;
+        }
         runtime.error?.(danger(`discord gateway error: ${String(err)}`));
       },
       shouldStopOnError: (err) => {
         const message = String(err);
         return (
-          message.includes("Max reconnect attempts") || message.includes("Fatal Gateway error")
+          message.includes("Max reconnect attempts") ||
+          message.includes("Fatal Gateway error") ||
+          isDiscordDisallowedIntentsError(err)
         );
       },
     });
+  } catch (err) {
+    if (!sawDisallowedIntents && !isDiscordDisallowedIntentsError(err)) {
+      throw err;
+    }
   } finally {
     unregisterGateway(account.accountId);
     stopGatewayLogging();

@@ -41,22 +41,12 @@ export async function fetchCodexUsage(
     fetchFn,
   );
 
-  if (res.status === 401 || res.status === 403) {
-    return {
-      provider: "openai-codex",
-      displayName: PROVIDER_LABELS["openai-codex"],
-      windows: [],
-      error: "Token expired",
-    };
-  }
-
   if (!res.ok) {
-    return {
+    return buildUsageHttpErrorSnapshot({
       provider: "openai-codex",
-      displayName: PROVIDER_LABELS["openai-codex"],
-      windows: [],
-      error: `HTTP ${res.status}`,
-    };
+      status: res.status,
+      tokenExpiredStatuses: [401, 403],
+    });
   }
 
   const data = (await res.json()) as CodexUsageResponse;

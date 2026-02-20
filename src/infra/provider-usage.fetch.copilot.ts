@@ -30,12 +30,10 @@ export async function fetchCopilotUsage(
   );
 
   if (!res.ok) {
-    return {
+    return buildUsageHttpErrorSnapshot({
       provider: "github-copilot",
-      displayName: PROVIDER_LABELS["github-copilot"],
-      windows: [],
-      error: `HTTP ${res.status}`,
-    };
+      status: res.status,
+    });
   }
 
   const data = (await res.json()) as CopilotUsageResponse;

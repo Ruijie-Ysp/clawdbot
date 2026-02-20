@@ -159,13 +159,11 @@ export async function fetchClaudeUsage(
       }
     }
 
-    const suffix = message ? `: ${message}` : "";
-    return {
+    return buildUsageHttpErrorSnapshot({
       provider: "anthropic",
-      displayName: PROVIDER_LABELS.anthropic,
-      windows: [],
-      error: `HTTP ${res.status}${suffix}`,
-    };
+      status: res.status,
+      message,
+    });
   }
 
   const data = (await res.json()) as ClaudeUsageResponse;

@@ -19,20 +19,6 @@ const PLUGIN_ORIGIN_RANK: Readonly<Record<PluginOrigin, number>> = {
   bundled: 3,
 };
 
-function safeRealpathSync(rootDir: string, cache: Map<string, string>): string | null {
-  const cached = cache.get(rootDir);
-  if (cached) {
-    return cached;
-  }
-  try {
-    const resolved = fs.realpathSync(rootDir);
-    cache.set(rootDir, resolved);
-    return resolved;
-  } catch {
-    return null;
-  }
-}
-
 export type PluginManifestRecord = {
   id: string;
   name?: string;

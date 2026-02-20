@@ -38,12 +38,10 @@ export async function fetchZaiUsage(
   );
 
   if (!res.ok) {
-    return {
+    return buildUsageHttpErrorSnapshot({
       provider: "zai",
-      displayName: PROVIDER_LABELS.zai,
-      windows: [],
-      error: `HTTP ${res.status}`,
-    };
+      status: res.status,
+    });
   }
 
   const data = (await res.json()) as ZaiUsageResponse;

@@ -130,13 +130,21 @@ function createProfileContext(
   };
 
   const openTab = async (url: string): Promise<BrowserTab> => {
+    const ssrfPolicyOpts = withBrowserNavigationPolicy(state().resolved.ssrfPolicy);
+    await assertBrowserNavigationAllowed({ url, ...ssrfPolicyOpts });
+
     // For remote profiles, use Playwright's persistent connection to create tabs
     // This ensures the tab persists beyond a single request
     if (!profile.cdpIsLoopback) {
       const mod = await getPwAiModule({ mode: "strict" });
       const createPageViaPlaywright = (mod as Partial<PwAiModule> | null)?.createPageViaPlaywright;
       if (typeof createPageViaPlaywright === "function") {
-        const page = await createPageViaPlaywright({ cdpUrl: profile.cdpUrl, url });
+        const page = await createPageViaPlaywright({
+          cdpUrl: profile.cdpUrl,
+          url,
+          ...ssrfPolicyOpts,
+          navigationChecked: true,
+        });
         const profileState = getProfileState();
         profileState.lastTargetId = page.targetId;
         return {
@@ -151,6 +159,8 @@ function createProfileContext(
     const createdViaCdp = await createTargetViaCdp({
       cdpUrl: profile.cdpUrl,
       url,
+      ...ssrfPolicyOpts,
+      navigationChecked: true,
     })
       .then((r) => r.targetId)
       .catch(() => null);
@@ -632,6 +642,12 @@ export function createBrowserRouteContext(opts: ContextOptions): BrowserRouteCon
   const getDefaultContext = () => forProfile();
 
   const mapTabError = (err: unknown) => {
+    if (err instanceof SsrFBlockedError) {
+      return { status: 400, message: err.message };
+    }
+    if (err instanceof InvalidBrowserNavigationUrlError) {
+      return { status: 400, message: err.message };
+    }
     const msg = String(err);
     if (msg.includes("ambiguous target id prefix")) {
       return { status: 409, message: "ambiguous target id prefix" };
