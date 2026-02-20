@@ -36,6 +36,14 @@ export default defineConfig(() => {
       host: true,
       port: 5173,
       strictPort: true,
+      proxy: {
+        // Forward /__openclaw/* to the gateway so the dev server can serve
+        // bootstrap config, avatar endpoints, etc. without a 404.
+        "/__openclaw": {
+          target: `http://localhost:${process.env.CLAWDBOT_GATEWAY_PORT ?? "18789"}`,
+          changeOrigin: false,
+        },
+      },
     },
   };
 });

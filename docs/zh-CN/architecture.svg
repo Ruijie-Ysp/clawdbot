@@ -1,0 +1,361 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 1050" font-family="'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+    <linearGradient id="g-entry" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+    <linearGradient id="g-gw" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#60a5fa"/>
+    </linearGradient>
+    <linearGradient id="g-route" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <linearGradient id="g-ch" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#34d399"/>
+    </linearGradient>
+    <linearGradient id="g-agent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ec4899"/><stop offset="100%" stop-color="#f472b6"/>
+    </linearGradient>
+    <linearGradient id="g-infra" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="g-media" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#14b8a6"/><stop offset="100%" stop-color="#2dd4bf"/>
+    </linearGradient>
+    <linearGradient id="g-plugin" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f472b6"/><stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.4"/></filter>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="1100" height="1050" fill="url(#bg)"/>
+
+  <!-- 标题 -->
+  <text x="550" y="42" text-anchor="middle" font-size="24" font-weight="700" fill="#fff" letter-spacing="1">OpenClaw 系统架构</text>
+  <text x="550" y="64" text-anchor="middle" font-size="12" fill="#8b949e" letter-spacing="2">模块化 AI 助手平台</text>
+
+  <!-- ========== 第一层：入口 ========== -->
+  <text x="40" y="100" font-size="11" fill="#6366f1" font-weight="600" letter-spacing="2">入口层</text>
+
+  <g transform="translate(40, 112)">
+    <rect width="230" height="68" rx="12" fill="rgba(99,102,241,0.1)" stroke="rgba(99,102,241,0.4)" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="12" y="14" width="32" height="32" rx="8" fill="url(#g-entry)" opacity="0.9"/>
+    <text x="16" y="35" font-size="14" fill="#fff" font-weight="700">CLI</text>
+    <text x="54" y="30" font-size="13" fill="#e2e8f0" font-weight="600">命令行界面</text>
+    <text x="54" y="48" font-size="11" fill="#8b949e">openclaw.mjs · Commander</text>
+  </g>
+
+  <g transform="translate(290, 112)">
+    <rect width="230" height="68" rx="12" fill="rgba(59,130,246,0.1)" stroke="rgba(59,130,246,0.4)" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="12" y="14" width="32" height="32" rx="8" fill="url(#g-gw)" opacity="0.9"/>
+    <text x="16" y="35" font-size="14" fill="#fff" font-weight="700">GW</text>
+    <text x="54" y="30" font-size="13" fill="#e2e8f0" font-weight="600">Gateway 网关</text>
+    <text x="54" y="48" font-size="11" fill="#8b949e">WebSocket RPC · Hono</text>
+  </g>
+
+  <g transform="translate(540, 112)">
+    <rect width="230" height="68" rx="12" fill="rgba(14,165,233,0.1)" stroke="rgba(14,165,233,0.4)" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="12" y="14" width="32" height="32" rx="8" fill="url(#g-media)" opacity="0.9"/>
+    <text x="16" y="35" font-size="14" fill="#fff" font-weight="700">UI</text>
+    <text x="54" y="30" font-size="13" fill="#e2e8f0" font-weight="600">Web 控制台</text>
+    <text x="54" y="48" font-size="11" fill="#8b949e">管理面板 · 聊天 · Canvas</text>
+  </g>
+
+  <g transform="translate(790, 112)">
+    <rect width="270" height="68" rx="12" fill="rgba(14,165,233,0.1)" stroke="rgba(14,165,233,0.4)" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="12" y="14" width="32" height="32" rx="8" fill="url(#g-media)" opacity="0.9"/>
+    <text x="16" y="35" font-size="14" fill="#fff" font-weight="700">App</text>
+    <text x="54" y="30" font-size="13" fill="#e2e8f0" font-weight="600">原生应用</text>
+    <text x="54" y="48" font-size="11" fill="#8b949e">macOS · iOS · Android</text>
+  </g>
+
+  <!-- 连接线：入口 → 命令/服务 -->
+  <line x1="155" y1="180" x2="155" y2="210" stroke="rgba(99,102,241,0.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="405" y1="180" x2="405" y2="210" stroke="rgba(59,130,246,0.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="655" y1="180" x2="550" y2="210" stroke="rgba(14,165,233,0.3)" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="925" y1="180" x2="550" y2="210" stroke="rgba(14,165,233,0.2)" stroke-width="1" stroke-dasharray="4 3"/>
+
+  <!-- ========== 第二层：命令与服务 ========== -->
+  <text x="40" y="228" font-size="11" fill="#818cf8" font-weight="600" letter-spacing="2">命令与服务层</text>
+
+  <g transform="translate(40, 240)">
+    <rect width="490" height="88" rx="12" fill="rgba(99,102,241,0.07)" stroke="rgba(99,102,241,0.25)" stroke-width="1" filter="url(#shadow)"/>
+    <text x="16" y="22" font-size="13" fill="#e2e8f0" font-weight="600">CLI 命令 (src/commands/)</text>
+    <g transform="translate(14, 32)">
+      <rect x="0" y="0" width="60" height="22" rx="6" fill="rgba(99,102,241,0.18)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="30" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd" font-weight="500">onboard</text>
+      <rect x="66" y="0" width="52" height="22" rx="6" fill="rgba(99,102,241,0.18)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="92" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd" font-weight="500">agent</text>
+      <rect x="124" y="0" width="68" height="22" rx="6" fill="rgba(99,102,241,0.18)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="158" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd" font-weight="500">channels</text>
+      <rect x="198" y="0" width="52" height="22" rx="6" fill="rgba(99,102,241,0.18)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="224" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd" font-weight="500">config</text>
+      <rect x="256" y="0" width="52" height="22" rx="6" fill="rgba(99,102,241,0.18)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="282" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd" font-weight="500">doctor</text>
+      <rect x="314" y="0" width="56" height="22" rx="6" fill="rgba(99,102,241,0.18)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="342" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd" font-weight="500">models</text>
+      <rect x="376" y="0" width="52" height="22" rx="6" fill="rgba(99,102,241,0.18)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="402" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd" font-weight="500">status</text>
+    </g>
+    <g transform="translate(14, 58)">
+      <rect x="0" y="0" width="48" height="22" rx="6" fill="rgba(99,102,241,0.18)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="24" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd" font-weight="500">skills</text>
+      <rect x="54" y="0" width="64" height="22" rx="6" fill="rgba(99,102,241,0.18)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="86" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd" font-weight="500">memory</text>
+      <rect x="124" y="0" width="68" height="22" rx="6" fill="rgba(99,102,241,0.18)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="158" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd" font-weight="500">message</text>
+      <rect x="198" y="0" width="68" height="22" rx="6" fill="rgba(99,102,241,0.18)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+      <text x="232" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd" font-weight="500">gateway</text>
+    </g>
+  </g>
+
+  <g transform="translate(550, 240)">
+    <rect width="510" height="88" rx="12" fill="rgba(59,130,246,0.07)" stroke="rgba(59,130,246,0.25)" stroke-width="1" filter="url(#shadow)"/>
+    <text x="16" y="22" font-size="13" fill="#e2e8f0" font-weight="600">网关服务 (src/gateway/)</text>
+    <g transform="translate(14, 32)">
+      <rect x="0" y="0" width="76" height="22" rx="6" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="38" y="15" text-anchor="middle" font-size="10" fill="#93c5fd" font-weight="500">RPC 服务</text>
+      <rect x="82" y="0" width="52" height="22" rx="6" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="108" y="15" text-anchor="middle" font-size="10" fill="#93c5fd" font-weight="500">聊天</text>
+      <rect x="140" y="0" width="52" height="22" rx="6" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="166" y="15" text-anchor="middle" font-size="10" fill="#93c5fd" font-weight="500">认证</text>
+      <rect x="198" y="0" width="68" height="22" rx="6" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="232" y="15" text-anchor="middle" font-size="10" fill="#93c5fd" font-weight="500">Methods</text>
+      <rect x="272" y="0" width="68" height="22" rx="6" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="306" y="15" text-anchor="middle" font-size="10" fill="#93c5fd" font-weight="500">广播</text>
+    </g>
+    <g transform="translate(14, 58)">
+      <rect x="0" y="0" width="52" height="22" rx="6" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="26" y="15" text-anchor="middle" font-size="10" fill="#93c5fd" font-weight="500">Hooks</text>
+      <rect x="58" y="0" width="52" height="22" rx="6" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="84" y="15" text-anchor="middle" font-size="10" fill="#93c5fd" font-weight="500">定时</text>
+      <rect x="116" y="0" width="80" height="22" rx="6" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="156" y="15" text-anchor="middle" font-size="10" fill="#93c5fd" font-weight="500">节点注册</text>
+      <rect x="202" y="0" width="72" height="22" rx="6" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+      <text x="238" y="15" text-anchor="middle" font-size="10" fill="#93c5fd" font-weight="500">控制面板</text>
+    </g>
+  </g>
+
+  <!-- 连接线：命令/服务 → 路由 -->
+  <line x1="285" y1="328" x2="380" y2="370" stroke="rgba(245,158,11,0.4)" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="805" y1="328" x2="720" y2="370" stroke="rgba(245,158,11,0.4)" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+  <!-- ========== 第三层：路由 ========== -->
+  <text x="40" y="385" font-size="11" fill="#fbbf24" font-weight="600" letter-spacing="2">路由与会话管理</text>
+
+  <g transform="translate(160, 395)">
+    <rect width="780" height="68" rx="12" fill="rgba(245,158,11,0.07)" stroke="rgba(245,158,11,0.35)" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="12" y="14" width="32" height="32" rx="8" fill="url(#g-route)" opacity="0.9"/>
+    <text x="54" y="28" font-size="13" fill="#e2e8f0" font-weight="600">路由层 (src/routing/)</text>
+    <text x="54" y="46" font-size="11" fill="#8b949e">resolveAgentRoute() · 会话键构建 · 绑定解析 · 渠道匹配 · DM 作用域</text>
+    <circle cx="740" cy="34" r="5" fill="rgba(245,158,11,0.7)"/>
+    <text x="728" y="38" text-anchor="end" font-size="9" fill="rgba(245,158,11,0.8)" font-weight="600">LIVE</text>
+  </g>
+
+  <!-- 连接线：路由 → 下层 -->
+  <path d="M 350 463 Q 350 485 250 500" stroke="rgba(16,185,129,0.4)" stroke-width="1.5" fill="none" stroke-dasharray="4 3"/>
+  <path d="M 550 463 L 550 500" stroke="rgba(236,72,153,0.4)" stroke-width="1.5" fill="none" stroke-dasharray="4 3"/>
+  <path d="M 750 463 Q 750 485 850 500" stroke="rgba(139,92,246,0.4)" stroke-width="1.5" fill="none" stroke-dasharray="4 3"/>
+
+  <!-- ========== 第四层标签 ========== -->
+  <text x="40" y="515" font-size="11" fill="#10b981" font-weight="600" letter-spacing="2">渠道</text>
+  <text x="420" y="515" font-size="11" fill="#ec4899" font-weight="600" letter-spacing="2">智能体引擎</text>
+  <text x="780" y="515" font-size="11" fill="#8b5cf6" font-weight="600" letter-spacing="2">基础设施</text>
+
+  <!-- 渠道卡片 -->
+  <g transform="translate(40, 525)">
+    <rect width="360" height="190" rx="12" fill="rgba(16,185,129,0.05)" stroke="rgba(16,185,129,0.25)" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="16" y="22" font-size="13" fill="#e2e8f0" font-weight="600">渠道层 (src/channels/)</text>
+    <text x="16" y="40" font-size="11" fill="#8b949e">注册中心 · 插件加载 · 白名单 · 输入状态</text>
+    <text x="16" y="60" font-size="10" fill="rgba(16,185,129,0.8)" font-weight="600">核心渠道</text>
+    <g transform="translate(14, 68)">
+      <rect x="0" y="0" width="68" height="22" rx="6" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="34" y="15" text-anchor="middle" font-size="10" fill="#6ee7b7">Telegram</text>
+      <rect x="74" y="0" width="72" height="22" rx="6" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="110" y="15" text-anchor="middle" font-size="10" fill="#6ee7b7">WhatsApp</text>
+      <rect x="152" y="0" width="60" height="22" rx="6" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="182" y="15" text-anchor="middle" font-size="10" fill="#6ee7b7">Discord</text>
+      <rect x="218" y="0" width="48" height="22" rx="6" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="242" y="15" text-anchor="middle" font-size="10" fill="#6ee7b7">Slack</text>
+      <rect x="272" y="0" width="56" height="22" rx="6" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="300" y="15" text-anchor="middle" font-size="10" fill="#6ee7b7">Signal</text>
+    </g>
+    <g transform="translate(14, 96)">
+      <rect x="0" y="0" width="68" height="22" rx="6" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="34" y="15" text-anchor="middle" font-size="10" fill="#6ee7b7">iMessage</text>
+      <rect x="74" y="0" width="52" height="22" rx="6" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="100" y="15" text-anchor="middle" font-size="10" fill="#6ee7b7">飞书</text>
+      <rect x="132" y="0" width="44" height="22" rx="6" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+      <text x="154" y="15" text-anchor="middle" font-size="10" fill="#6ee7b7">LINE</text>
+    </g>
+    <text x="16" y="138" font-size="10" fill="rgba(244,114,182,0.8)" font-weight="600">扩展渠道 (20+)</text>
+    <g transform="translate(14, 146)">
+      <rect x="0" y="0" width="56" height="22" rx="6" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="28" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">Teams</text>
+      <rect x="62" y="0" width="52" height="22" rx="6" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="88" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">Matrix</text>
+      <rect x="120" y="0" width="44" height="22" rx="6" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="142" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">Zalo</text>
+      <rect x="170" y="0" width="56" height="22" rx="6" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="198" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">Twitch</text>
+      <rect x="232" y="0" width="48" height="22" rx="6" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="256" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">IRC</text>
+      <rect x="286" y="0" width="52" height="22" rx="6" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="312" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">更多...</text>
+    </g>
+  </g>
+
+  <!-- 智能体引擎卡片 -->
+  <g transform="translate(420, 525)">
+    <rect width="340" height="190" rx="12" fill="rgba(236,72,153,0.05)" stroke="rgba(236,72,153,0.25)" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="16" y="22" font-size="13" fill="#e2e8f0" font-weight="600">智能体引擎 (src/agent/)</text>
+    <text x="16" y="40" font-size="11" fill="#8b949e">LLM 编排 · 工具调用 · 流式输出</text>
+    <text x="16" y="60" font-size="10" fill="rgba(236,72,153,0.8)" font-weight="600">核心组件</text>
+    <g transform="translate(14, 68)">
+      <rect x="0" y="0" width="80" height="22" rx="6" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="40" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">LLM 路由</text>
+      <rect x="86" y="0" width="80" height="22" rx="6" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="126" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">工具注册</text>
+      <rect x="172" y="0" width="72" height="22" rx="6" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="208" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">流式处理</text>
+    </g>
+    <g transform="translate(14, 96)">
+      <rect x="0" y="0" width="72" height="22" rx="6" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="36" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">上下文</text>
+      <rect x="78" y="0" width="72" height="22" rx="6" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="114" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">记忆系统</text>
+      <rect x="156" y="0" width="72" height="22" rx="6" fill="rgba(236,72,153,0.15)" stroke="rgba(236,72,153,0.3)" stroke-width="1"/>
+      <text x="192" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">技能系统</text>
+    </g>
+    <text x="16" y="138" font-size="10" fill="rgba(236,72,153,0.8)" font-weight="600">LLM 提供商</text>
+    <g transform="translate(14, 146)">
+      <rect x="0" y="0" width="68" height="22" rx="6" fill="rgba(236,72,153,0.1)" stroke="rgba(236,72,153,0.2)" stroke-width="1"/>
+      <text x="34" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">OpenAI</text>
+      <rect x="74" y="0" width="76" height="22" rx="6" fill="rgba(236,72,153,0.1)" stroke="rgba(236,72,153,0.2)" stroke-width="1"/>
+      <text x="112" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">Anthropic</text>
+      <rect x="156" y="0" width="64" height="22" rx="6" fill="rgba(236,72,153,0.1)" stroke="rgba(236,72,153,0.2)" stroke-width="1"/>
+      <text x="188" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">Google</text>
+      <rect x="226" y="0" width="68" height="22" rx="6" fill="rgba(236,72,153,0.1)" stroke="rgba(236,72,153,0.2)" stroke-width="1"/>
+      <text x="260" y="15" text-anchor="middle" font-size="10" fill="#f9a8d4">Ollama</text>
+    </g>
+  </g>
+
+  <!-- 基础设施卡片 -->
+  <g transform="translate(780, 525)">
+    <rect width="280" height="190" rx="12" fill="rgba(139,92,246,0.05)" stroke="rgba(139,92,246,0.25)" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="16" y="22" font-size="13" fill="#e2e8f0" font-weight="600">基础设施</text>
+    <text x="16" y="40" font-size="11" fill="#8b949e">存储 · 网络 · 安全</text>
+    <text x="16" y="60" font-size="10" fill="rgba(139,92,246,0.8)" font-weight="600">存储</text>
+    <g transform="translate(14, 68)">
+      <rect x="0" y="0" width="60" height="22" rx="6" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="30" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd">SQLite</text>
+      <rect x="66" y="0" width="80" height="22" rx="6" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="106" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd">消息存储</text>
+      <rect x="152" y="0" width="80" height="22" rx="6" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="192" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd">向量搜索</text>
+    </g>
+    <text x="16" y="110" font-size="10" fill="rgba(139,92,246,0.8)" font-weight="600">网络</text>
+    <g transform="translate(14, 118)">
+      <rect x="0" y="0" width="80" height="22" rx="6" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="40" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd">SSH 隧道</text>
+      <rect x="86" y="0" width="76" height="22" rx="6" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="124" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd">Tailscale</text>
+      <rect x="168" y="0" width="68" height="22" rx="6" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="202" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd">出站代理</text>
+    </g>
+    <g transform="translate(14, 146)">
+      <rect x="0" y="0" width="60" height="22" rx="6" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="30" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd">TLS</text>
+      <rect x="66" y="0" width="80" height="22" rx="6" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+      <text x="106" y="15" text-anchor="middle" font-size="10" fill="#c4b5fd">设备配对</text>
+    </g>
+  </g>
+
+  <!-- 连接线：第四层 → 媒体/插件 -->
+  <line x1="220" y1="715" x2="220" y2="755" stroke="rgba(20,184,166,0.4)" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="590" y1="715" x2="590" y2="755" stroke="rgba(244,114,182,0.4)" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+  <!-- ========== 第五层：媒体与插件 ========== -->
+  <text x="40" y="770" font-size="11" fill="#14b8a6" font-weight="600" letter-spacing="2">媒体处理</text>
+  <text x="420" y="770" font-size="11" fill="#fb923c" font-weight="600" letter-spacing="2">插件系统</text>
+
+  <!-- 媒体处理卡片 -->
+  <g transform="translate(40, 780)">
+    <rect width="360" height="80" rx="12" fill="rgba(20,184,166,0.05)" stroke="rgba(20,184,166,0.25)" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="16" y="22" font-size="13" fill="#e2e8f0" font-weight="600">媒体处理 (src/media/)</text>
+    <g transform="translate(14, 34)">
+      <rect x="0" y="0" width="56" height="22" rx="6" fill="rgba(20,184,166,0.15)" stroke="rgba(20,184,166,0.3)" stroke-width="1"/>
+      <text x="28" y="15" text-anchor="middle" font-size="10" fill="#5eead4">STT</text>
+      <rect x="62" y="0" width="56" height="22" rx="6" fill="rgba(20,184,166,0.15)" stroke="rgba(20,184,166,0.3)" stroke-width="1"/>
+      <text x="90" y="15" text-anchor="middle" font-size="10" fill="#5eead4">TTS</text>
+      <rect x="124" y="0" width="56" height="22" rx="6" fill="rgba(20,184,166,0.15)" stroke="rgba(20,184,166,0.3)" stroke-width="1"/>
+      <text x="152" y="15" text-anchor="middle" font-size="10" fill="#5eead4">视觉</text>
+      <rect x="186" y="0" width="72" height="22" rx="6" fill="rgba(20,184,166,0.15)" stroke="rgba(20,184,166,0.3)" stroke-width="1"/>
+      <text x="222" y="15" text-anchor="middle" font-size="10" fill="#5eead4">FFmpeg</text>
+      <rect x="264" y="0" width="72" height="22" rx="6" fill="rgba(20,184,166,0.15)" stroke="rgba(20,184,166,0.3)" stroke-width="1"/>
+      <text x="300" y="15" text-anchor="middle" font-size="10" fill="#5eead4">图片生成</text>
+    </g>
+  </g>
+
+  <!-- 插件系统卡片 -->
+  <g transform="translate(420, 780)">
+    <rect width="640" height="80" rx="12" fill="rgba(244,114,182,0.05)" stroke="rgba(244,114,182,0.2)" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="16" y="22" font-size="13" fill="#e2e8f0" font-weight="600">插件系统 (extensions/)</text>
+    <g transform="translate(14, 34)">
+      <rect x="0" y="0" width="80" height="22" rx="6" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="40" y="15" text-anchor="middle" font-size="10" fill="#fda4af">Web 搜索</text>
+      <rect x="86" y="0" width="80" height="22" rx="6" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="126" y="15" text-anchor="middle" font-size="10" fill="#fda4af">日历同步</text>
+      <rect x="172" y="0" width="80" height="22" rx="6" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="212" y="15" text-anchor="middle" font-size="10" fill="#fda4af">智能家居</text>
+      <rect x="258" y="0" width="80" height="22" rx="6" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="298" y="15" text-anchor="middle" font-size="10" fill="#fda4af">代码执行</text>
+      <rect x="344" y="0" width="80" height="22" rx="6" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="384" y="15" text-anchor="middle" font-size="10" fill="#fda4af">MCP 服务</text>
+      <rect x="430" y="0" width="80" height="22" rx="6" fill="rgba(244,114,182,0.12)" stroke="rgba(244,114,182,0.25)" stroke-width="1"/>
+      <text x="470" y="15" text-anchor="middle" font-size="10" fill="#fda4af">更多 34+</text>
+    </g>
+  </g>
+
+  <!-- ========== 第六层：开发工具 ========== -->
+  <text x="40" y="895" font-size="11" fill="#a78bfa" font-weight="600" letter-spacing="2">开发与部署</text>
+
+  <g transform="translate(40, 905)">
+    <rect width="1020" height="56" rx="12" fill="rgba(139,92,246,0.05)" stroke="rgba(139,92,246,0.2)" stroke-width="1" filter="url(#shadow)"/>
+    <text x="16" y="22" font-size="13" fill="#e2e8f0" font-weight="600">工具链</text>
+    <g transform="translate(14, 30)">
+      <rect x="0" y="0" width="80" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="40" y="14" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="500">TypeScript</text>
+      <rect x="86" y="0" width="56" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="114" y="14" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="500">Bun</text>
+      <rect x="148" y="0" width="56" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="176" y="14" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="500">Vitest</text>
+      <rect x="210" y="0" width="56" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="238" y="14" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="500">Oxlint</text>
+      <rect x="272" y="0" width="60" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="302" y="14" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="500">tsdown</text>
+      <rect x="338" y="0" width="60" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="368" y="14" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="500">Docker</text>
+      <rect x="404" y="0" width="80" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="444" y="14" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="500">Shell 脚本</text>
+      <rect x="490" y="0" width="56" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="518" y="14" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="500">Fly.io</text>
+      <rect x="552" y="0" width="80" height="20" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+      <text x="592" y="14" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="500">GitHub CI</text>
+    </g>
+  </g>
+
+  <!-- 连接线：媒体/插件 → 工具链 -->
+  <line x1="220" y1="860" x2="300" y2="905" stroke="rgba(139,92,246,0.2)" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="740" y1="860" x2="550" y2="905" stroke="rgba(139,92,246,0.2)" stroke-width="1" stroke-dasharray="4 3"/>
+
+  <!-- 页脚 -->
+  <text x="550" y="990" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.2)" letter-spacing="2">
+    OpenClaw v2026.2 · 模块化 AI 助手平台 · 34+ 扩展 · 20+ 渠道
+  </text>
+
+</svg>

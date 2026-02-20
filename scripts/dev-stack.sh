@@ -121,20 +121,62 @@ read_pid() {
 
 is_running() {
   local pidfile="$1"
+  local port="${2:-}"
   local pid
   pid="$(read_pid "$pidfile" || true)"
   if [[ -z "$pid" ]]; then
     return 1
   fi
   if kill -0 "$pid" >/dev/null 2>&1; then
+    # Check if the process or any of its children are listening on the port.
+    # node scripts/run-node.mjs spawns a child (openclaw-gateway) that actually listens.
+    if [[ -n "$port" ]] && ! lsof -ti:"$port" -sTCP:LISTEN >/dev/null 2>&1; then
+      return 1
+    fi
     return 0
   fi
   return 1
 }
 
+resolve_live_pid() {
+  local pidfile="$1"
+  local port="${2:-}"
+  local pid
+  pid="$(read_pid "$pidfile" || true)"
+  if [[ -n "$pid" ]]; then
+    if kill -0 "$pid" >/dev/null 2>&1; then
+      # Check if port has any listener (child process may be the one listening)
+      if [[ -n "$port" ]] && ! lsof -ti:"$port" -sTCP:LISTEN >/dev/null 2>&1; then
+        pid=""
+      fi
+    else
+      pid=""
+    fi
+  fi
+
+  if [[ -n "$pid" ]]; then
+    echo "$pid"
+    return 0
+  fi
+
+  if [[ -n "$port" ]]; then
+    local port_pid
+    port_pid="$(lsof -ti:"$port" 2>/dev/null | head -n1 || true)"
+    if [[ -n "$port_pid" ]] && kill -0 "$port_pid" >/dev/null 2>&1; then
+      echo "$port_pid" > "$pidfile"
+      echo "$port_pid"
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
 start_gateway() {
-  if is_running "$GATEWAY_PID"; then
-    echo "Gateway already running (pid $(cat "$GATEWAY_PID"))."
+  local running_pid
+  running_pid="$(resolve_live_pid "$GATEWAY_PID" "$GATEWAY_PORT" || true)"
+  if [[ -n "$running_pid" ]]; then
+    echo "Gateway already running (pid $running_pid)."
     return 0
   fi
 
@@ -155,10 +197,10 @@ start_gateway() {
   local cmd
   if [[ "$DEV_MODE" == "1" ]]; then
     echo "Starting gateway in DEV mode (C-3PO 🤖)..."
-    cmd=(node scripts/run-node.mjs --dev gateway)
+    cmd=(node scripts/run-node.mjs --dev gateway run --bind loopback --port "$GATEWAY_PORT" --force)
   else
     echo "Starting gateway in NORMAL mode (Clawd 🦞)..."
-    cmd=(node scripts/run-node.mjs gateway --port "$GATEWAY_PORT")
+    cmd=(node scripts/run-node.mjs gateway run --bind loopback --port "$GATEWAY_PORT" --force)
   fi
 
   if ((${#extra[@]})); then
@@ -183,8 +225,10 @@ start_gateway() {
 }
 
 start_ui() {
-  if is_running "$UI_PID"; then
-    echo "UI already running (pid $(cat "$UI_PID"))."
+  local running_pid
+  running_pid="$(resolve_live_pid "$UI_PID" "$UI_PORT" || true)"
+  if [[ -n "$running_pid" ]]; then
+    echo "UI already running (pid $running_pid)."
     return 0
   fi
 
@@ -244,11 +288,13 @@ stop_process() {
   local pidfile="$2"
   local port="$3"
   local pid
-  pid="$(read_pid "$pidfile" || true)"
+  pid="$(resolve_live_pid "$pidfile" "$port" || true)"
 
   if [[ -z "$pid" ]] || ! kill -0 "$pid" >/dev/null 2>&1; then
-    if [[ -n "$pid" ]]; then
-      echo "$name not running (stale pid $pid)."
+    local stale_pid
+    stale_pid="$(read_pid "$pidfile" || true)"
+    if [[ -n "$stale_pid" ]]; then
+      echo "$name not running (stale pid $stale_pid)."
       rm -f "$pidfile"
     else
       echo "$name not running (no pid file)."
@@ -289,13 +335,17 @@ status() {
   echo "Mode: $(if [[ "$DEV_MODE" == "1" ]]; then echo "DEV (C-3PO 🤖)"; else echo "NORMAL (Clawd 🦞)"; fi)"
   echo "Gateway port: $GATEWAY_PORT"
   echo ""
-  if is_running "$GATEWAY_PID"; then
-    echo "Gateway: running (pid $(cat "$GATEWAY_PID")), log: $GATEWAY_LOG"
+  local gateway_pid
+  gateway_pid="$(resolve_live_pid "$GATEWAY_PID" "$GATEWAY_PORT" || true)"
+  if [[ -n "$gateway_pid" ]]; then
+    echo "Gateway: running (pid $gateway_pid), log: $GATEWAY_LOG"
   else
     echo "Gateway: stopped"
   fi
-  if is_running "$UI_PID"; then
-    echo "UI: running (pid $(cat "$UI_PID")), log: $UI_LOG"
+  local ui_pid
+  ui_pid="$(resolve_live_pid "$UI_PID" "$UI_PORT" || true)"
+  if [[ -n "$ui_pid" ]]; then
+    echo "UI: running (pid $ui_pid), log: $UI_LOG"
   else
     echo "UI: stopped"
   fi

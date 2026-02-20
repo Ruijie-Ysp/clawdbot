@@ -1,3 +1,10 @@
+import { formatControlPlaneActor, resolveControlPlaneActor } from "./control-plane-audit.js";
+import { consumeControlPlaneWriteBudget } from "./control-plane-rate-limit.js";
+import {
+  ADMIN_SCOPE,
+  authorizeOperatorScopesForMethod,
+  isNodeRoleMethod,
+} from "./method-scopes.js";
 import type { GatewayRequestHandlers, GatewayRequestOptions } from "./server-methods/types.js";
 import { ErrorCodes, errorShape } from "./protocol/index.js";
 import { agentHandlers } from "./server-methods/agent.js";

@@ -97,6 +97,21 @@ function safeStatMtimeMs(filePath: string): number | null {
   }
 }
 
+function safeRealpathSync(filePath: string, cache?: Map<string, string>): string | null {
+  if (cache?.has(filePath)) {
+    const cached = cache.get(filePath);
+    return cached || null;
+  }
+  try {
+    const resolved = fs.realpathSync(filePath);
+    cache?.set(filePath, resolved);
+    return resolved;
+  } catch {
+    cache?.set(filePath, "");
+    return null;
+  }
+}
+
 function normalizeManifestLabel(raw: string | undefined): string | undefined {
   const trimmed = raw?.trim();
   return trimmed ? trimmed : undefined;

@@ -3,6 +3,7 @@ import path from "node:path";
 import type { PluginDiagnostic, PluginOrigin } from "./types.js";
 import { resolveConfigDir, resolveUserPath } from "../utils.js";
 import { resolveBundledPluginsDir } from "./bundled-dir.js";
+import { isPathInside, isPathInsideWithRealpath } from "../security/scan-paths.js";
 import {
   getPackageManifestMetadata,
   type OpenClawPackageManifest,
@@ -10,6 +11,26 @@ import {
 } from "./manifest.js";
 
 const EXTENSION_EXTS = new Set([".ts", ".js", ".mts", ".cts", ".mjs", ".cjs"]);
+
+function safeRealpathSync(filePath: string): string | null {
+  try {
+    return fs.realpathSync(filePath);
+  } catch {
+    return null;
+  }
+}
+
+function safeStatSync(filePath: string): fs.Stats | null {
+  try {
+    return fs.statSync(filePath);
+  } catch {
+    return null;
+  }
+}
+
+function formatPosixMode(modeBits: number): string {
+  return `0${(modeBits & 0o777).toString(8).padStart(3, "0")}`;
+}
 
 export type PluginCandidate = {
   idHint: string;

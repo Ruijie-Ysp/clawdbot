@@ -5,7 +5,7 @@ import {
   type BaseMessageInteractiveComponent,
   type Modal,
 } from "@buape/carbon";
-import { Routes } from "discord-api-types/v10";
+import { GatewayCloseCodes, Routes } from "discord-api-types/v10";
 import { inspect } from "node:util";
 import type { HistoryEntry } from "../../auto-reply/reply/history.js";
 import type { OpenClawConfig, ReplyToMode } from "../../config/config.js";

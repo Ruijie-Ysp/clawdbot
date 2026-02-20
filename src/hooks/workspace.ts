@@ -18,6 +18,7 @@ import {
   resolveOpenClawMetadata,
   resolveHookInvocationPolicy,
 } from "./frontmatter.js";
+import { isPathInsideWithRealpath } from "../security/scan-paths.js";
 
 type HookPackageManifest = {
   name?: string;
