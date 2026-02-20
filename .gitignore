@@ -93,3 +93,16 @@ package-lock.json
 
 # Local iOS signing overrides
 apps/ios/LocalSigning.xcconfig
+
+# Local backups (large binary archives, do not commit)
+backups/
+
+# Temporary files
+*.bak
+.tmp-*
+**/.tmp-*
+.playwright-mcp/
+architecture-preview.png
+
+# Local documentation (non-upstream)
+docs/local/
