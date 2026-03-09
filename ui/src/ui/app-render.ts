@@ -427,6 +427,15 @@ export function renderApp(state: AppViewState) {
           >
             <span class="nav-collapse-toggle__icon" aria-hidden="true">${icons.menu}</span>
           </button>
+          <div class="topnav-shell__brand">
+            <div class="brand-logo">
+              <img src=${basePath ? `${basePath}/wjj.svg` : "/wjj.svg"} alt="医疗机器人" />
+            </div>
+            <div class="brand-text">
+              <div class="brand-title">医疗机器人</div>
+              <div class="brand-sub">Gateway Dashboard</div>
+            </div>
+          </div>
           <div class="topnav-shell__content">
             <dashboard-header .tab=${state.tab}></dashboard-header>
           </div>
