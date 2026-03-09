@@ -251,10 +251,10 @@ export function renderApp(state: AppViewState) {
           </button>
           <div class="brand">
             <div class="brand-logo">
-              <img src=${basePath ? `${basePath}/favicon.svg` : "/favicon.svg"} alt="OpenClaw" />
+              <img src=${basePath ? `${basePath}/wjj.svg` : "/wjj.svg"} alt="医疗机器人" />
             </div>
             <div class="brand-text">
-              <div class="brand-title">OPENCLAW</div>
+              <div class="brand-title">医疗机器人</div>
               <div class="brand-sub">Gateway Dashboard</div>
             </div>
           </div>
