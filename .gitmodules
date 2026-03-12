@@ -1,0 +1,3 @@
+[submodule "extensions/dingtalk"]
+	path = extensions/dingtalk
+	url = https://github.com/soimy/openclaw-channel-dingtalk.git
