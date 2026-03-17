@@ -127,14 +127,27 @@ start_web() {
   cd "$ROOT_DIR"
   nohup node scripts/ui.js dev > "$WEB_LOG" 2>&1 &
   local pid=$!
-  sleep 2
-  if web_running; then
-    log "✅ Web UI 启动成功 (PID: $pid) → http://localhost:$WEB_PORT"
-  else
-    err "❌ Web UI 启动失败，查看日志:"
-    tail -20 "$WEB_LOG" 2>/dev/null
-    return 1
-  fi
+  
+  # 等待最多 10 秒，每秒检查一次
+  local waited=0
+  while [ $waited -lt 10 ]; do
+    sleep 1
+    waited=$((waited + 1))
+    if web_running; then
+      log "✅ Web UI 启动成功 (PID: $pid, ${waited}s) → http://localhost:$WEB_PORT"
+      return 0
+    fi
+    # 如果进程已退出，立即报错
+    if ! kill -0 "$pid" 2>/dev/null; then
+      err "❌ Web UI 进程已退出，查看日志:"
+      tail -30 "$WEB_LOG" 2>/dev/null
+      return 1
+    fi
+  done
+  
+  err "❌ Web UI 启动超时 (${waited}s)，查看日志:"
+  tail -30 "$WEB_LOG" 2>/dev/null
+  return 1
 }
 
 do_start() {
