@@ -82,7 +82,6 @@ import "./components/dashboard-header.ts";
 import { buildExternalLinkRel, EXTERNAL_LINK_TARGET } from "./external-link.ts";
 import { icons } from "./icons.ts";
 import { normalizeBasePath, TAB_GROUPS, subtitleForTab, titleForTab } from "./navigation.ts";
-import { agentLogoUrl } from "./views/agents-utils.ts";
 import {
   resolveAgentConfig,
   resolveConfiguredCronModelSuggestions,
@@ -467,10 +466,10 @@ export function renderApp(state: AppViewState) {
                   navCollapsed
                     ? nothing
                     : html`
-                        <img class="sidebar-brand__logo" src="${agentLogoUrl(basePath)}" alt="OpenClaw" />
+                        <img class="sidebar-brand__logo" src=${basePath ? `${basePath}/wjj.svg` : "/wjj.svg"} alt="医疗机器人" />
                         <span class="sidebar-brand__copy">
                           <span class="sidebar-brand__eyebrow">${t("nav.control")}</span>
-                          <span class="sidebar-brand__title">OpenClaw</span>
+                          <span class="sidebar-brand__title">医疗机器人</span>
                         </span>
                       `
                 }
