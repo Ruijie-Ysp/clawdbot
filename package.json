@@ -193,6 +193,74 @@
       "types": "./dist/plugin-sdk/discord-core.d.ts",
       "default": "./dist/plugin-sdk/discord-core.js"
     },
+    "./plugin-sdk/slack": {
+      "types": "./dist/plugin-sdk/slack.d.ts",
+      "default": "./dist/plugin-sdk/slack.js"
+    },
+    "./plugin-sdk/slack-core": {
+      "types": "./dist/plugin-sdk/slack-core.d.ts",
+      "default": "./dist/plugin-sdk/slack-core.js"
+    },
+    "./plugin-sdk/signal": {
+      "types": "./dist/plugin-sdk/signal.d.ts",
+      "default": "./dist/plugin-sdk/signal.js"
+    },
+    "./plugin-sdk/signal-core": {
+      "types": "./dist/plugin-sdk/signal-core.d.ts",
+      "default": "./dist/plugin-sdk/signal-core.js"
+    },
+    "./plugin-sdk/imessage": {
+      "types": "./dist/plugin-sdk/imessage.d.ts",
+      "default": "./dist/plugin-sdk/imessage.js"
+    },
+    "./plugin-sdk/imessage-core": {
+      "types": "./dist/plugin-sdk/imessage-core.d.ts",
+      "default": "./dist/plugin-sdk/imessage-core.js"
+    },
+    "./plugin-sdk/whatsapp": {
+      "types": "./dist/plugin-sdk/whatsapp.d.ts",
+      "default": "./dist/plugin-sdk/whatsapp.js"
+    },
+    "./plugin-sdk/whatsapp-core": {
+      "types": "./dist/plugin-sdk/whatsapp-core.d.ts",
+      "default": "./dist/plugin-sdk/whatsapp-core.js"
+    },
+    "./plugin-sdk/line": {
+      "types": "./dist/plugin-sdk/line.d.ts",
+      "default": "./dist/plugin-sdk/line.js"
+    },
+    "./plugin-sdk/msteams": {
+      "types": "./dist/plugin-sdk/msteams.d.ts",
+      "default": "./dist/plugin-sdk/msteams.js"
+    },
+    "./plugin-sdk/acpx": {
+      "types": "./dist/plugin-sdk/acpx.d.ts",
+      "default": "./dist/plugin-sdk/acpx.js"
+    },
+    "./plugin-sdk/bluebubbles": {
+      "types": "./dist/plugin-sdk/bluebubbles.d.ts",
+      "default": "./dist/plugin-sdk/bluebubbles.js"
+    },
+    "./plugin-sdk/copilot-proxy": {
+      "types": "./dist/plugin-sdk/copilot-proxy.d.ts",
+      "default": "./dist/plugin-sdk/copilot-proxy.js"
+    },
+    "./plugin-sdk/device-pair": {
+      "types": "./dist/plugin-sdk/device-pair.d.ts",
+      "default": "./dist/plugin-sdk/device-pair.js"
+    },
+    "./plugin-sdk/diagnostics-otel": {
+      "types": "./dist/plugin-sdk/diagnostics-otel.d.ts",
+      "default": "./dist/plugin-sdk/diagnostics-otel.js"
+    },
+    "./plugin-sdk/diffs": {
+      "types": "./dist/plugin-sdk/diffs.d.ts",
+      "default": "./dist/plugin-sdk/diffs.js"
+    },
+    "./plugin-sdk/dingtalk": {
+      "types": "./dist/plugin-sdk/dingtalk.d.ts",
+      "default": "./dist/plugin-sdk/dingtalk.js"
+    },
     "./plugin-sdk/feishu": {
       "types": "./dist/plugin-sdk/feishu.d.ts",
       "default": "./dist/plugin-sdk/feishu.js"
