@@ -541,6 +541,28 @@ async function resolveSubagentCompletionOrigin(params: {
   const requesterConversation: ConversationRef | undefined =
     channel && conversationId ? { channel, accountId, conversationId } : undefined;
 
+  // Extract child agent ID from session key (format: agent:{agentId}:subagent:{uuid})
+  const childAgentId = params.childSessionKey?.startsWith("agent:")
+    ? params.childSessionKey.split(":")[1]
+    : undefined;
+
+  // Map child agent to specific dingtalk account for cross-account delivery
+  const agentToAccountMap: Record<string, string> = {
+    "office-pro": "office",
+    coding: "coding",
+  };
+
+  // If this is a dingtalk request and we have a mapped agent, redirect to that account
+  if (channel === "dingtalk" && childAgentId && agentToAccountMap[childAgentId]) {
+    const targetAccount = agentToAccountMap[childAgentId];
+    return {
+      channel: "dingtalk",
+      accountId: targetAccount,
+      to: to || `channel:${conversationId}`,
+      threadId,
+    };
+  }
+
   const route = createBoundDeliveryRouter().resolveDestination({
     eventKind: "task_completion",
     targetSessionKey: params.childSessionKey,
@@ -1007,6 +1029,10 @@ export function buildSubagentSystemPrompt(params: {
       params.requesterOrigin?.channel
         ? `- Requester channel: ${params.requesterOrigin.channel}.`
         : undefined,
+      params.requesterOrigin?.accountId
+        ? `- Requester account: ${params.requesterOrigin.accountId}.`
+        : undefined,
+      params.requesterOrigin?.to ? `- Requester target: ${params.requesterOrigin.to}.` : undefined,
       `- Your session: ${params.childSessionKey}.`,
     ].filter((line): line is string => line !== undefined),
     "",
