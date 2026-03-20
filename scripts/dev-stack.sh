@@ -38,14 +38,16 @@ web_running() {
 }
 
 stop_gateway() {
-  if cd "$ROOT_DIR" && node scripts/run-node.mjs gateway stop 2>/dev/null; then
-    log "Gateway 已停止"
-    return 0
-  fi
+  # 尝试使用 openclaw 命令停止（对于 managed gateway）
+  cd "$ROOT_DIR" && node scripts/run-node.mjs gateway stop 2>/dev/null || true
+  
+  # 检查是否还有进程占用端口（包括通过 node dist/index.js 启动的 unmanaged gateway）
   if gateway_running; then
     kill $(lsof -ti TCP:"$GATEWAY_PORT" -sTCP:LISTEN) 2>/dev/null || true
     sleep 1
-    log "已清理 Gateway 端口 $GATEWAY_PORT"
+    log "Gateway 已停止"
+  else
+    log "Gateway 已停止"
   fi
 }
 
