@@ -1,0 +1,68 @@
+{
+  "name": "@openclaw/weixin",
+  "version": "2026.3.14",
+  "description": "OpenClaw Weixin channel plugin with multi-account QR login",
+  "homepage": "https://github.com/openclaw/openclaw",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openclaw/openclaw.git"
+  },
+  "files": [
+    "src/",
+    "!src/**/*.test.ts",
+    "!src/**/node_modules/",
+    "index.ts",
+    "openclaw.plugin.json",
+    "README.md",
+    "README.zh_CN.md",
+    "CHANGELOG.md",
+    "CHANGELOG.zh_CN.md"
+  ],
+  "type": "module",
+  "dependencies": {
+    "qrcode-terminal": "0.12.0",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "openclaw": "workspace:*"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.3.14"
+  },
+  "peerDependenciesMeta": {
+    "openclaw": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "channel": {
+      "id": "weixin",
+      "label": "Weixin",
+      "selectionLabel": "Weixin (multi-account QR)",
+      "docsPath": "/channels/weixin",
+      "docsLabel": "weixin",
+      "blurb": "Tencent Weixin bot channel with multi-account QR onboarding.",
+      "order": 75,
+      "quickstartAllowFrom": true
+    },
+    "install": {
+      "npmSpec": "@openclaw/weixin",
+      "localPath": "extensions/weixin",
+      "defaultChoice": "npm"
+    },
+    "release": {
+      "publishToNpm": true
+    }
+  },
+  "upstream": {
+    "package": "@tencent-weixin/openclaw-weixin",
+    "version": "1.0.2"
+  }
+}
