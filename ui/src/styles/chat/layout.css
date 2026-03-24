@@ -146,35 +146,41 @@
   flex-shrink: 0;
 }
 
-/* Context usage warning pill */
+/* Context usage notice */
 .context-notice {
   align-self: center;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 14px;
-  margin: 0 auto 8px;
-  border-radius: var(--radius-full);
-  border: 1px solid color-mix(in srgb, var(--ctx-color, #d97706) 35%, transparent);
-  background: var(--ctx-bg, rgba(217, 119, 6, 0.12));
-  color: var(--ctx-color, #d97706);
-  font-size: 13px;
+  padding: 6px 12px;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--ctx-color, var(--warn)) 35%, transparent);
+  background: var(--ctx-bg, color-mix(in srgb, var(--warn) 12%, transparent));
+  color: var(--ctx-color, var(--warn));
+  font-size: 12px;
   line-height: 1.2;
+  font-weight: 600;
   white-space: nowrap;
-  user-select: none;
   animation: fade-in 0.2s var(--ease-out);
 }
 
 .context-notice__icon {
   width: 16px;
   height: 16px;
-  flex-shrink: 0;
   stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
 }
 
 .context-notice__detail {
-  color: color-mix(in srgb, currentColor 72%, var(--muted));
-  font-variant-numeric: tabular-nums;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.9;
 }
 
 /* Chat compose - sticky at bottom */

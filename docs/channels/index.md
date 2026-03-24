@@ -34,6 +34,7 @@ Text is supported everywhere; media and reactions vary by channel.
 - [Voice Call](/plugins/voice-call) — Telephony via Plivo or Twilio (plugin, installed separately).
 - [WebChat](/web/webchat) — Gateway WebChat UI over WebSocket.
 - [WhatsApp](/channels/whatsapp) — Most popular; uses Baileys and requires QR pairing.
+- [Weixin](/channels/weixin) — Tencent Weixin bot channel with multi-account QR onboarding (plugin, installed separately).
 - [Zalo](/channels/zalo) — Zalo Bot API; Vietnam's popular messenger (plugin, installed separately).
 - [Zalo Personal](/channels/zalouser) — Zalo personal account via QR login (plugin, installed separately).
 

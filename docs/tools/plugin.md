@@ -80,6 +80,7 @@ and the [Plugin SDK Overview](/plugins/sdk-overview).
 | Microsoft Teams | `@openclaw/msteams`    | [Microsoft Teams](/channels/msteams) |
 | Nostr           | `@openclaw/nostr`      | [Nostr](/channels/nostr)             |
 | Voice Call      | `@openclaw/voice-call` | [Voice Call](/plugins/voice-call)    |
+| Weixin          | `@openclaw/weixin`     | [Weixin](/channels/weixin)           |
 | Zalo            | `@openclaw/zalo`       | [Zalo](/channels/zalo)               |
 | Zalo Personal   | `@openclaw/zalouser`   | [Zalo Personal](/plugins/zalouser)   |
 

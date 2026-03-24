@@ -750,6 +750,44 @@ export const GENERATED_BUNDLED_PLUGIN_METADATA = [
     },
   },
   {
+    dirName: "dingtalk",
+    idHint: "dingtalk",
+    source: {
+      source: "./index.ts",
+      built: "index.js",
+    },
+    packageName: "@soimy/dingtalk",
+    packageVersion: "3.2.0",
+    packageDescription: "DingTalk (钉钉) channel plugin for OpenClaw",
+    packageManifest: {
+      extensions: ["./index.ts"],
+      channel: {
+        id: "dingtalk",
+        label: "DingTalk",
+        selectionLabel: "DingTalk (钉钉)",
+        docsPath: "/channels/dingtalk",
+        docsLabel: "dingtalk",
+        blurb: "钉钉企业内部机器人，使用 Stream 模式，无需公网 IP。",
+        order: 70,
+        aliases: ["dd", "ding"],
+      },
+      install: {
+        npmSpec: "@soimy/dingtalk",
+        localPath: ".",
+        defaultChoice: "npm",
+      },
+    },
+    manifest: {
+      id: "dingtalk",
+      configSchema: {
+        type: "object",
+        additionalProperties: true,
+        properties: {},
+      },
+      channels: ["dingtalk"],
+    },
+  },
+  {
     dirName: "discord",
     idHint: "discord",
     source: {
@@ -3872,6 +3910,89 @@ export const GENERATED_BUNDLED_PLUGIN_METADATA = [
           cliDescription: "Volcano Engine API key",
         },
       ],
+    },
+  },
+  {
+    dirName: "weixin",
+    idHint: "weixin",
+    source: {
+      source: "./index.ts",
+      built: "index.js",
+    },
+    packageName: "@openclaw/weixin",
+    packageVersion: "2026.3.14",
+    packageDescription: "OpenClaw Weixin channel plugin with multi-account QR login",
+    packageManifest: {
+      extensions: ["./index.ts"],
+      channel: {
+        id: "weixin",
+        label: "Weixin",
+        selectionLabel: "Weixin (multi-account QR)",
+        docsPath: "/channels/weixin",
+        docsLabel: "weixin",
+        blurb: "Tencent Weixin bot channel with multi-account QR onboarding.",
+        order: 75,
+        quickstartAllowFrom: true,
+      },
+      install: {
+        npmSpec: "@openclaw/weixin",
+        localPath: "extensions/weixin",
+        defaultChoice: "npm",
+      },
+    },
+    manifest: {
+      id: "weixin",
+      configSchema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          name: {
+            type: "string",
+          },
+          enabled: {
+            type: "boolean",
+          },
+          baseUrl: {
+            type: "string",
+          },
+          cdnBaseUrl: {
+            type: "string",
+          },
+          routeTag: {
+            type: "number",
+          },
+          logUploadUrl: {
+            type: "string",
+          },
+          accounts: {
+            type: "object",
+          },
+          demoService: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+              enabled: {
+                type: "boolean",
+              },
+              bind: {
+                type: "string",
+              },
+              port: {
+                type: "integer",
+                minimum: 1,
+                maximum: 65535,
+              },
+              restartCommand: {
+                type: "string",
+              },
+            },
+          },
+        },
+      },
+      channels: ["weixin"],
+      name: "Weixin",
+      description:
+        "Weixin channel plugin with multi-account QR onboarding and local management page.",
     },
   },
   {

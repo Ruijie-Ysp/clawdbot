@@ -987,6 +987,7 @@
                   "channels/twitch",
                   "plugins/voice-call",
                   "channels/whatsapp",
+                  "channels/weixin",
                   "channels/zalo",
                   "channels/zalouser"
                 ]
