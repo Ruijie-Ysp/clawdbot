@@ -54,6 +54,7 @@
   "device-bootstrap",
   "diagnostics-otel",
   "diffs",
+  "dingtalk",
   "discord",
   "discord-core",
   "extension-shared",

@@ -1,5 +1,5 @@
 import type { ReplyPayload } from "openclaw/plugin-sdk";
-import { stripMarkdown } from "../../../../src/line/markdown-to-line.js";
+import { stripMarkdown } from "openclaw/plugin-sdk/text-runtime";
 import { sendMessage as sendMessageApi } from "../api/api.js";
 import type { WeixinApiOptions } from "../api/api.js";
 import type { MessageItem, SendMessageReq } from "../api/types.js";
