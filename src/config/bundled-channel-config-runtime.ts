@@ -3,7 +3,7 @@ import type {
   ChannelConfigRuntimeSchema,
   ChannelConfigSchema,
 } from "../channels/plugins/types.plugin.js";
-import { BUNDLED_PLUGIN_METADATA } from "../plugins/bundled-plugin-metadata.js";
+import { listBundledPluginMetadata } from "../plugins/bundled-plugin-metadata.js";
 import { MSTeamsConfigSchema } from "./zod-schema.providers-core.js";
 import { WhatsAppConfigSchema } from "./zod-schema.providers-whatsapp.js";
 
@@ -24,7 +24,7 @@ function buildBundledChannelMaps(): BundledChannelMaps {
   const runtimeMap = new Map<string, ChannelConfigRuntimeSchema>();
   const configSchemaMap = new Map<string, ChannelConfigSchema>();
 
-  for (const entry of BUNDLED_PLUGIN_METADATA) {
+  for (const entry of listBundledPluginMetadata({ includeChannelConfigs: true })) {
     const channelConfigs = entry.manifest.channelConfigs;
     if (!channelConfigs) {
       continue;

@@ -289,10 +289,26 @@ export function collectConfiguredModelPricingRefs(config: OpenClawConfig): Model
     }
   }
 
-  addResolvedModelRef({ raw: config.tools?.web?.search?.gemini?.model, aliasIndex, refs });
-  addResolvedModelRef({ raw: config.tools?.web?.search?.grok?.model, aliasIndex, refs });
-  addResolvedModelRef({ raw: config.tools?.web?.search?.kimi?.model, aliasIndex, refs });
-  addResolvedModelRef({ raw: config.tools?.web?.search?.perplexity?.model, aliasIndex, refs });
+  addResolvedModelRef({
+    raw: resolvePluginWebSearchConfig(config, "google")?.model as string | undefined,
+    aliasIndex,
+    refs,
+  });
+  addResolvedModelRef({
+    raw: resolvePluginWebSearchConfig(config, "xai")?.model as string | undefined,
+    aliasIndex,
+    refs,
+  });
+  addResolvedModelRef({
+    raw: resolvePluginWebSearchConfig(config, "moonshot")?.model as string | undefined,
+    aliasIndex,
+    refs,
+  });
+  addResolvedModelRef({
+    raw: resolvePluginWebSearchConfig(config, "perplexity")?.model as string | undefined,
+    aliasIndex,
+    refs,
+  });
 
   for (const entry of config.tools?.media?.models ?? []) {
     addProviderModelPair({ provider: entry.provider, model: entry.model, refs });
