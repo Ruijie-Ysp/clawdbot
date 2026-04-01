@@ -127,6 +127,18 @@ export function resolveMessageActionDiscoveryForPlugin(params: {
       schemaContributions: [],
     };
   }
+  if (typeof adapter.describeMessageTool !== "function") {
+    logMessageActionError({
+      pluginId: params.pluginId,
+      operation: "describeMessageTool",
+      error: new TypeError("actions.describeMessageTool is not a function"),
+    });
+    return {
+      actions: [],
+      capabilities: [],
+      schemaContributions: [],
+    };
+  }
 
   const described = describeMessageToolSafely({
     pluginId: params.pluginId,

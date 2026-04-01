@@ -17,11 +17,11 @@ import {
 } from "../../context-engine/index.js";
 import { getMachineDisplayName } from "../../infra/machine-name.js";
 import { generateSecureToken } from "../../infra/secure-random.js";
-import { resolveSignalReactionLevel } from "../../plugin-sdk/signal.js";
+import { resolveSignalReactionLevel } from "../../plugin-sdk/signal-config.js";
 import {
   resolveTelegramInlineButtonsScope,
   resolveTelegramReactionLevel,
-} from "../../plugin-sdk/telegram.js";
+} from "../../plugin-sdk/telegram-config.js";
 import { getGlobalHookRunner } from "../../plugins/hook-runner-global.js";
 import { prepareProviderRuntimeAuth } from "../../plugins/provider-runtime.js";
 import { type enqueueCommand, enqueueCommandInLane } from "../../process/command-queue.js";
@@ -66,7 +66,7 @@ import { createPreparedEmbeddedPiSettingsManager } from "../pi-project-settings.
 import { createOpenClawCodingTools } from "../pi-tools.js";
 import { registerProviderStreamForModel } from "../provider-stream.js";
 import { ensureRuntimePluginsLoaded } from "../runtime-plugins.js";
-import { resolveSandboxContext } from "../sandbox.js";
+import { resolveSandboxContext } from "../sandbox/context.js";
 import { repairSessionFileIfNeeded } from "../session-file-repair.js";
 import { guardSessionManager } from "../session-tool-result-guard-wrapper.js";
 import { sanitizeToolUseResultPairing } from "../session-transcript-repair.js";

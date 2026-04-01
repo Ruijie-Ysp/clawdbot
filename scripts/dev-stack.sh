@@ -13,6 +13,7 @@ WEB_PORT=5173
 GATEWAY_START_TIMEOUT="${GATEWAY_START_TIMEOUT:-90}"
 WEB_START_TIMEOUT="${WEB_START_TIMEOUT:-20}"
 CHANNELS_STATUS_TIMEOUT_MS="${CHANNELS_STATUS_TIMEOUT_MS:-5000}"
+LOG_TAIL_LINES="${LOG_TAIL_LINES:-200}"
 LOG_DIR="${STATE_DIR}/logs"
 LOG_FILE="${LOG_DIR}/gateway.log"
 ERR_FILE="${LOG_DIR}/gateway.err.log"
@@ -27,6 +28,18 @@ NC='\033[0m'
 log()  { printf "${GREEN}[OpenClaw]${NC} %s\n" "$*"; }
 warn() { printf "${YELLOW}[OpenClaw]${NC} %s\n" "$*"; }
 err()  { printf "${RED}[OpenClaw]${NC} %s\n" "$*" >&2; }
+
+tail_gateway_logs() {
+  local lines="${1:-20}"
+  if [ -f "$LOG_FILE" ]; then
+    warn "Gateway stdout 日志 (最近 ${lines} 行):"
+    tail -n "$lines" "$LOG_FILE"
+  fi
+  if [ -f "$ERR_FILE" ]; then
+    warn "Gateway stderr 日志 (最近 ${lines} 行):"
+    tail -n "$lines" "$ERR_FILE"
+  fi
+}
 
 # 导出环境变量，确保使用默认配置目录
 export OPENCLAW_STATE_DIR="$STATE_DIR"
@@ -158,7 +171,7 @@ start_gateway() {
     # 如果进程已退出，立即报错
     if ! kill -0 "$pid" 2>/dev/null; then
       err "❌ Gateway 进程已退出，查看日志:"
-      tail -20 "$ERR_FILE" 2>/dev/null || tail -20 "$LOG_FILE" 2>/dev/null
+      tail_gateway_logs 20
       return 1
     fi
     if [ $((waited % 10)) -eq 0 ]; then
@@ -166,7 +179,7 @@ start_gateway() {
     fi
   done
   err "❌ Gateway 启动超时 (${waited}s)，查看日志:"
-  tail -20 "$ERR_FILE" 2>/dev/null || tail -20 "$LOG_FILE" 2>/dev/null
+  tail_gateway_logs 20
   return 1
 }
 
@@ -219,6 +232,36 @@ do_stop() {
   log "全部已停止"
 }
 
+show_logs() {
+  local mode="${1:-backend}"
+  mkdir -p "$LOG_DIR"
+  touch "$LOG_FILE" "$ERR_FILE" "$WEB_LOG" 2>/dev/null || true
+
+  case "$mode" in
+    backend|gateway)
+      log "📋 Gateway 后端详细日志 (stdout + stderr, 最近 ${LOG_TAIL_LINES} 行, Ctrl+C 退出):"
+      tail -n "$LOG_TAIL_LINES" -F "$LOG_FILE" "$ERR_FILE"
+      ;;
+    out|stdout)
+      log "📋 Gateway 标准输出日志 (最近 ${LOG_TAIL_LINES} 行, Ctrl+C 退出):"
+      tail -n "$LOG_TAIL_LINES" -F "$LOG_FILE"
+      ;;
+    err|error|stderr)
+      log "📋 Gateway 错误日志 (最近 ${LOG_TAIL_LINES} 行, Ctrl+C 退出):"
+      tail -n "$LOG_TAIL_LINES" -F "$ERR_FILE"
+      ;;
+    all)
+      log "📋 全部日志 (gateway stdout + gateway stderr + web, 最近 ${LOG_TAIL_LINES} 行, Ctrl+C 退出):"
+      tail -n "$LOG_TAIL_LINES" -F "$LOG_FILE" "$ERR_FILE" "$WEB_LOG"
+      ;;
+    *)
+      err "未知日志模式: $mode"
+      echo "可用模式: backend(default) | out | err | all"
+      exit 1
+      ;;
+  esac
+}
+
 ACTION="${1:-help}"
 
 case "$ACTION" in
@@ -243,12 +286,7 @@ case "$ACTION" in
     show_status
     ;;
   log)
-    if [ ! -f "$LOG_FILE" ]; then
-      err "日志文件不存在: $LOG_FILE"
-      exit 1
-    fi
-    log "📋 实时日志 (Ctrl+C 退出):"
-    tail -f "$LOG_FILE"
+    show_logs "${2:-backend}"
     ;;
   help|*)
     printf "${CYAN}OpenClaw 开发环境管理脚本${NC}\n"
@@ -261,8 +299,13 @@ case "$ACTION" in
     echo "  restart   重启所有服务"
     echo "  rebuild   重新构建并启动 (install + build + start)"
     echo "  status    查看运行状态"
-    echo "  log       实时查看 Gateway 日志 (tail -f)"
+    echo "  log [mode] 实时查看日志"
+    echo "            mode=backend(默认): gateway stdout + stderr"
+    echo "            mode=out: gateway stdout"
+    echo "            mode=err: gateway stderr"
+    echo "            mode=all: gateway stdout + stderr + web"
     echo ""
     echo "配置: ~/.openclaw/openclaw.json"
+    echo "日志行数: LOG_TAIL_LINES (默认 200)"
     ;;
 esac

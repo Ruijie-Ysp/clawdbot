@@ -1,14 +1,14 @@
 import {
+  createLazyRuntimeMethodBinder,
+  createLazyRuntimeSurface,
+} from "../../shared/lazy-runtime.js";
+import {
   collectTelegramUnmentionedGroupIds,
   resolveTelegramToken,
   setTelegramThreadBindingIdleTimeoutBySessionKey,
   setTelegramThreadBindingMaxAgeBySessionKey,
   telegramMessageActions,
-} from "../../plugin-sdk/telegram.js";
-import {
-  createLazyRuntimeMethodBinder,
-  createLazyRuntimeSurface,
-} from "../../shared/lazy-runtime.js";
+} from "./runtime-telegram-boundary.js";
 import { createTelegramTypingLease } from "./runtime-telegram-typing.js";
 import type { PluginRuntimeChannel } from "./types-channel.js";
 

@@ -97,6 +97,29 @@ describe("normalizeStoredCronJobs", () => {
     expect(result.issues.legacyPayloadKind).toBeUndefined();
   });
 
+  it("migrates top-level cron/timezone fields into schedule", () => {
+    const jobs = [
+      {
+        id: "legacy-top-level-schedule",
+        cron: "*/10 * * * *",
+        timezone: "Asia/Shanghai",
+        payload: { kind: "systemEvent", text: "tick" },
+      },
+    ] as Array<Record<string, unknown>>;
+
+    const result = normalizeStoredCronJobs(jobs);
+
+    expect(result.mutated).toBe(true);
+    expect(result.issues.legacyTopLevelScheduleFields).toBe(1);
+    expect(jobs[0]?.schedule).toMatchObject({
+      kind: "cron",
+      expr: "*/10 * * * *",
+      tz: "Asia/Shanghai",
+    });
+    expect(jobs[0]?.cron).toBeUndefined();
+    expect(jobs[0]?.timezone).toBeUndefined();
+  });
+
   it("normalizes whitespace-padded and non-canonical payload kinds", () => {
     const jobs = [
       {

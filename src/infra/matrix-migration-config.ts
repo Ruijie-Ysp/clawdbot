@@ -12,7 +12,7 @@ import {
   resolveMatrixChannelConfig,
   resolveMatrixCredentialsPath,
   resolveMatrixDefaultOrOnlyAccountId,
-} from "../plugin-sdk/matrix.js";
+} from "../plugin-sdk/matrix-config.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
 
 export type MatrixStoredCredentials = {

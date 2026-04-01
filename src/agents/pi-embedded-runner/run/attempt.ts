@@ -21,11 +21,11 @@ import {
   shouldInjectOllamaCompatNumCtx,
   wrapOllamaCompatNumCtx,
 } from "../../../plugin-sdk/ollama.js";
-import { resolveSignalReactionLevel } from "../../../plugin-sdk/signal.js";
+import { resolveSignalReactionLevel } from "../../../plugin-sdk/signal-config.js";
 import {
   resolveTelegramInlineButtonsScope,
   resolveTelegramReactionLevel,
-} from "../../../plugin-sdk/telegram-runtime.js";
+} from "../../../plugin-sdk/telegram-config.js";
 import { getGlobalHookRunner } from "../../../plugins/hook-runner-global.js";
 import { resolveToolCallArgumentsEncoding } from "../../../plugins/provider-model-compat.js";
 import { isSubagentSessionKey } from "../../../routing/session-key.js";
@@ -77,7 +77,7 @@ import { applyPiAutoCompactionGuard } from "../../pi-settings.js";
 import { toClientToolDefinitions } from "../../pi-tool-definition-adapter.js";
 import { createOpenClawCodingTools, resolveToolLoopDetectionConfig } from "../../pi-tools.js";
 import { registerProviderStreamForModel } from "../../provider-stream.js";
-import { resolveSandboxContext } from "../../sandbox.js";
+import { resolveSandboxContext } from "../../sandbox/context.js";
 import { resolveSandboxRuntimeStatus } from "../../sandbox/runtime-status.js";
 import { repairSessionFileIfNeeded } from "../../session-file-repair.js";
 import { guardSessionManager } from "../../session-tool-result-guard-wrapper.js";

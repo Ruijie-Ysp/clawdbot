@@ -227,4 +227,33 @@ describe("message action capability checks", () => {
     expect(listChannelMessageCapabilities({} as OpenClawConfig)).toEqual([]);
     expect(errorSpy).toHaveBeenCalledTimes(1);
   });
+
+  it("handles malformed plugin actions adapters where describeMessageTool is not a function", () => {
+    const malformedPlugin: ChannelPlugin = {
+      ...createChannelTestPluginBase({
+        id: "discord",
+        label: "Discord",
+        capabilities: { chatTypes: ["direct", "group"] },
+        config: {
+          listAccountIds: () => ["default"],
+        },
+      }),
+      actions: {
+        describeMessageTool: "not-a-function" as unknown as NonNullable<
+          NonNullable<ChannelPlugin["actions"]>["describeMessageTool"]
+        >,
+      },
+    };
+    setActivePluginRegistry(
+      createTestRegistry([{ pluginId: "discord", source: "test", plugin: malformedPlugin }]),
+    );
+
+    expect(listChannelMessageActions({} as OpenClawConfig)).toEqual(["send", "broadcast"]);
+    expect(listChannelMessageCapabilities({} as OpenClawConfig)).toEqual([]);
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+
+    expect(listChannelMessageActions({} as OpenClawConfig)).toEqual(["send", "broadcast"]);
+    expect(listChannelMessageCapabilities({} as OpenClawConfig)).toEqual([]);
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+  });
 });

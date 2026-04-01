@@ -16,7 +16,7 @@ import {
   type ChannelSetupWizardTextInput,
 } from "openclaw/plugin-sdk/setup-runtime";
 import { formatCliCommand, formatDocsLink } from "openclaw/plugin-sdk/setup-tools";
-import { normalizeE164 } from "openclaw/plugin-sdk/text-runtime";
+import { normalizeSignalAccountInput } from "./account-input.js";
 import {
   listSignalAccountIds,
   resolveDefaultSignalAccountId,
@@ -24,27 +24,10 @@ import {
 } from "./accounts.js";
 
 const channel = "signal" as const;
-const MIN_E164_DIGITS = 5;
-const MAX_E164_DIGITS = 15;
-const DIGITS_ONLY = /^\d+$/;
 const INVALID_SIGNAL_ACCOUNT_ERROR =
   "Invalid E.164 phone number (must start with + and country code, e.g. +15555550123)";
 
-export function normalizeSignalAccountInput(value: string | null | undefined): string | null {
-  const trimmed = value?.trim();
-  if (!trimmed) {
-    return null;
-  }
-  const normalized = normalizeE164(trimmed);
-  const digits = normalized.slice(1);
-  if (!DIGITS_ONLY.test(digits)) {
-    return null;
-  }
-  if (digits.length < MIN_E164_DIGITS || digits.length > MAX_E164_DIGITS) {
-    return null;
-  }
-  return `+${digits}`;
-}
+export { normalizeSignalAccountInput } from "./account-input.js";
 
 function isUuidLike(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);

@@ -9,6 +9,7 @@ type CronStoreIssueKey =
   | "jobId"
   | "legacyScheduleString"
   | "legacyScheduleCron"
+  | "legacyTopLevelScheduleFields"
   | "legacyPayloadKind"
   | "legacyPayloadProvider"
   | "legacyTopLevelPayloadFields"
@@ -217,11 +218,28 @@ export function normalizeStoredCronJobs(
       trackIssue("jobId");
     }
 
+    const topLevelCronRaw = typeof raw.cron === "string" ? raw.cron.trim() : "";
+    const topLevelTimezoneRaw = typeof raw.timezone === "string" ? raw.timezone.trim() : "";
+    const topLevelTzRaw = typeof raw.tz === "string" ? raw.tz.trim() : "";
+    const topLevelScheduleTimezone = topLevelTimezoneRaw || topLevelTzRaw;
+
     if (typeof raw.schedule === "string") {
       const expr = raw.schedule.trim();
       raw.schedule = { kind: "cron", expr };
       mutated = true;
       trackIssue("legacyScheduleString");
+    }
+    if (
+      (!raw.schedule || typeof raw.schedule !== "object" || Array.isArray(raw.schedule)) &&
+      topLevelCronRaw
+    ) {
+      raw.schedule = {
+        kind: "cron",
+        expr: topLevelCronRaw,
+        ...(topLevelScheduleTimezone ? { tz: topLevelScheduleTimezone } : {}),
+      };
+      mutated = true;
+      trackIssue("legacyTopLevelScheduleFields");
     }
 
     const nameRaw = raw.name;
@@ -402,6 +420,12 @@ export function normalizeStoredCronJobs(
         mutated = true;
         trackIssue("legacyScheduleCron");
       }
+      if (!normalizedExpr && topLevelCronRaw) {
+        normalizedExpr = topLevelCronRaw;
+        sched.expr = normalizedExpr;
+        mutated = true;
+        trackIssue("legacyTopLevelScheduleFields");
+      }
       if (typeof sched.expr === "string" && sched.expr !== normalizedExpr) {
         sched.expr = normalizedExpr;
         mutated = true;
@@ -425,6 +449,33 @@ export function normalizeStoredCronJobs(
           mutated = true;
         }
       }
+
+      const schedTzRaw = typeof sched.tz === "string" ? sched.tz.trim() : "";
+      if (schedTzRaw) {
+        if (sched.tz !== schedTzRaw) {
+          sched.tz = schedTzRaw;
+          mutated = true;
+        }
+      } else if (topLevelScheduleTimezone) {
+        sched.tz = topLevelScheduleTimezone;
+        mutated = true;
+        trackIssue("legacyTopLevelScheduleFields");
+      }
+    }
+    if ("cron" in raw) {
+      delete raw.cron;
+      mutated = true;
+      trackIssue("legacyTopLevelScheduleFields");
+    }
+    if ("timezone" in raw) {
+      delete raw.timezone;
+      mutated = true;
+      trackIssue("legacyTopLevelScheduleFields");
+    }
+    if ("tz" in raw) {
+      delete raw.tz;
+      mutated = true;
+      trackIssue("legacyTopLevelScheduleFields");
     }
 
     const delivery = raw.delivery;

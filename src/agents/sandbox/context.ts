@@ -1,17 +1,11 @@
 import fs from "node:fs/promises";
 import type { OpenClawConfig } from "../../config/config.js";
 import { loadConfig } from "../../config/config.js";
-import {
-  DEFAULT_BROWSER_EVALUATE_ENABLED,
-  ensureBrowserControlAuth,
-  resolveBrowserControlAuth,
-} from "../../plugin-sdk/browser-runtime.js";
 import { defaultRuntime } from "../../runtime.js";
 import { resolveUserPath } from "../../utils.js";
 import { syncSkillsToWorkspace } from "../skills.js";
 import { DEFAULT_AGENT_WORKSPACE_DIR } from "../workspace.js";
 import { requireSandboxBackendFactory } from "./backend.js";
-import { ensureSandboxBrowser } from "./browser.js";
 import { resolveSandboxConfigForAgent } from "./config.js";
 import { createSandboxFsBridge } from "./fs-bridge.js";
 import { maybePruneSandboxes } from "./prune.js";
@@ -154,14 +148,15 @@ export async function resolveSandboxContext(params: {
     configLabelKind: backend.configLabelKind ?? "Image",
   });
 
-  const evaluateEnabled =
-    params.config?.browser?.evaluateEnabled ?? DEFAULT_BROWSER_EVALUATE_ENABLED;
+  const evaluateEnabled = params.config?.browser?.evaluateEnabled ?? true;
 
   const bridgeAuth = cfg.browser.enabled
     ? await (async () => {
         // Sandbox browser bridge server runs on a loopback TCP port; always wire up
         // the same auth that loopback browser clients will send (token/password).
         const cfgForAuth = params.config ?? loadConfig();
+        const { ensureBrowserControlAuth, resolveBrowserControlAuth } =
+          await import("../../plugin-sdk/browser-runtime.js");
         let browserAuth = resolveBrowserControlAuth(cfgForAuth);
         try {
           const ensured = await ensureBrowserControlAuth({ cfg: cfgForAuth });
@@ -180,14 +175,17 @@ export async function resolveSandboxContext(params: {
   }
   const browser =
     resolvedCfg.browser.enabled && backend.capabilities?.browser === true
-      ? await ensureSandboxBrowser({
-          scopeKey,
-          workspaceDir,
-          agentWorkspaceDir,
-          cfg: resolvedCfg,
-          evaluateEnabled,
-          bridgeAuth,
-        })
+      ? await (async () => {
+          const { ensureSandboxBrowser } = await import("./browser.js");
+          return await ensureSandboxBrowser({
+            scopeKey,
+            workspaceDir,
+            agentWorkspaceDir,
+            cfg: resolvedCfg,
+            evaluateEnabled,
+            bridgeAuth,
+          });
+        })()
       : null;
 
   const sandboxContext: SandboxContext = {
