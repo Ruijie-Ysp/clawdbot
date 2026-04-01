@@ -8,6 +8,7 @@ import {
   type ModelRef,
 } from "../agents/model-selection.js";
 import type { OpenClawConfig } from "../config/config.js";
+import { resolvePluginWebSearchConfig } from "../config/legacy-web-search.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { normalizeProviderModelIdWithPlugin } from "../plugins/provider-runtime.js";
 import {
