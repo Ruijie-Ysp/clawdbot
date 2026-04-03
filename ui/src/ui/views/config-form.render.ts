@@ -471,8 +471,35 @@ export function renderConfigForm(props: ConfigFormProps) {
     </section>
   `;
 
+  // Render observability dashboard button when viewing gateway section
+  const observabilityButton =
+    activeSection === "gateway"
+      ? html`
+          <section class="config-section-card" id="config-section-observability">
+            <div class="config-section-card__header">
+              <span class="config-section-card__icon">${icons.activity}</span>
+              <div class="config-section-card__titles">
+                <h3 class="config-section-card__title">Observability Dashboard</h3>
+                <p class="config-section-card__desc">Agent process tracing and analytics</p>
+              </div>
+            </div>
+            <div class="config-section-card__content">
+              <a
+                href="http://localhost:18789/plugins/observability"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn"
+              >
+                ${icons.externalLink} Open Observability Dashboard
+              </a>
+            </div>
+          </section>
+        `
+      : nothing;
+
   return html`
     <div class="config-form config-form--modern">
+      ${observabilityButton}
       ${subsectionContext
         ? (() => {
             const { sectionKey, subsectionKey, schema: node } = subsectionContext;
