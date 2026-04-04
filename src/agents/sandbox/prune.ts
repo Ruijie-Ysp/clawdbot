@@ -1,4 +1,5 @@
 import { loadConfig } from "../../config/config.js";
+import { stopBrowserBridgeServer } from "../../plugin-sdk/browser-bridge.js";
 import { defaultRuntime } from "../../runtime.js";
 import { getSandboxBackendManager } from "./backend.js";
 import { BROWSER_BRIDGES } from "./browser-bridges.js";
@@ -103,7 +104,6 @@ async function pruneSandboxBrowsers(cfg: SandboxConfig) {
     onRemoved: async (entry) => {
       const bridge = BROWSER_BRIDGES.get(entry.sessionKey);
       if (bridge?.containerName === entry.containerName) {
-        const { stopBrowserBridgeServer } = await import("../../plugin-sdk/browser-runtime.js");
         await stopBrowserBridgeServer(bridge.bridge.server).catch(() => undefined);
         BROWSER_BRIDGES.delete(entry.sessionKey);
       }

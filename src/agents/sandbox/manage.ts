@@ -1,4 +1,5 @@
 import { loadConfig } from "../../config/config.js";
+import { stopBrowserBridgeServer } from "../../plugin-sdk/browser-bridge.js";
 import { getSandboxBackendManager } from "./backend.js";
 import { BROWSER_BRIDGES } from "./browser-bridges.js";
 import { dockerSandboxBackendManager } from "./docker-backend.js";
@@ -116,7 +117,6 @@ export async function removeSandboxBrowserContainer(containerName: string): Prom
 
   for (const [sessionKey, bridge] of BROWSER_BRIDGES.entries()) {
     if (bridge.containerName === containerName) {
-      const { stopBrowserBridgeServer } = await import("../../plugin-sdk/browser-runtime.js");
       await stopBrowserBridgeServer(bridge.bridge.server).catch(() => undefined);
       BROWSER_BRIDGES.delete(sessionKey);
     }

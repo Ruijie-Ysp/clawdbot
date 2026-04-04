@@ -5,7 +5,7 @@ import { normalizeAnyChannelId } from "../../channels/registry.js";
 import { resolveStateDir } from "../../config/paths.js";
 import { loadJsonFile } from "../../infra/json-file.js";
 import { writeJsonFileAtomically } from "../../plugin-sdk/json-store.js";
-import { getActivePluginChannelRegistry } from "../../plugins/runtime.js";
+import { getActivePluginChannelRegistryFromState } from "../../plugins/runtime-state.js";
 import { normalizeAccountId } from "../../routing/session-key.js";
 import type {
   ConversationRef,
@@ -124,15 +124,19 @@ function resolveChannelSupportsCurrentConversationBinding(channel: string): bool
   if (!normalized) {
     return false;
   }
-  const activeRegistry = getActivePluginChannelRegistry();
-  if (!activeRegistry) {
-    return false;
-  }
   const matchesPluginId = (plugin: { id: string; meta?: { aliases?: readonly string[] } }) =>
     plugin.id === normalized ||
     (plugin.meta?.aliases ?? []).some((alias) => alias.trim().toLowerCase() === normalized);
-  const plugin = activeRegistry.channels.find((entry) => matchesPluginId(entry.plugin))?.plugin;
-  return plugin?.conversationBindings?.supportsCurrentConversationBinding === true;
+  // Read the already-installed runtime channel registry from shared state only.
+  // Importing plugins/runtime here creates a module cycle through plugin-sdk
+  // surfaces during bundled channel discovery.
+  const plugin = getActivePluginChannelRegistryFromState()?.channels.find((entry) =>
+    matchesPluginId(entry.plugin),
+  )?.plugin;
+  if (plugin?.conversationBindings?.supportsCurrentConversationBinding === true) {
+    return true;
+  }
+  return false;
 }
 
 export function getGenericCurrentConversationBindingCapabilities(params: {

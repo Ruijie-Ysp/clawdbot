@@ -5,26 +5,31 @@ vi.hoisted(() => {
   process.env.OPENCLAW_TEST_FAST = "1";
 });
 
+import { expectsSubagentFollowup, isLikelyInterimCronMessage } from "./subagent-followup-hints.js";
 import {
-  expectsSubagentFollowup,
-  isLikelyInterimCronMessage,
   readDescendantSubagentFallbackReply,
   waitForDescendantSubagentSummary,
 } from "./subagent-followup.js";
 
-vi.mock("../../agents/subagent-registry.js", () => ({
+vi.mock("../../agents/subagent-registry-read.js", () => ({
   listDescendantRunsForRequester: vi.fn().mockReturnValue([]),
 }));
 
-vi.mock("../../agents/tools/agent-step.js", () => ({
-  readLatestAssistantReply: vi.fn().mockResolvedValue(undefined),
-}));
+vi.mock("../../agents/tools/agent-step.js", async () => {
+  const actual = await vi.importActual<typeof import("../../agents/tools/agent-step.js")>(
+    "../../agents/tools/agent-step.js",
+  );
+  return {
+    ...actual,
+    readLatestAssistantReply: vi.fn().mockResolvedValue(undefined),
+  };
+});
 
 vi.mock("../../gateway/call.js", () => ({
   callGateway: vi.fn().mockResolvedValue({ status: "ok" }),
 }));
 
-const { listDescendantRunsForRequester } = await import("../../agents/subagent-registry.js");
+const { listDescendantRunsForRequester } = await import("../../agents/subagent-registry-read.js");
 const { readLatestAssistantReply } = await import("../../agents/tools/agent-step.js");
 const { callGateway } = await import("../../gateway/call.js");
 
