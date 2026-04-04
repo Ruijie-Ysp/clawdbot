@@ -141,3 +141,6 @@ changelog/fragments/
 
 # Local scratch workspace
 .tmp/
+
+# local assistant config (contains secrets)
+openclaw.json
