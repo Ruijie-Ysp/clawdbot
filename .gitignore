@@ -147,3 +147,6 @@ changelog/fragments/
 .tmp/
 test/fixtures/openclaw-vitest-unit-report.json
 analysis/
+
+# local assistant config (contains secrets)
+openclaw.json
